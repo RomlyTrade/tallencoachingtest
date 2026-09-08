@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TALLEN Coaching</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=Dongle:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --chalk:#EDEBE6;
+  --chalk-deep:#E2DFD8;
+  --ink:#17181C;
+  --muted:#6E6F6B;
+  --plate:#1E45C8;
+  --rule:#CFCBC2;
+  --wrap:640px;
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+
+html{
+  scroll-behavior:smooth;
+  scroll-padding-top:81px;
+  -webkit-text-size-adjust:100%;
+  -webkit-tap-highlight-color:transparent;
+}
+
+body{
+  background:var(--chalk);
+  color:var(--ink);
+  font-family:'Archivo',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
+  font-size:17px;
+  line-height:1.6;
+  font-variation-settings:'wdth' 100,'wght' 400;
+}
+
+.wrap{max-width:var(--wrap);margin:0 auto;padding:0 22px}
+
+/* ---------- logo ---------- */
+
+.masthead{padding:44px 0 26px}
+
+.logo{
+  display:block;
+  width:100%;
+  max-width:330px;
+  height:auto;
+  aspect-ratio:2186/1013;
+}
+
+/* ---------- sticky service nav ---------- */
+
+.jump{
+  position:sticky;
+  top:0;
+  z-index:20;
+  background:var(--chalk);
+  border-top:1px solid var(--rule);
+  border-bottom:1px solid var(--rule);
+}
+
+.jump ul{
+  max-width:var(--wrap);
+  margin:0 auto;
+  padding:0 22px;
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  list-style:none;
+}
+
+.jump li + li{border-left:1px solid var(--rule)}
+
+.jump a{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:3px;
+  text-align:center;
+  min-height:78px;
+  padding:12px 7px;
+  color:var(--ink);
+  text-decoration:none;
+}
+
+.jump strong{
+  font-variation-settings:'wdth' 106,'wght' 700;
+  font-size:13.5px;
+  line-height:1.15;
+  letter-spacing:-.01em;
+}
+
+.jump span{
+  color:var(--muted);
+  font-variation-settings:'wght' 400;
+  font-size:11px;
+  line-height:1.25;
+}
+
+.jump a:hover{background:var(--chalk-deep)}
+
+@media (max-width:380px){
+  .jump a{padding:10px 4px;gap:2px}
+  .jump strong{font-size:12px;letter-spacing:-.015em}
+  .jump span{font-size:10px}
+}
+
+/* ---------- sections ---------- */
+
+section{padding:52px 0;border-bottom:1px solid var(--rule)}
+
+h2{
+  font-family:'Dongle','Archivo',sans-serif;
+  font-weight:700;
+  font-size:clamp(50px,14vw,70px);
+  line-height:.82;
+  letter-spacing:.005em;
+}
+
+#about h2{margin-bottom:26px}
+
+.where{
+  display:inline-block;
+  margin-bottom:16px;
+  padding-bottom:5px;
+  border-bottom:3px solid var(--plate);
+  font-variation-settings:'wght' 600;
+  font-size:14px;
+  color:var(--plate);
+}
+
+section p{margin-top:18px;max-width:62ch}
+
+.lede{font-size:19px;line-height:1.5}
+
+ul.detail{margin:26px 0 0;padding:0;list-style:none;border-top:1px solid var(--rule)}
+
+ul.detail li{
+  padding:13px 0 13px 20px;
+  border-bottom:1px solid var(--rule);
+  position:relative;
+  font-size:16.5px;
+}
+
+ul.detail li::before{
+  content:"";
+  position:absolute;
+  left:0;top:22px;
+  width:8px;height:8px;
+  background:var(--plate);
+}
+
+.price{
+  margin-top:22px;
+  font-variation-settings:'wdth' 108,'wght' 700;
+  font-size:17px;
+}
+
+.stripe-slot{
+  margin-top:26px;
+  padding:20px;
+  border:1px dashed var(--rule);
+  color:var(--muted);
+  font-size:14px;
+  text-align:center;
+}
+
+.stripe-slot:empty::before{
+  content:"Stripe checkout goes here";
+}
+
+/* ---------- buttons ---------- */
+
+.cta{
+  display:block;
+  margin-top:26px;
+  padding:17px 22px;
+  background:var(--plate);
+  color:#fff;
+  text-align:center;
+  text-decoration:none;
+  font-variation-settings:'wdth' 108,'wght' 700;
+  font-size:17px;
+  letter-spacing:-.005em;
+}
+
+.cta:hover{background:#1836A2}
+
+/* ---------- about ---------- */
+
+.portrait{
+  width:100%;
+  aspect-ratio:4/5;
+  background:var(--chalk-deep);
+  border:1px solid var(--rule);
+  margin-bottom:26px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:var(--muted);
+  font-size:14px;
+  object-fit:cover;
+}
+
+.creds{
+  margin-top:26px;
+  padding-top:18px;
+  border-top:1px solid var(--rule);
+  color:var(--muted);
+  font-size:15.5px;
+}
+
+/* ---------- footer ---------- */
+
+footer{padding:46px 0 64px;color:var(--muted);font-size:15px}
+footer a{color:var(--ink)}
+.footmark{
+  width:100%;
+  max-width:160px;
+  height:auto;
+  aspect-ratio:2186/1013;
+  display:block;
+  margin-bottom:16px;
+  opacity:.55;
+}
+
+/* ---------- focus + motion ---------- */
+
+a:focus-visible{outline:3px solid var(--plate);outline-offset:3px}
+
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+}
+
+/* ---------- desktop ---------- */
+
+@media (min-width:820px){
+  :root{--wrap:940px}
+  html{scroll-padding-top:89px}
+  body{font-size:18px}
+  .masthead{padding:64px 0 34px}
+  .jump strong{font-size:17px}
+  .jump span{font-size:13.5px}
+  .jump a{min-height:88px}
+  .logo{max-width:420px}
+  section{padding:76px 0}
+  .split{display:grid;grid-template-columns:1fr 1fr;gap:52px;align-items:start}
+  .split .body{margin:0}
+  .cta{display:inline-block;padding:17px 34px}
+  .portrait{max-width:340px;margin-bottom:0}
+  .about-grid{display:grid;grid-template-columns:340px 1fr;gap:52px;align-items:start}
+}
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="wrap">
+    <img class="logo" src="tallen-logo-caps.svg" alt="TALLEN Coaching">
+  </div>
+</header>
+
+<nav class="jump" aria-label="Services">
+  <ul>
+    <li><a href="#in-person"><strong>Personal Training</strong><span>in-person, gym-based</span></a></li>
+    <li><a href="#online"><strong>Online Coaching</strong><span>remote</span></a></li>
+    <li><a href="#at-home"><strong>Home Training</strong><span>sessions at your home</span></a></li>
+  </ul>
+</nav>
+
+<main>
+
+  <section id="about">
+    <div class="wrap">
+      <h2>About me</h2>
+      <div class="about-grid">
+        <!-- Replace this div with: <img class="portrait" src="tom.jpg" alt="Tom" loading="lazy"> -->
+        <!-- Keep loading="lazy" — the photo is below the fold on first load, so this defers it until needed -->
+        <div class="portrait">Photo of you goes here</div>
+        <div>
+          <p>I'm Tom. For the first half of my life, I had no interest in sport or fitness at all. Then one day, as a kid, I was beaten up by another kid at Center Parcs, of all places.</p>
+          <p>That inspired me to start training in martial arts, eventually settling on boxing, wrestling and Jiu-Jitsu.</p>
+          <p>In my late teens I decided to train as an MMA fighter. I trained alongside some of the best in the country and had over 100 fights across smaller tournaments, before changing my long-term plans after learning about the risks of frequent concussions.</p>
+          <p>My coaches gave me gym programmes to improve my performance in fights, and those sessions stayed consistent long after everything else changed.</p>
+          <p>Since stepping back from fighting, I've kept training myself in the gym — educating myself on form, programming, nutrition and recovery — and have been coaching others for over two years now.</p>
+          <p>Hope to work with you soon.</p>
+          <div class="creds">Level 3 PT<br>Level 2 PT<br>8 Years Martial Arts Experience</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="in-person">
+    <div class="wrap">
+      <div class="split">
+        <div>
+          <h2>Personal Training</h2>
+        </div>
+        <div class="body">
+          <p class="lede">In person coaching on the gym floor. Best if you want hands-on coaching and someone waiting for you to turn up each day, forcing you to stay consistent!</p>
+          <ul class="detail">
+            <li>Full programme built specifically to your life and preferences</li>
+            <li>Sessions booked around you</li>
+            <li>Technical coaching</li>
+            <li>Nutritional guidance</li>
+          </ul>
+          <a class="cta" href="#book">Get Started Now</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="online">
+    <div class="wrap">
+      <div class="split">
+        <div>
+          <h2>Online coaching</h2>
+        </div>
+        <div class="body">
+          <p class="lede">Weekly coaching for people who train on their own but don't want to guess. Cheaper than PT, and it fits round shift work and travel.</p>
+          <ul class="detail">
+            <li>Programme built for your gym and your available days</li>
+            <li>Video form checks, sent back with actual notes</li>
+            <li>Weekly check-in and adjustments</li>
+            <li>Direct access on WhatsApp between sessions</li>
+          </ul>
+          <!-- Stripe: paste your embedded Buy Button / Payment Link code inside this div -->
+          <div class="stripe-slot"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="at-home">
+    <div class="wrap">
+      <div class="split">
+        <div>
+          <h2>In-home coaching</h2>
+        </div>
+        <div class="body">
+          <p class="lede">I come to you. For people who won't set foot in a gym yet, or can't find the time.</p>
+          <ul class="detail">
+            <li>Works with whatever kit you have, including none</li>
+            <li>No commute, no waiting for a squat rack</li>
+            <li>Same programming as in-gym clients</li>
+          </ul>
+          <a class="cta" href="#book">Join waitlist</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <img class="footmark" src="tallen-logo-caps.svg" alt="TALLEN Coaching">
+    <p><a href="mailto:tom@tallencoaching.com">tom@tallencoaching.com</a><br><a href="tel:+447920016005">+44 (0) 7920 016 005</a></p>
+  </div>
+</footer>
+
+</body>
+</html>
