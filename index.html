@@ -204,7 +204,7 @@ ul.detail li::before{
 
 /* ---------- footer ---------- */
 
-footer{padding:46px 0 64px;color:var(--muted);font-size:15px}
+footer{padding:46px 0 64px;color:var(--muted);font-size:15px;text-align:center}
 footer a{color:var(--ink)}
 .footmark{
   width:100%;
@@ -212,8 +212,15 @@ footer a{color:var(--ink)}
   height:auto;
   aspect-ratio:2186/1013;
   display:block;
-  margin-bottom:16px;
+  margin:0 auto 16px;
   opacity:.55;
+}
+
+.footer-question{
+  font-size:17px;
+  font-variation-settings:'wght' 600;
+  color:var(--ink);
+  margin-bottom:10px;
 }
 
 /* ---------- focus + motion ---------- */
@@ -275,8 +282,6 @@ a:focus-visible{outline:3px solid var(--plate);outline-offset:3px}
     <div class="wrap">
       <h2>About me</h2>
       <div class="about-grid">
-        <!-- Replace this div with: <img class="portrait" src="tom.jpg" alt="Tom" loading="lazy"> -->
-        <!-- Keep loading="lazy" — the photo is below the fold on first load, so this defers it until needed -->
         <img class="portrait" src="aboutmepic.jpeg" alt="Tom" loading="lazy">
         <div>
           <p>I'm Tom. For the first half of my life, I had no interest in sport or fitness at all. Then one day, as a kid, I was beaten up by another kid at Center Parcs, of all places.</p>
@@ -325,16 +330,12 @@ a:focus-visible{outline:3px solid var(--plate);outline-offset:3px}
             <li>Weekly check-in and adjustments</li>
             <li>Direct access on WhatsApp between sessions</li>
           </ul>
-          <!-- Stripe: paste your embedded Buy Button / Payment Link code inside this div -->
-          <script async
-  src="https://js.stripe.com/v3/buy-button.js">
-</script>
-
-<stripe-buy-button
-  buy-button-id="buy_btn_1TIzaWRoUtU7ZAq0CtwTT9Im"
-  publishable-key="pk_live_51RbmliRoUtU7ZAq0Ja569sxD4k49CHZACWW30ksox4UHDcnDFSiyqTsIGx8iKfKbmGtFiaJaHGXYh6bW4xIbfCXQ00xoC62msJ"
->
-</stripe-buy-button>
+          <script async src="https://js.stripe.com/v3/buy-button.js"></script>
+          <stripe-buy-button
+            buy-button-id="buy_btn_1TIzaWRoUtU7ZAq0CtwTT9Im"
+            publishable-key="pk_live_51RbmliRoUtU7ZAq0Ja569sxD4k49CHZACWW30ksox4UHDcnDFSiyqTsIGx8iKfKbmGtFiaJaHGXYh6bW4xIbfCXQ00xoC62msJ"
+          >
+          </stripe-buy-button>
         </div>
       </div>
     </div>
@@ -353,7 +354,7 @@ a:focus-visible{outline:3px solid var(--plate);outline-offset:3px}
             <li>No commute, no waiting for a squat rack</li>
             <li>Same programming as in-gym clients</li>
           </ul>
-          <a class="cta" href="#book">Join waitlist</a>
+          <a class="cta" href="https://tallencoaching1.aweb.page/join-at-home-training">Join waitlist</a>
         </div>
       </div>
     </div>
@@ -364,6 +365,7 @@ a:focus-visible{outline:3px solid var(--plate);outline-offset:3px}
 <footer>
   <div class="wrap">
     <img class="footmark" src="tallen-logo-caps.svg" alt="TALLEN Coaching">
+    <p class="footer-question">Any questions?</p>
     <p><a href="mailto:tom@tallencoaching.com">tom@tallencoaching.com</a><br><a href="tel:+447920016005">+44 (0) 7920 016 005</a></p>
   </div>
 </footer>
