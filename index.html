@@ -326,7 +326,15 @@ a:focus-visible{outline:3px solid var(--plate);outline-offset:3px}
             <li>Direct access on WhatsApp between sessions</li>
           </ul>
           <!-- Stripe: paste your embedded Buy Button / Payment Link code inside this div -->
-          <div class="stripe-slot"></div>
+          <script async
+  src="https://js.stripe.com/v3/buy-button.js">
+</script>
+
+<stripe-buy-button
+  buy-button-id="buy_btn_1TIzaWRoUtU7ZAq0CtwTT9Im"
+  publishable-key="pk_live_51RbmliRoUtU7ZAq0Ja569sxD4k49CHZACWW30ksox4UHDcnDFSiyqTsIGx8iKfKbmGtFiaJaHGXYh6bW4xIbfCXQ00xoC62msJ"
+>
+</stripe-buy-button>
         </div>
       </div>
     </div>
