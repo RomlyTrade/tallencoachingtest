@@ -53,41 +53,37 @@ body{
 /* ---------- sticky service nav ---------- */
 
 .jump{
-  position:sticky;
-  top:0;
-  z-index:20;
-  background:var(--chalk);
   border-top:1px solid var(--rule);
   border-bottom:1px solid var(--rule);
 }
 
 .jump ul{
-  max-width:var(--wrap);
-  margin:0 auto;
-  padding:0 22px;
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
+  display:flex;
+  flex-direction:column;
   list-style:none;
+  min-height:78vh;
 }
 
-.jump li + li{border-left:1px solid var(--rule)}
+.jump li{flex:1;display:flex}
+.jump li + li{border-top:1px solid var(--rule)}
 
 .jump a{
   display:flex;
+  flex:1;
+  width:100%;
   flex-direction:column;
   align-items:center;
   justify-content:center;
-  gap:3px;
+  gap:7px;
   text-align:center;
-  min-height:78px;
-  padding:12px 7px;
+  padding:20px 20px;
   color:var(--ink);
   text-decoration:none;
 }
 
 .jump strong{
   font-variation-settings:'wdth' 106,'wght' 700;
-  font-size:13.5px;
+  font-size:23px;
   line-height:1.15;
   letter-spacing:-.01em;
 }
@@ -95,17 +91,11 @@ body{
 .jump span{
   color:var(--muted);
   font-variation-settings:'wght' 400;
-  font-size:11px;
+  font-size:15px;
   line-height:1.25;
 }
 
 .jump a:hover{background:var(--chalk-deep)}
-
-@media (max-width:380px){
-  .jump a{padding:10px 4px;gap:2px}
-  .jump strong{font-size:12px;letter-spacing:-.015em}
-  .jump span{font-size:10px}
-}
 
 /* ---------- sections ---------- */
 
@@ -241,9 +231,18 @@ a:focus-visible{outline:3px solid var(--plate);outline-offset:3px}
   html{scroll-padding-top:89px}
   body{font-size:18px}
   .masthead{padding:64px 0 34px}
+  .jump{position:sticky;top:0;z-index:20;background:var(--chalk)}
+  .jump ul{
+    flex-direction:row;
+    min-height:0;
+    max-width:var(--wrap);
+    margin:0 auto;
+  }
+  .jump li{flex:1 1 0}
+  .jump li + li{border-top:none;border-left:1px solid var(--rule)}
+  .jump a{min-height:88px;padding:12px 8px}
   .jump strong{font-size:17px}
   .jump span{font-size:13.5px}
-  .jump a{min-height:88px}
   .logo{max-width:420px}
   section{padding:76px 0}
   .split{display:grid;grid-template-columns:1fr 1fr;gap:52px;align-items:start}
