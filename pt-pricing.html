@@ -107,8 +107,16 @@ h2{
   color:var(--muted);
 }
 
+/* per-session figure now leads; total drops to supporting text */
 .amount{
   margin-top:6px;
+  display:flex;
+  align-items:baseline;
+  flex-wrap:wrap;
+  gap:9px;
+}
+
+.amount b{
   font-family:'Dongle','Archivo',sans-serif;
   font-weight:700;
   font-size:56px;
@@ -116,10 +124,21 @@ h2{
   letter-spacing:.005em;
 }
 
-.per-session{
-  margin-top:6px;
+.amount span{
   color:var(--muted);
   font-size:15px;
+}
+
+.total{
+  margin-top:8px;
+  color:var(--muted);
+  font-size:15.5px;
+  font-variant-numeric:tabular-nums;
+}
+
+.total strong{
+  color:var(--ink);
+  font-variation-settings:'wght' 700;
 }
 
 .saving{
@@ -143,6 +162,111 @@ h2{
 }
 
 .buy:hover{background:#1836A2}
+
+/* ---------- monthly membership block ---------- */
+
+.membership{
+  margin-top:16px;
+  border:2px solid var(--plate);
+  background:rgba(255,255,255,.35);
+  padding:22px;
+}
+
+.membership .terms{
+  margin-top:12px;
+  padding-top:12px;
+  border-top:1px solid var(--rule);
+  color:var(--muted);
+  font-size:14.5px;
+  line-height:1.45;
+}
+
+.or{
+  margin-top:24px;
+  text-align:center;
+  color:var(--muted);
+  font-size:13.5px;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  font-variation-settings:'wght' 600;
+}
+
+/* ---------- free intro session ---------- */
+
+.intro{background:var(--chalk-deep)}
+
+.intro .group-intro{margin-top:14px}
+
+.lead-form{
+  margin:24px auto 0;
+  max-width:420px;
+}
+
+.field + .field{margin-top:14px}
+
+.field label{
+  display:block;
+  margin-bottom:6px;
+  font-size:14px;
+  font-variation-settings:'wght' 600;
+  color:var(--muted);
+}
+
+.field input{
+  width:100%;
+  font-family:inherit;
+  font-size:16px;            /* 16px min stops iOS zooming on focus */
+  line-height:1.4;
+  min-height:52px;
+  padding:13px 14px;
+  border:1px solid var(--rule);
+  border-radius:0;
+  background:rgba(255,255,255,.55);
+  color:var(--ink);
+  -webkit-appearance:none;
+}
+
+.field input:focus{
+  outline:3px solid var(--plate);
+  outline-offset:2px;
+}
+
+.field input::placeholder{color:#A3A199}
+
+.lead-form .buy{
+  width:100%;
+  border:0;
+  cursor:pointer;
+  font-family:inherit;
+  min-height:54px;
+}
+
+.form-note{
+  margin-top:12px;
+  text-align:center;
+  font-size:14px;
+  line-height:1.45;
+  color:var(--muted);
+}
+
+/* success state — swapped in without leaving the page */
+.form-done{display:none}
+.lead-form.is-done .form-fields{display:none}
+.lead-form.is-done .form-done{
+  display:block;
+  text-align:center;
+  border:2px solid var(--plate);
+  padding:24px 20px;
+}
+.form-done strong{
+  display:block;
+  font-variation-settings:'wdth' 108,'wght' 700;
+  font-size:19px;
+  margin-bottom:8px;
+}
+.form-done span{color:var(--muted);font-size:15.5px;line-height:1.45}
+
+.sink{display:none}
 
 /* ---------- footer ---------- */
 
@@ -182,8 +306,20 @@ a:focus-visible{outline:3px solid var(--plate);outline-offset:3px}
     flex-direction:row;
     gap:20px;
   }
-  .card{flex:1}
-  .amount{font-size:48px}
+  .card{flex:1;display:flex;flex-direction:column}
+  .card .buy{margin-top:auto}
+  .amount b{font-size:48px}
+
+  .membership{
+    display:grid;
+    grid-template-columns:1fr minmax(240px,280px);
+    gap:32px;
+    align-items:center;
+    padding:26px 28px;
+  }
+  .membership .membership-body{min-width:0}
+  .membership .buy{margin-top:0}
+  .membership .terms{margin-top:12px}
 }
 </style>
 </head>
@@ -197,6 +333,73 @@ a:focus-visible{outline:3px solid var(--plate);outline-offset:3px}
 
 <main>
 
+  <!-- ============================================================
+       FREE INTRO SESSION
+
+       This posts straight to AWeber. Before it works you need to:
+
+       1. Build a form in AWeber and choose "I will install my form"
+       2. Add a custom field for the phone number in
+          AWeber > List Options > Custom Fields
+       3. Copy the hidden field values below out of AWeber's own
+          generated HTML — including the exact phone field name,
+          which AWeber writes as "custom <YourFieldName>"
+       4. Make a thanks.html page and point "redirect" at it
+
+       Then turn on new-subscriber notifications in AWeber so you
+       get the alert as well as the list entry.
+       ============================================================ -->
+  <section id="intro" class="intro">
+    <div class="wrap">
+      <h2>Free intro session</h2>
+      <p class="group-intro">Not sure yet? Come in for one session, free, no card needed. We'll go through what you want out of training, put you through a proper workout, and you decide afterwards whether you want to carry on.</p>
+
+      <form class="lead-form" id="lead-form" method="post"
+            action="https://www.aweber.com/scripts/addlead.pl" target="aweber-sink">
+        <input type="hidden" name="meta_web_form_id" value="494768673">
+        <input type="hidden" name="meta_split_id" value="">
+        <input type="hidden" name="listname" value="awlist6939572">
+        <!-- redirect now lands inside the hidden iframe, so nobody ever
+             sees it. Leave it as is, or point it anywhere you like. -->
+        <input type="hidden" name="redirect" value="https://tallencoaching.com/thanks.html">
+        <input type="hidden" name="meta_redirect_onlist" value="https://tallencoaching.com/thanks.html">
+        <input type="hidden" name="meta_adtracking" value="free_intro_session">
+        <input type="hidden" name="meta_message" value="1">
+        <input type="hidden" name="meta_required" value="name,email">
+
+        <div class="form-fields">
+          <div class="field">
+            <label for="lead-name">Your name</label>
+            <input id="lead-name" type="text" name="name" autocomplete="given-name" required>
+          </div>
+
+          <div class="field">
+            <label for="lead-email">Email address</label>
+            <input id="lead-email" type="email" name="email" autocomplete="email"
+                   inputmode="email" autocapitalize="off" spellcheck="false" required>
+          </div>
+
+          <div class="field">
+            <!-- name must match your AWeber custom field exactly -->
+            <label for="lead-phone">Phone number</label>
+            <input id="lead-phone" type="tel" name="custom Phone Number" autocomplete="tel" inputmode="tel">
+          </div>
+
+          <button class="buy" type="submit">Book my free session</button>
+          <p class="form-note">I'll text or email you within 24 hours to arrange a time. No obligation to book anything after.</p>
+        </div>
+
+        <div class="form-done" role="status" aria-live="polite">
+          <strong>Got it &mdash; thanks.</strong>
+          <span>I'll be in touch within 24 hours to sort a time that works around you.</span>
+        </div>
+      </form>
+
+      <!-- AWeber's response loads in here, out of sight -->
+      <iframe class="sink" id="aweber-sink" name="aweber-sink" title="Form submission"></iframe>
+    </div>
+  </section>
+
   <section id="members">
     <div class="wrap">
       <h2>Anytime Fitness Members</h2>
@@ -204,26 +407,42 @@ a:focus-visible{outline:3px solid var(--plate);outline-offset:3px}
       <div class="cards">
         <div class="card">
           <div class="tier">Single session</div>
-          <div class="amount">£48</div>
+          <div class="amount"><b>&pound;48</b> <span>per session</span></div>
+          <div class="total">One session, no commitment</div>
           <a class="buy" href="https://buy.stripe.com/4gMfZjfDP3dm2Gt3D8aVa05">Buy single session</a>
         </div>
 
         <div class="card">
           <div class="tier">4-Pack</div>
-          <div class="amount">£168</div>
-          <div class="per-session">£42 per session</div>
+          <div class="amount"><b>&pound;42</b> <span>per session</span></div>
+          <div class="total"><strong>&pound;168</strong> total</div>
           <div class="saving">Save 12.5%</div>
           <a class="buy" href="https://buy.stripe.com/3cI8wRcrDcNW0yla1waVa06">Buy 4-pack</a>
         </div>
 
-        <div class="card best">
-          <span class="tag">Best value</span>
-          <div class="tier">12-Pack</div>
-          <div class="amount">£432</div>
-          <div class="per-session">£36 per session</div>
-          <div class="saving">Save 25%</div>
-          <a class="buy" href="https://buy.stripe.com/bJe00l0IV4hq80NehMaVa07">Buy 12-pack</a>
+        <!-- NEW: 8-pack -->
+        <div class="card">
+          <div class="tier">8-Pack</div>
+          <div class="amount"><b>&pound;40</b> <span>per session</span></div>
+          <div class="total"><strong>&pound;320</strong> total</div>
+          <div class="saving">Save 17%</div>
+          <a class="buy" href="https://buy.stripe.com/cNi14p77jdS02Gtc9EaVa0b">Buy 8-pack</a>
         </div>
+      </div>
+
+      <p class="or">or train twice a week</p>
+
+      <!-- NEW: monthly membership, replaces the 12-pack -->
+      <div class="membership">
+        <div class="membership-body">
+          <span class="tag">Best value</span>
+          <div class="tier">Monthly coaching</div>
+          <div class="amount"><b>&pound;36</b> <span>per session</span></div>
+          <div class="total"><strong>&pound;288</strong> per month &middot; 8 sessions</div>
+          <div class="saving">Save 25%</div>
+          <p class="terms">Minimum three months, then rolling monthly. Sessions are booked in advance and run to a proper programme rather than one at a time.</p>
+        </div>
+        <a class="buy" href="https://buy.stripe.com/3cI3cxbnz15e3KxgpUaVa0d">Start monthly coaching</a>
       </div>
     </div>
   </section>
@@ -236,24 +455,39 @@ a:focus-visible{outline:3px solid var(--plate);outline-offset:3px}
       <div class="cards">
         <div class="card">
           <div class="tier">Single session</div>
-          <div class="amount">£53</div>
+          <div class="amount"><b>&pound;53</b> <span>per session</span></div>
+          <div class="total">One session, no commitment</div>
           <a class="buy" href="https://buy.stripe.com/00wdRb3V7dS00yl8XsaVa08">Buy single session</a>
         </div>
 
         <div class="card">
           <div class="tier">4-Pack</div>
-          <div class="amount">£178</div>
-          <div class="per-session">£44.50 per session</div>
+          <div class="amount"><b>&pound;44.50</b> <span>per session</span></div>
+          <div class="total"><strong>&pound;178</strong> total</div>
           <a class="buy" href="https://buy.stripe.com/7sYbJ3dvH4hqbcZ6PkaVa09">Buy 4-pack</a>
         </div>
 
-        <div class="card best">
-          <span class="tag">Best value</span>
-          <div class="tier">12-Pack</div>
-          <div class="amount">£462</div>
-          <div class="per-session">£38.50 per session</div>
-          <a class="buy" href="https://buy.stripe.com/8x2eVfcrD15edl7ehMaVa0a">Buy 12-pack</a>
+        <!-- NEW: 8-pack -->
+        <div class="card">
+          <div class="tier">8-Pack</div>
+          <div class="amount"><b>&pound;42.50</b> <span>per session</span></div>
+          <div class="total"><strong>&pound;340</strong> total</div>
+          <a class="buy" href="https://buy.stripe.com/cNi8wR0IVcNW5SFddIaVa0c">Buy 8-pack</a>
         </div>
+      </div>
+
+      <p class="or">or train twice a week</p>
+
+      <!-- NEW: monthly membership, replaces the 12-pack -->
+      <div class="membership">
+        <div class="membership-body">
+          <span class="tag">Best value</span>
+          <div class="tier">Monthly coaching</div>
+          <div class="amount"><b>&pound;38.50</b> <span>per session</span></div>
+          <div class="total"><strong>&pound;308</strong> per month &middot; 8 sessions</div>
+          <p class="terms">Minimum three months, then rolling monthly. Day passes included. Sessions are booked in advance and run to a proper programme rather than one at a time.</p>
+        </div>
+        <a class="buy" href="https://buy.stripe.com/14A6oJ4Zb15e80N4HcaVa0e">Start monthly coaching</a>
       </div>
     </div>
   </section>
@@ -267,6 +501,24 @@ a:focus-visible{outline:3px solid var(--plate);outline-offset:3px}
     <p><a href="mailto:tom@tallencoaching.com">tom@tallencoaching.com</a><br><a href="tel:+447920016005">+44 (0) 7920 016 005</a></p>
   </div>
 </footer>
+
+<script>
+(function(){
+  var form = document.getElementById('lead-form');
+  var sink = document.getElementById('aweber-sink');
+  if(!form || !sink) return;
+
+  var sent = false;
+  form.addEventListener('submit', function(){ sent = true; });
+
+  // fires when AWeber's response finishes loading inside the hidden frame
+  sink.addEventListener('load', function(){
+    if(!sent) return;
+    form.classList.add('is-done');
+    form.scrollIntoView({block:'center'});
+  });
+})();
+</script>
 
 </body>
 </html>
