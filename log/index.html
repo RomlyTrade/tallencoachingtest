@@ -133,7 +133,7 @@ function rpc(fn, args){
   const headers = { 'Content-Type':'application/json', apikey: SUPABASE_KEY };
   if(!SUPABASE_KEY.startsWith('sb_')) headers.Authorization = 'Bearer ' + SUPABASE_KEY;
   return fetch(`${SUPABASE_URL.replace(/\/+$/,'')}/rest/v1/rpc/${fn}`, { method:'POST', headers, body: JSON.stringify(args) })
-    .then(r => { if(!r.ok) throw new Error('http ' + r.status); return r.json(); });
+    .then(async r => { if(!r.ok){ let t=''; try{ t = (await r.text()).slice(0,160); }catch(_){} throw new Error('http ' + r.status + ' ' + t); } return r.json(); });
 }
 
 /* ===== Who is this? (from the private link: /log/#c=karen&t=KEY) ===== */
@@ -332,7 +332,7 @@ async function boot(){
       save(); render();
     }
   }catch(e){
-    setStatus(db.plan ? 'You’re offline. You can still log; it’ll send when you’re back online.' : 'Couldn’t reach the server. Check your connection and refresh.');
+    setStatus(db.plan ? 'You’re offline. You can still log; it’ll send when you’re back online.' : 'Couldn’t reach the server. Check your connection and refresh. (' + (e && e.message || 'unknown') + ')');
   }
   syncPending();
 }
