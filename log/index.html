@@ -127,7 +127,14 @@ details textarea{width:100%;min-height:80px;margin-top:8px;border:1px solid var(
 
 <script>
 /* ===== Config ===== */
-const API = 'https://script.google.com/macros/s/AKfycbwE5gJdJaJ3QEv-d1FiMCp5PweyfrgNreDSJsRPSKeBRTRXzOGKS1K8vIQ4yrHfmoQV0g/exec';   // Google Apps Script web app URL
+const SUPABASE_URL = 'https://fxvrquxurenfmenqnnu.supabase.co';   // e.g. https://abcd1234.supabase.co
+const SUPABASE_KEY = 'sb_publishable_RAv9EjgkbjA5F8QgVEJHow_3oyylnUO';    // the public "anon" / "publishable" key (safe to be public)
+function rpc(fn, args){
+  const headers = { 'Content-Type':'application/json', apikey: SUPABASE_KEY };
+  if(!SUPABASE_KEY.startsWith('sb_')) headers.Authorization = 'Bearer ' + SUPABASE_KEY;
+  return fetch(`${SUPABASE_URL.replace(/\/+$/,'')}/rest/v1/rpc/${fn}`, { method:'POST', headers, body: JSON.stringify(args) })
+    .then(r => { if(!r.ok) throw new Error('http ' + r.status); return r.json(); });
+}
 
 /* ===== Who is this? (from the private link: /log/#c=karen&t=KEY) ===== */
 function readAuth(){
@@ -294,8 +301,7 @@ function renderHistory(){
 
 /* ===== Server ===== */
 async function fetchPlan(){
-  const r = await fetch(`${API}?c=${encodeURIComponent(AUTH.c)}&t=${encodeURIComponent(AUTH.t)}`, { method:'GET', redirect:'follow' });
-  return r.json();
+  return rpc('get_log', { p_client: AUTH.c, p_key: AUTH.t });
 }
 let syncing = false;
 async function syncPending(){
@@ -303,9 +309,7 @@ async function syncPending(){
   syncing = true;
   try{
     for(const sess of db.pending.slice()){
-      const r = await fetch(API, { method:'POST', redirect:'follow', headers:{ 'Content-Type':'text/plain;charset=utf-8' },
-        body: JSON.stringify({ c: AUTH.c, t: AUTH.t, session: sess, summary: summaryText(sess) }) });
-      const j = await r.json();
+      const j = await rpc('save_session', { p_client: AUTH.c, p_key: AUTH.t, p_session: sess, p_summary: summaryText(sess) });
       if(j && j.ok){ db.pending = db.pending.filter(p => p.id !== sess.id); if(!db.sessions.some(s => s.id === sess.id)) db.sessions.push(sess); save(); }
       else throw new Error(j && j.error || 'save failed');
     }
