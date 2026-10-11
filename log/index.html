@@ -1,0 +1,394 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#1E45C8">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="TALLEN Log">
+<title>Workout Log · TALLEN</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=Dongle:wght@400;700&display=swap">
+<style>
+:root{
+  --chalk:#EDEBE6; --card:#F7F6F2; --chalk-deep:#E2DFD8; --ink:#17181C; --muted:#5F605C; --rule:#CFCBC2;
+  --plate:#1E45C8; --plate-ink:#FFFFFF; --plate-soft:#DCE3F8; --good:#1F7A4D; --good-soft:#DCEFE4; --warn:#9A5B00;
+  --display:'Dongle','Archivo',sans-serif;
+  --body:'Archivo',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --chalk:#121318; --card:#1B1D24; --chalk-deep:#262933; --ink:#ECEBE6; --muted:#A3A49E; --rule:#33363F;
+    --plate:#6F8EF5; --plate-ink:#0D1220; --plate-soft:#1F2A4D; --good:#5CC890; --good-soft:#173326; --warn:#E3A84A;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --chalk:#121318; --card:#1B1D24; --chalk-deep:#262933; --ink:#ECEBE6; --muted:#A3A49E; --rule:#33363F;
+  --plate:#6F8EF5; --plate-ink:#0D1220; --plate-soft:#1F2A4D; --good:#5CC890; --good-soft:#173326; --warn:#E3A84A;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0}
+body{background:var(--chalk);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5;padding-inline:16px;padding-block:20px 60px;font-variation-settings:'wdth' 100}
+.wrap{max-width:620px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+h1,h2{font-family:var(--display);font-weight:700;margin:0;line-height:.8;text-wrap:balance}
+.num{font-variant-numeric:tabular-nums}
+button,input,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--plate);outline-offset:2px}
+
+.top{display:flex;justify-content:space-between;align-items:flex-end;gap:12px}
+.brand{font-size:13px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.top h1{font-size:64px;margin-top:6px}
+.top .sub{color:var(--muted);font-size:14px}
+
+.tabs{display:grid;grid-template-columns:repeat(var(--n),minmax(0,1fr));gap:6px}
+.tab{appearance:none;border:1.5px solid var(--rule);background:var(--card);border-radius:0;padding:10px 8px;cursor:pointer;text-align:left;display:flex;flex-direction:column;gap:2px;min-height:44px}
+.tab b{font-size:16px;font-weight:700;font-variation-settings:'wdth' 106;line-height:1.2}
+.tab span{font-size:12px;color:var(--muted);line-height:1.25}
+.tab[aria-selected="true"]{border-color:var(--plate);background:var(--plate);color:var(--plate-ink)}
+.tab[aria-selected="true"] span{color:var(--plate-ink);opacity:.85}
+
+.meta{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:14px;color:var(--muted)}
+.meta strong{color:var(--ink);font-weight:600}
+
+.ex{background:var(--card);border:1px solid var(--rule);padding:14px;display:flex;flex-direction:column;gap:10px}
+.ex.done{border-color:var(--good)}
+.exhead{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.muscle{font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--plate)}
+.optnote{font-size:12.5px;color:var(--plate);font-weight:600;margin-top:2px}
+.setrow .n.opt{color:var(--plate);border:1.5px dashed var(--plate);height:28px;display:grid;place-items:center}
+.exname{font-size:18px;font-weight:700;font-variation-settings:'wdth' 106;line-height:1.25}
+.exspec{font-size:13px;color:var(--muted)}
+.idx{font-family:var(--display);font-weight:700;font-size:36px;line-height:.6;color:var(--plate);padding-top:6px}
+.target{display:flex;gap:8px;align-items:flex-start;background:var(--plate-soft);padding:8px 10px;font-size:14px;line-height:1.35}
+.target.up{background:var(--good-soft)}
+.target .tag{flex:none;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:2px 6px;background:var(--plate);color:var(--plate-ink);margin-top:1px}
+.target.up .tag{background:var(--good);color:var(--plate-ink)}
+.note{font-size:14px;line-height:1.4;border-left:3px solid var(--plate);padding-left:10px}
+.vid{font-size:14px;font-weight:600;color:var(--plate)}
+.settings{display:flex;flex-direction:column;gap:4px}
+.settings label{font-size:12px;font-weight:600;color:var(--muted)}
+.settings input{border:1px solid var(--rule);background:var(--chalk);padding:8px 10px;min-height:40px;width:100%}
+
+.sets{display:flex;flex-direction:column;gap:6px}
+.setrow{display:grid;grid-template-columns:28px minmax(0,1fr) minmax(0,1fr) 44px;gap:8px;align-items:center}
+.setrow .n{font-size:13px;font-weight:700;color:var(--muted);text-align:center}
+.field{position:relative}
+.field input{width:100%;border:1.5px solid var(--rule);background:var(--chalk);padding:8px 34px 8px 10px;min-height:44px;font-size:17px;font-weight:600;font-variant-numeric:tabular-nums}
+.field input::placeholder{color:var(--muted);font-weight:400;opacity:.8}
+.field .u{position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:12px;color:var(--muted);pointer-events:none}
+.tick{appearance:none;width:44px;height:44px;border:1.5px solid var(--rule);background:var(--chalk);cursor:pointer;display:grid;place-items:center}
+.tick svg{opacity:.25}
+.tick[aria-pressed="true"]{background:var(--good);border-color:var(--good)}
+.tick[aria-pressed="true"] svg{opacity:1;stroke:var(--plate-ink)}
+.colhead{display:grid;grid-template-columns:28px minmax(0,1fr) minmax(0,1fr) 44px;gap:8px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.last{font-size:12.5px;color:var(--muted)}
+
+.finish{display:flex;flex-direction:column;gap:10px;background:var(--card);border:1px solid var(--rule);padding:14px}
+.finish textarea{border:1px solid var(--rule);background:var(--chalk);padding:10px;min-height:70px;width:100%;resize:vertical}
+.btn{appearance:none;border:0;background:var(--plate);color:var(--plate-ink);padding:14px 18px;font-weight:700;font-variation-settings:'wdth' 108;font-size:16px;cursor:pointer;min-height:48px;text-align:center;text-decoration:none;display:block}
+.btn.ghost{background:transparent;color:var(--plate);border:1.5px solid var(--plate)}
+.btnrow{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.summary{white-space:pre-wrap;font-size:13.5px;background:var(--chalk);border:1px dashed var(--rule);padding:10px;user-select:all;font-variant-numeric:tabular-nums}
+.small{font-size:13px;color:var(--muted)}
+.banner{font-size:13.5px;background:var(--chalk-deep);padding:10px 12px}
+details{background:var(--card);border:1px solid var(--rule);padding:10px 14px}
+details summary{cursor:pointer;font-weight:600;font-size:14px}
+details textarea{width:100%;min-height:80px;margin-top:8px;border:1px solid var(--rule);background:var(--chalk);padding:8px;font-size:12px}
+.hist{font-size:13px;display:flex;flex-direction:column;gap:4px;margin-top:8px}
+.hist div{display:flex;justify-content:space-between;gap:8px;border-bottom:1px solid var(--rule);padding:4px 0}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="brand">TALLEN Coaching</div>
+      <h1 id="who">Your workouts</h1>
+    </div>
+  </header>
+
+  <div class="banner" id="status" role="status" hidden></div>
+
+  <div id="app" hidden>
+    <div style="display:flex;flex-direction:column;gap:18px">
+      <nav class="tabs" id="tabs" role="tablist" aria-label="Workouts"></nav>
+      <div class="meta" id="meta"></div>
+      <div id="list" style="display:flex;flex-direction:column;gap:12px"></div>
+      <section class="finish" id="finish"></section>
+      <details id="histBox"><summary>Past sessions</summary><div class="hist" id="hist"></div></details>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ===== Config ===== */
+const API = 'https://script.google.com/macros/s/AKfycbwE5gJdJaJ3QEv-d1FiMCp5PweyfrgNreDSJsRPSKeBRTRXzOGKS1K8vIQ4yrHfmoQV0g/exec';   // Google Apps Script web app URL
+
+/* ===== Who is this? (from the private link: /log/#c=karen&t=KEY) ===== */
+function readAuth(){
+  const h = new URLSearchParams(location.hash.slice(1));
+  let c = h.get('c'), t = h.get('t');
+  try{
+    if(c && t) localStorage.setItem('tallen-auth', JSON.stringify({c, t}));
+    else { const a = JSON.parse(localStorage.getItem('tallen-auth') || 'null'); if(a){ c = a.c; t = a.t; } }
+  }catch(e){}
+  return c && t ? { c: c.toLowerCase(), t } : null;
+}
+const AUTH = readAuth();
+const KEY = 'tallen-log:' + (AUTH ? AUTH.c : 'none');
+
+/* ===== Local copy (works offline, survives refresh) ===== */
+let canStore = true;
+function load(){ try{ const v = localStorage.getItem(KEY); return v ? JSON.parse(v) : null; }catch(e){ canStore = false; return null; } }
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(db)); }catch(e){ canStore = false; } }
+let db = load() || {};
+db.plan ||= null; db.name ||= ''; db.sessions ||= []; db.pending ||= []; db.drafts ||= {}; db.settings ||= {}; db.tab ||= null;
+
+/* ===== Helpers ===== */
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fmtW = w => (w === '' || w == null || isNaN(Number(w))) ? '' : (Math.round(Number(w)*100)/100).toString();
+const today = () => new Date().toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
+const uid = () => (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2));
+const workouts = () => (db.plan || []);
+const workout = k => workouts().find(w => w.key === k) || workouts()[0];
+const unitOf = ex => ex.unit || 'reps';
+const wU = ex => ex.wUnit || 'kg';
+const repTxt = ex => ex.reps[0] === ex.reps[1] ? `${ex.reps[0]}` : `${ex.reps[0]}–${ex.reps[1]}`;
+const isOpt = (ex, s) => (ex.optional || []).includes(s + 1);
+const reqCount = ex => Math.max(1, ex.sets - (ex.optional || []).filter(n => n <= ex.sets).length);
+const startAt = (ex, i) => ex.start == null ? null : (Array.isArray(ex.start) ? ex.start[Math.min(i, ex.start.length-1)] : ex.start);
+const wList = (ex, ws) => { const v = ws.map(fmtW); return v.every(x => x === v[0]) ? `${v[0]} ${wU(ex)}` : `${v.join(', ')} ${wU(ex)}`; };
+
+function allSessions(){
+  const seen = new Set(); const out = [];
+  [...db.sessions, ...db.pending].forEach(s => { if(s && !seen.has(s.id)){ seen.add(s.id); out.push(s); } });
+  return out.sort((a,b) => (a.ts||0) - (b.ts||0));
+}
+function lastSession(k){ const s = allSessions().filter(x => x.workout === k); return s.length ? s[s.length-1] : null; }
+function prevSets(sess, exId){
+  const arr = sess && sess.sets && sess.sets[exId];
+  return arr ? Array.from(arr, x => x || { w:'', r:'' }) : null;
+}
+function draftFor(k){ return db.drafts[k] ||= { sets:{}, done:{}, note:'' }; }
+
+/* Level up when every required set hits the top of the rep range */
+function targetFor(ex, prev){
+  const hi = ex.reps[1]; const u = unitOf(ex);
+  if(!prev || !prev.length || prev.every(s => !s.r)){
+    if(ex.start == null) return { up:false };
+    return { up:false, ws: Array.from({length: ex.sets}, (_, i) => startAt(ex, i)) };
+  }
+  const req = prev.slice(0, reqCount(ex));
+  const allTop = req.length >= reqCount(ex) && req.every(s => Number(s.r) >= hi);
+  const lastWs = Array.from({length: ex.sets}, (_, i) => { const v = prev[i] && Number(prev[i].w); return v ? v : (startAt(ex, i) ?? 0); });
+  if(allTop && ex.inc > 0 && !ex.bodyweight){
+    const ws = lastWs.map(v => v + ex.inc);
+    return { up:true, ws, text:`You hit ${hi} ${u} on every set. Go up ${fmtW(ex.inc)} ${wU(ex)}: ${wList(ex, ws)} today.` };
+  }
+  if(allTop) return { up:true, text:'Top of the range on every set. Make it harder: slower lowering or a pause.' };
+  return { up:false, ws: lastWs };
+}
+
+/* ===== Status line ===== */
+function setStatus(msg){ const el = $('status'); el.hidden = !msg; el.textContent = msg || ''; }
+
+/* ===== Render ===== */
+function render(){
+  if(!db.plan || !db.plan.length){ $('app').hidden = true; return; }
+  $('app').hidden = false;
+  if(!db.tab || !workout(db.tab) || workout(db.tab).key !== db.tab) db.tab = workouts()[0].key;
+  const k = db.tab; const w = workout(k); const d = draftFor(k); const last = lastSession(k);
+  $('who').textContent = db.name || 'Your workouts';
+  document.title = (db.name ? db.name + '’s ' : '') + 'Workout Log · TALLEN';
+
+  const tabs = $('tabs'); tabs.style.setProperty('--n', workouts().length); tabs.hidden = workouts().length < 2;
+  tabs.innerHTML = workouts().map(x => `<button type="button" role="tab" class="tab" data-tab="${esc(x.key)}" aria-selected="${x.key===k}"><b>Workout ${esc(x.key)}</b><span>${esc(x.name)}</span></button>`).join('');
+
+  const doneCount = w.exercises.reduce((n,ex) => n + (d.done[ex.id]||[]).filter(Boolean).length, 0);
+  const totalSets = w.exercises.reduce((n,ex) => n + ex.sets, 0);
+  $('meta').innerHTML = `${workouts().length < 2 ? `<span><strong>${esc(w.name)}</strong></span>` : ''}<span>Last done: <strong>${last ? esc(last.date) : 'not yet'}</strong></span><span><strong class="num">${doneCount}/${totalSets}</strong> sets ticked</span>`;
+
+  $('list').innerHTML = w.exercises.map((ex, i) => {
+    const prev = prevSets(last, ex.id);
+    const t = targetFor(ex, prev);
+    const u = unitOf(ex);
+    const cur = d.sets[ex.id] || [];
+    const done = d.done[ex.id] || [];
+    const allDone = done.filter(Boolean).length >= ex.sets;
+    const rows = Array.from({length: ex.sets}, (_, s) => {
+      const p = prev && prev[s];
+      const phW = t.ws && t.ws[s] != null ? fmtW(t.ws[s]) : (p && p.w ? fmtW(p.w) : '');
+      const phR = p && p.r ? p.r : repTxt(ex);
+      const c = cur[s] || {};
+      return `<div class="setrow">
+        <span class="n${isOpt(ex,s) ? ' opt' : ''}"${isOpt(ex,s) ? ' title="Optional set"' : ''}>${s+1}</span>
+        ${ex.bodyweight ? `<span class="small">Bodyweight</span>` : `<label class="field"><input inputmode="decimal" id="w-${esc(ex.id)}-${s}" data-ex="${esc(ex.id)}" data-set="${s}" data-k="w" value="${esc(c.w ?? '')}" placeholder="${esc(phW)}" aria-label="Set ${s+1} weight in ${esc(wU(ex))}" style="padding-right:${wU(ex).length > 2 ? 60 : 34}px"><span class="u">${esc(wU(ex))}</span></label>`}
+        <label class="field"><input inputmode="numeric" id="r-${esc(ex.id)}-${s}" data-ex="${esc(ex.id)}" data-set="${s}" data-k="r" value="${esc(c.r ?? '')}" placeholder="${esc(phR)}" aria-label="Set ${s+1} ${esc(u)}"><span class="u">${u === 'reps' ? '' : esc(u)}</span></label>
+        <button type="button" class="tick" data-tick="${esc(ex.id)}" data-set="${s}" aria-pressed="${!!done[s]}" aria-label="Mark set ${s+1} done"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="square"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button>
+      </div>`;
+    }).join('');
+    const prevTxt = prev ? prev.slice(0, ex.sets).map(s => ex.bodyweight ? `${s.r||'–'}` : `${fmtW(s.w)||'–'}×${s.r||'–'}`).join(', ') : '';
+    const opt = (ex.optional||[]).filter(n => n <= ex.sets);
+    return `<article class="ex${allDone ? ' done' : ''}">
+      <div class="exhead">
+        <div>${ex.muscle ? `<div class="muscle">${esc(ex.muscle)}</div>` : ''}<div class="exname">${esc(ex.name)}</div>
+        <div class="exspec">${ex.sets} sets · ${repTxt(ex)} ${esc(u)}${ex.perSide ? ' each side' : ''}${ex.rest ? ` · rest ${esc(ex.rest)}` : ''}</div>
+        ${opt.length ? `<div class="optnote">Set ${opt.join(' & ')} ${opt.length > 1 ? 'are' : 'is'} optional if you’re short on time</div>` : ''}</div>
+        <span class="idx">${i+1}</span>
+      </div>
+      ${t.up ? `<div class="target up"><span class="tag">Level up</span><span>${esc(t.text)}</span></div>` : ''}
+      ${ex.note ? `<div class="note">${esc(ex.note)}</div>` : ''}
+      ${/^https?:\/\//.test(ex.video || '') ? `<a class="vid" href="${esc(ex.video)}" target="_blank" rel="noopener">▶ Watch the demo</a>` : ''}
+      <div class="sets">
+        <div class="colhead"><span>Set</span><span>${ex.bodyweight ? '' : 'Weight'}</span><span>${u === 'reps' ? 'Reps' : esc(u)}</span><span></span></div>
+        ${rows}
+      </div>
+      ${prevTxt ? `<div class="last">Last time: ${esc(prevTxt)}</div>` : ''}
+    </article>`;
+  }).join('');
+
+  renderFinish();
+  renderHistory();
+}
+
+function summaryText(sess){
+  const w = workout(sess.workout) || { name:'', exercises:[] };
+  const lines = [`${db.name} – ${workouts().length > 1 ? `Workout ${sess.workout} (${w.name})` : w.name} – ${sess.date}`];
+  w.exercises.forEach(ex => {
+    const s = (sess.sets[ex.id]||[]).filter(x => x && (x.r || x.w));
+    if(!s.length) return;
+    lines.push(`• ${ex.name}: ` + s.map(x => ex.bodyweight ? `${x.r}` : `${fmtW(x.w)}${wU(ex) === 'kg' ? 'kg' : ' ' + wU(ex)}×${x.r}`).join(', '));
+  });
+  if(sess.note) lines.push(`Notes: ${sess.note}`);
+  return lines.join('\n');
+}
+
+let justFinished = null;
+function renderFinish(){
+  const k = db.tab; const d = draftFor(k);
+  if(justFinished && justFinished.workout === k){
+    const sent = !db.pending.some(p => p.id === justFinished.id);
+    $('finish').innerHTML = `
+      <h2 style="font-size:44px">Session saved</h2>
+      <p style="margin:0">${sent ? 'Tom’s got it. Next time you open this, your new numbers will be waiting.' : 'Saved on your phone. It’ll send to Tom automatically next time you’re online.'}</p>
+      <div class="summary">${esc(summaryText(justFinished))}</div>
+      <button type="button" class="btn ghost" id="newSess">Back to my workout</button>`;
+    return;
+  }
+  $('finish').innerHTML = `
+    <label for="sessNote" style="font-weight:600">Anything I should know?</label>
+    <textarea id="sessNote" placeholder="Aches, a lift that felt easy…">${esc(d.note||'')}</textarea>
+    <button type="button" class="btn" id="finishBtn">Finish & send to Tom</button>`;
+}
+
+function renderHistory(){
+  const all = allSessions().slice().reverse();
+  $('hist').innerHTML = all.length ? all.slice(0, 15).map(s => `<div><span>${esc(s.date)}</span><span>${esc((workout(s.workout)||{}).name || 'Workout ' + s.workout)}${db.pending.some(p => p.id === s.id) ? ' · not sent yet' : ''}</span></div>`).join('') : '<p class="small">No sessions saved yet.</p>';
+}
+
+/* ===== Server ===== */
+async function fetchPlan(){
+  const r = await fetch(`${API}?c=${encodeURIComponent(AUTH.c)}&t=${encodeURIComponent(AUTH.t)}`, { method:'GET', redirect:'follow' });
+  return r.json();
+}
+let syncing = false;
+async function syncPending(){
+  if(syncing || !db.pending.length) return;
+  syncing = true;
+  try{
+    for(const sess of db.pending.slice()){
+      const r = await fetch(API, { method:'POST', redirect:'follow', headers:{ 'Content-Type':'text/plain;charset=utf-8' },
+        body: JSON.stringify({ c: AUTH.c, t: AUTH.t, session: sess, summary: summaryText(sess) }) });
+      const j = await r.json();
+      if(j && j.ok){ db.pending = db.pending.filter(p => p.id !== sess.id); if(!db.sessions.some(s => s.id === sess.id)) db.sessions.push(sess); save(); }
+      else throw new Error(j && j.error || 'save failed');
+    }
+  }catch(e){ /* try again later */ }
+  syncing = false;
+  const y = scrollY; render(); scrollTo(0, y);
+}
+
+async function boot(){
+  if(!AUTH){ setStatus('This link is missing your personal code. Open the link Tom sent you.'); return; }
+  if(db.plan) render();
+  else setStatus('Loading your workouts…');
+  try{
+    const j = await fetchPlan();
+    if(!j.ok){ setStatus(j.error === 'not_found' ? 'This link isn’t working. Ask Tom to send you a new one.' : 'Couldn’t load your workouts. Try again in a minute.'); if(!db.plan) return; }
+    else{
+      db.plan = j.workouts; db.name = j.client.name;
+      db.sessions = j.sessions || [];
+      setStatus(canStore ? '' : 'This browser isn’t saving anything between visits. Open the link in Safari or Chrome.');
+      save(); render();
+    }
+  }catch(e){
+    setStatus(db.plan ? 'You’re offline. You can still log; it’ll send when you’re back online.' : 'Couldn’t reach the server. Check your connection and refresh.');
+  }
+  syncPending();
+}
+
+/* ===== Events ===== */
+document.addEventListener('click', e => {
+  const tab = e.target.closest('[data-tab]');
+  if(tab){ db.tab = tab.dataset.tab; justFinished = null; save(); render(); scrollTo({top:0}); return; }
+  const tk = e.target.closest('[data-tick]');
+  if(tk){
+    const d = draftFor(db.tab); const id = tk.dataset.tick; const s = +tk.dataset.set;
+    d.done[id] ||= []; d.done[id][s] = !d.done[id][s];
+    if(d.done[id][s]){
+      d.sets[id] ||= []; d.sets[id][s] ||= {};
+      const wi = document.getElementById(`w-${id}-${s}`), ri = document.getElementById(`r-${id}-${s}`);
+      if(wi && !wi.value && wi.placeholder && !isNaN(parseFloat(wi.placeholder))) d.sets[id][s].w = wi.placeholder;
+      if(ri && !ri.value && ri.placeholder && /^\d+$/.test(ri.placeholder)) d.sets[id][s].r = ri.placeholder;
+    }
+    save(); const y = scrollY; render(); scrollTo(0, y); return;
+  }
+  if(e.target.id === 'finishBtn'){
+    const k = db.tab; const d = draftFor(k); const w = workout(k);
+    const sets = {};
+    w.exercises.forEach(ex => {
+      const arr = Array.from({length: ex.sets}, (_, i) => {
+        const x = (d.sets[ex.id] || [])[i] || {};
+        const r = x.r ? String(x.r) : '';
+        let wt = x.w ? String(x.w) : '';
+        if(!wt && r && !ex.bodyweight){ const ph = document.getElementById(`w-${ex.id}-${i}`)?.placeholder; if(ph && !isNaN(parseFloat(ph))) wt = ph; }
+        return { w: wt, r };
+      });
+      if(arr.some(x => x.r || x.w)) sets[ex.id] = arr;
+    });
+    if(!Object.keys(sets).length){ const n = $('sessNote'); n.placeholder = 'Log at least one set before finishing.'; n.focus(); return; }
+    const sess = { id: uid(), workout: k, date: today(), ts: Date.now(), sets, settings:{}, note: (d.note || '').trim() };
+    db.pending.push(sess);
+    delete db.drafts[k];
+    justFinished = sess;
+    save(); render(); $('finish').scrollIntoView({block:'start'});
+    syncPending();
+    return;
+  }
+  if(e.target.id === 'newSess'){ justFinished = null; render(); scrollTo({top:0}); }
+});
+
+document.addEventListener('input', e => {
+  const t = e.target; if(!db.tab) return; const d = draftFor(db.tab);
+  if(t.dataset.ex){
+    d.sets[t.dataset.ex] ||= [];
+    d.sets[t.dataset.ex][+t.dataset.set] ||= {};
+    d.sets[t.dataset.ex][+t.dataset.set][t.dataset.k] = t.value.trim();
+    save(); return;
+  }
+  if(t.id === 'sessNote'){ d.note = t.value; save(); }
+});
+window.addEventListener('online', syncPending);
+window.addEventListener('hashchange', () => location.reload());
+
+boot();
+</script>
+
+</body>
+</html>
