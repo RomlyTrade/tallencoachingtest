@@ -127,8 +127,8 @@ details textarea{width:100%;min-height:80px;margin-top:8px;border:1px solid var(
 
 <script>
 /* ===== Config ===== */
-const SUPABASE_URL = 'PASTE_PROJECT_URL';   // e.g. https://abcd1234.supabase.co
-const SUPABASE_KEY = 'PASTE_PUBLIC_KEY';    // the public "anon" / "publishable" key (safe to be public)
+const SUPABASE_URL = 'https://fxvrquxurenfmenqnnu.supabase.co';   // e.g. https://abcd1234.supabase.co
+const SUPABASE_KEY = 'sb_publishable_RAv9EjgkbjA5F8QgVEJHow_3oyylnUO';    // the public "anon" / "publishable" key (safe to be public)
 function rpc(fn, args){
   const headers = { 'Content-Type':'application/json', apikey: SUPABASE_KEY };
   if(!SUPABASE_KEY.startsWith('sb_')) headers.Authorization = 'Bearer ' + SUPABASE_KEY;
