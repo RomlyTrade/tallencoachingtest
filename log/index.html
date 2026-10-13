@@ -282,13 +282,22 @@ function render(){
 
 function summaryText(sess){
   const w = workout(sess.workout) || { name:'', exercises:[] };
-  const lines = [`${db.name} – ${workouts().length > 1 ? `Workout ${sess.workout} (${w.name})` : w.name} – ${sess.date}`];
+  const head = [workouts().length > 1 ? `Workout ${sess.workout}` : '', w.name, sess.date].filter(Boolean).join(' · ');
+  const lines = [head];
+  if(sess.note) lines.push(`📝 ${sess.note}`);
+  lines.push('');
   w.exercises.forEach(ex => {
     const s = (sess.sets[ex.id]||[]).filter(x => x && (x.r || x.w));
     if(!s.length) return;
-    lines.push(`• ${ex.name}: ` + s.map(x => ex.bodyweight ? `${x.r}` : `${fmtW(x.w)}${wU(ex) === 'kg' ? 'kg' : ' ' + wU(ex)}×${x.r}`).join(', '));
+    const name = ex.name.replace(/\s*\(.*?\)\s*/g, ' ').trim();
+    const reps = s.map(x => x.r || '–'); const sameReps = reps.every(r => r === reps[0]);
+    const unit = wU(ex);
+    let txt;
+    if(ex.bodyweight) txt = `${reps.join(' · ')} reps`;
+    else if(sameReps) txt = `${s.map(x => fmtW(x.w) || '–').join(' · ')} ${unit} × ${reps[0]}`;
+    else txt = `${s.map(x => `${fmtW(x.w) || '–'}×${x.r || '–'}`).join(' · ')} ${unit}`;
+    lines.push(`${name}: ${txt}`);
   });
-  if(sess.note) lines.push(`Notes: ${sess.note}`);
   return lines.join('\n');
 }
 
