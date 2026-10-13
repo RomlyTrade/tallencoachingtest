@@ -184,15 +184,31 @@ function prevSets(sess, exId){
 }
 function draftFor(k){ return db.drafts[k] ||= { sets:{}, done:{}, note:'' }; }
 
-/* Level up when every required set hits the top of the rep range */
-function targetFor(ex, prev){
+/* Level up only after every required set hits the top of the rep range
+   HITS_NEEDED sessions in a row at the same weight */
+const HITS_NEEDED = 3;
+function hitTop(ex, sets){
+  const n = reqCount(ex); const req = (sets || []).slice(0, n);
+  return req.length >= n && req.every(s => s && Number(s.r) >= ex.reps[1]);
+}
+function sameWeights(ex, a, b){
+  for(let i = 0; i < reqCount(ex); i++){ if(Number(a[i] && a[i].w) !== Number(b[i] && b[i].w)) return false; }
+  return true;
+}
+function hitStreak(ex, k){
+  const hist = allSessions().filter(s => s.workout === k).reverse()
+    .map(s => prevSets(s, ex.id)).filter(p => p && p.some(x => x.r));
+  let n = 0;
+  for(const p of hist){ if(hitTop(ex, p) && sameWeights(ex, p, hist[0])) n++; else break; }
+  return n;
+}
+function targetFor(ex, prev, k){
   const hi = ex.reps[1]; const u = unitOf(ex);
   if(!prev || !prev.length || prev.every(s => !s.r)){
     if(ex.start == null) return { up:false };
     return { up:false, ws: Array.from({length: ex.sets}, (_, i) => startAt(ex, i)) };
   }
-  const req = prev.slice(0, reqCount(ex));
-  const allTop = req.length >= reqCount(ex) && req.every(s => Number(s.r) >= hi);
+  const allTop = hitTop(ex, prev) && hitStreak(ex, k) >= HITS_NEEDED;
   const lastWs = Array.from({length: ex.sets}, (_, i) => { const v = prev[i] && Number(prev[i].w); return v ? v : (startAt(ex, i) ?? 0); });
   if(allTop && ex.inc > 0 && !ex.bodyweight){
     const ws = lastWs.map(v => v + ex.inc);
@@ -223,7 +239,7 @@ function render(){
 
   $('list').innerHTML = w.exercises.map((ex, i) => {
     const prev = prevSets(last, ex.id);
-    const t = targetFor(ex, prev);
+    const t = targetFor(ex, prev, k);
     const u = unitOf(ex);
     const cur = d.sets[ex.id] || [];
     const done = d.done[ex.id] || [];
