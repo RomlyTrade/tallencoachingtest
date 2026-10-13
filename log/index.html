@@ -244,7 +244,7 @@ function render(){
   if(fam.length > 1){
     const next = fam[(fam.findIndex(x => x.key === k) + 1) % fam.length];
     vb.dataset.tab = next.key;
-    vb.textContent = next.key === baseKey(k) ? 'Back to my usual workout' : 'Want some variety? Change up the workout';
+    vb.textContent = 'Want some variety? Change up the workout.';
   }
   $('meta').innerHTML = `${mainWorkouts().length < 2 || baseKey(k) !== k ? `<span><strong>${esc(w.name)}</strong></span>` : ''}<span>Last done: <strong>${last ? esc(last.date) : 'not yet'}</strong></span><span><strong class="num">${doneCount}/${totalSets}</strong> sets ticked</span>`;
 
