@@ -117,6 +117,7 @@ details textarea{width:100%;min-height:80px;margin-top:8px;border:1px solid var(
   <div id="app" hidden>
     <div style="display:flex;flex-direction:column;gap:18px">
       <nav class="tabs" id="tabs" role="tablist" aria-label="Workouts"></nav>
+      <button type="button" class="btn ghost" id="variety" hidden></button>
       <div class="meta" id="meta"></div>
       <div id="list" style="display:flex;flex-direction:column;gap:12px"></div>
       <section class="finish" id="finish"></section>
@@ -164,6 +165,10 @@ const today = () => new Date().toLocaleDateString('en-GB',{weekday:'short',day:'
 const uid = () => (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2));
 const workouts = () => (db.plan || []);
 const workout = k => workouts().find(w => w.key === k) || workouts()[0];
+/* Alternate workouts use the main key plus a number: A2 is the variety version of A */
+const baseKey = k => String(k).replace(/\d+$/, '') || String(k);
+const mainWorkouts = () => { const m = workouts().filter(w => baseKey(w.key) === w.key); return m.length ? m : workouts(); };
+const family = k => workouts().filter(w => baseKey(w.key) === baseKey(k));
 const unitOf = ex => ex.unit || 'reps';
 const wU = ex => ex.wUnit || 'kg';
 const repTxt = ex => ex.reps[0] === ex.reps[1] ? `${ex.reps[0]}` : `${ex.reps[0]}–${ex.reps[1]}`;
@@ -230,12 +235,18 @@ function render(){
   $('who').textContent = db.name || 'Your workouts';
   document.title = (db.name ? db.name + '’s ' : '') + 'Workout Log · TALLEN';
 
-  const tabs = $('tabs'); tabs.style.setProperty('--n', workouts().length); tabs.hidden = workouts().length < 2;
-  tabs.innerHTML = workouts().map(x => `<button type="button" role="tab" class="tab" data-tab="${esc(x.key)}" aria-selected="${x.key===k}"><b>Workout ${esc(x.key)}</b><span>${esc(x.name)}</span></button>`).join('');
+  const tabs = $('tabs'); tabs.style.setProperty('--n', mainWorkouts().length); tabs.hidden = mainWorkouts().length < 2;
+  tabs.innerHTML = mainWorkouts().map(x => `<button type="button" role="tab" class="tab" data-tab="${esc(x.key)}" aria-selected="${x.key===baseKey(k)}"><b>Workout ${esc(x.key)}</b><span>${esc(x.name)}</span></button>`).join('');
 
   const doneCount = w.exercises.reduce((n,ex) => n + (d.done[ex.id]||[]).filter(Boolean).length, 0);
   const totalSets = w.exercises.reduce((n,ex) => n + ex.sets, 0);
-  $('meta').innerHTML = `${workouts().length < 2 ? `<span><strong>${esc(w.name)}</strong></span>` : ''}<span>Last done: <strong>${last ? esc(last.date) : 'not yet'}</strong></span><span><strong class="num">${doneCount}/${totalSets}</strong> sets ticked</span>`;
+  const fam = family(k); const vb = $('variety'); vb.hidden = fam.length < 2;
+  if(fam.length > 1){
+    const next = fam[(fam.findIndex(x => x.key === k) + 1) % fam.length];
+    vb.dataset.tab = next.key;
+    vb.textContent = next.key === baseKey(k) ? 'Back to my usual workout' : 'Want some variety? Change up the workout';
+  }
+  $('meta').innerHTML = `${mainWorkouts().length < 2 || baseKey(k) !== k ? `<span><strong>${esc(w.name)}</strong></span>` : ''}<span>Last done: <strong>${last ? esc(last.date) : 'not yet'}</strong></span><span><strong class="num">${doneCount}/${totalSets}</strong> sets ticked</span>`;
 
   $('list').innerHTML = w.exercises.map((ex, i) => {
     const prev = prevSets(last, ex.id);
@@ -282,7 +293,7 @@ function render(){
 
 function summaryText(sess){
   const w = workout(sess.workout) || { name:'', exercises:[] };
-  const head = [workouts().length > 1 ? `Workout ${sess.workout}` : '', w.name, sess.date].filter(Boolean).join(' · ');
+  const head = [mainWorkouts().length > 1 ? `Workout ${baseKey(sess.workout)}` : '', w.name, sess.date].filter(Boolean).join(' · ');
   const lines = [head];
   if(sess.note) lines.push(`📝 ${sess.note}`);
   lines.push('');
