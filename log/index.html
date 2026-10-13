@@ -258,7 +258,10 @@ function render(){
     const rows = Array.from({length: ex.sets}, (_, s) => {
       const p = prev && prev[s];
       const phW = t.ws && t.ws[s] != null ? fmtW(t.ws[s]) : (p && p.w ? fmtW(p.w) : '');
-      const phR = p && p.r ? p.r : repTxt(ex);
+      /* Rep target: what they managed last time (capped at the plan's top number);
+         after a weight increase, back to the bottom of the range */
+      const phR = (t.up && t.ws) ? String(ex.reps[0])
+                : (p && /^\d+$/.test(String(p.r)) ? String(Math.min(Number(p.r), ex.reps[1])) : repTxt(ex));
       const c = cur[s] || {};
       return `<div class="setrow">
         <span class="n${isOpt(ex,s) ? ' opt' : ''}"${isOpt(ex,s) ? ' title="Optional set"' : ''}>${s+1}</span>
