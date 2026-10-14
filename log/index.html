@@ -464,7 +464,7 @@ function renderDaily(){
   }).join('');
   const range = `${days[0].getDate()} ${days[0].toLocaleDateString('en-GB',{month:'short'})} – ${days[5].getDate()} ${days[5].toLocaleDateString('en-GB',{month:'short'})}`;
   $('daily').innerHTML = `
-    <div class="asa-head"><h2>朝練</h2><div class="sub">Morning calisthenics<br>Tap a box when it’s done</div></div>
+    <div class="asa-head"><h2>朝練</h2></div>
     <div class="asa-week">
       <button type="button" data-week="-1" aria-label="Previous week">←</button>
       <strong>${db.week === 0 ? '今週 · This week' : esc(range)}</strong>
