@@ -71,7 +71,41 @@ button,input,textarea{font:inherit;color:inherit}
 .vid{font-size:14px;font-weight:600;color:var(--plate)}
 .settings{display:flex;flex-direction:column;gap:4px}
 .settings label{font-size:12px;font-weight:600;color:var(--muted)}
-.settings input{border:1px solid var(--rule);background:var(--chalk);padding:8px 10px;min-height:40px;width:100%}
+.settings input{border:1px solid var(--rule);background:var(--chalk);padding:8px 10px;min-height:44px;width:100%;font-size:16px}
+.info{background:var(--card);border:1px solid var(--rule);padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+.info .row{display:flex;flex-direction:column;gap:2px}
+.info .row + .row{border-top:1px solid var(--rule);padding-top:8px}
+.info .row .muscle{margin-bottom:2px}
+.info .iname{font-weight:600;font-size:15.5px;line-height:1.3;display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.info .iname a{flex:none;font-size:13.5px;font-weight:600;color:var(--plate);text-decoration:none}
+.info .inote{font-size:13.5px;color:var(--muted);line-height:1.35}
+
+.views{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.view{appearance:none;border:1.5px solid var(--rule);background:var(--card);padding:10px 8px;min-height:44px;font-weight:700;cursor:pointer}
+.view[aria-selected="true"]{border-color:var(--ink);background:var(--ink);color:var(--chalk)}
+
+/* 朝 page */
+#daily{--shu:#C8361D;--shu-soft:#F6E1DA;display:flex;flex-direction:column;gap:14px}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) #daily{--shu:#F0684F;--shu-soft:#3A1E19}}
+:root[data-theme="dark"] #daily{--shu:#F0684F;--shu-soft:#3A1E19}
+.asa-head{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;border-bottom:2px solid var(--shu);padding-bottom:8px}
+.asa-head h2{font-family:'Hiragino Mincho ProN','Yu Mincho','Noto Serif JP',serif;font-weight:700;font-size:44px;line-height:1;letter-spacing:.06em;color:var(--shu)}
+.asa-head .sub{font-size:13px;color:var(--muted);text-align:right;line-height:1.35}
+.asa-week{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:14px}
+.asa-week button{appearance:none;border:1.5px solid var(--rule);background:var(--card);min-width:44px;min-height:40px;cursor:pointer;font-weight:700}
+.asa-week button:disabled{opacity:.35;cursor:default}
+.asa-grid{display:grid;grid-template-columns:52px repeat(var(--n),minmax(0,1fr));gap:6px;align-items:center}
+.asa-grid .th{font-size:12px;font-weight:700;color:var(--muted);text-align:center;line-height:1.2;padding-bottom:2px}
+.asa-day{font-family:'Hiragino Mincho ProN','Yu Mincho','Noto Serif JP',serif;font-size:24px;font-weight:700;text-align:center;line-height:1}
+.asa-day small{display:block;font-family:var(--body);font-size:10.5px;font-weight:600;color:var(--muted);margin-top:3px;letter-spacing:.04em}
+.asa-day.today{color:var(--shu)}
+.hanko{appearance:none;height:52px;border:1.5px dashed var(--rule);background:var(--card);cursor:pointer;display:grid;place-items:center;padding:0}
+.hanko:disabled{opacity:.35;cursor:default}
+.hanko span{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;font-family:'Hiragino Mincho ProN','Yu Mincho','Noto Serif JP',serif;font-weight:700;font-size:19px;color:transparent}
+.hanko[aria-pressed="true"]{border-style:solid;border-color:var(--shu);background:var(--shu-soft)}
+.hanko[aria-pressed="true"] span{border:2.5px solid var(--shu);color:var(--shu);transform:rotate(-8deg)}
+.asa-total{font-size:14px;color:var(--muted)}
+.asa-total strong{color:var(--shu)}
 
 .sets{display:flex;flex-direction:column;gap:6px}
 .setrow{display:grid;grid-template-columns:28px minmax(0,1fr) minmax(0,1fr) 44px;gap:8px;align-items:center}
@@ -113,6 +147,9 @@ details textarea{width:100%;min-height:80px;margin-top:8px;border:1px solid var(
   </header>
 
   <div class="banner" id="status" role="status" hidden></div>
+
+  <nav class="views" id="views" role="tablist" aria-label="Pages" hidden></nav>
+  <section id="daily" hidden></section>
 
   <div id="app" hidden>
     <div style="display:flex;flex-direction:column;gap:18px">
@@ -156,6 +193,7 @@ function load(){ try{ const v = localStorage.getItem(KEY); return v ? JSON.parse
 function save(){ try{ localStorage.setItem(KEY, JSON.stringify(db)); }catch(e){ canStore = false; } }
 let db = load() || {};
 db.plan ||= null; db.name ||= ''; db.sessions ||= []; db.pending ||= []; db.drafts ||= {}; db.settings ||= {}; db.tab ||= null;
+db.daily ||= []; db.dailyLog ||= {}; db.dailyPending ||= {}; db.view ||= 'gym'; db.week ||= 0;
 
 /* ===== Helpers ===== */
 const $ = id => document.getElementById(id);
@@ -187,7 +225,10 @@ function prevSets(sess, exId){
   const arr = sess && sess.sets && sess.sets[exId];
   return arr ? Array.from(arr, x => x || { w:'', r:'' }) : null;
 }
-function draftFor(k){ return db.drafts[k] ||= { sets:{}, done:{}, note:'' }; }
+function draftFor(k){ const d = db.drafts[k] ||= { sets:{}, done:{}, note:'' }; d.settings ||= {}; return d; }
+/* A saved 'setting' box (e.g. bench setting): the last value they typed, carried forward */
+function lastSetting(exId){ const a = allSessions(); for(let i = a.length - 1; i >= 0; i--){ const v = a[i].settings && a[i].settings[exId]; if(v) return v; } return ''; }
+function settingNow(k, exId){ const d = draftFor(k); return d.settings[exId] != null ? d.settings[exId] : lastSetting(exId); }
 
 /* Level up only after every required set hits the top of the rep range
    HITS_NEEDED sessions in a row at the same weight */
@@ -228,6 +269,12 @@ function setStatus(msg){ const el = $('status'); el.hidden = !msg; el.textConten
 
 /* ===== Render ===== */
 function render(){
+  const hasDaily = db.daily && db.daily.length;
+  if(!hasDaily) db.view = 'gym';
+  $('views').hidden = !hasDaily || !(db.plan && db.plan.length);
+  $('views').innerHTML = hasDaily ? `<button type="button" role="tab" class="view" data-view="gym" aria-selected="${db.view==='gym'}">Workouts</button><button type="button" role="tab" class="view" data-view="daily" aria-selected="${db.view==='daily'}">朝 Morning</button>` : '';
+  if(db.view === 'daily'){ $('app').hidden = true; $('daily').hidden = false; $('who').textContent = db.name || 'Your workouts'; renderDaily(); return; }
+  $('daily').hidden = true;
   if(!db.plan || !db.plan.length){ $('app').hidden = true; return; }
   $('app').hidden = false;
   if(!db.tab || !workout(db.tab) || workout(db.tab).key !== db.tab) db.tab = workouts()[0].key;
@@ -248,7 +295,27 @@ function render(){
   }
   $('meta').innerHTML = `${mainWorkouts().length < 2 || baseKey(k) !== k ? `<span><strong>${esc(w.name)}</strong></span>` : ''}<span>Last done: <strong>${last ? esc(last.date) : 'not yet'}</strong></span><span><strong class="num">${doneCount}/${totalSets}</strong> sets ticked</span>`;
 
-  $('list').innerHTML = w.exercises.map((ex, i) => {
+  let num = 0; const html = []; let infoRows = [];
+  const flushInfo = () => { if(infoRows.length){ html.push(`<article class="info">${infoRows.join('')}</article>`); infoRows = []; } };
+  w.exercises.forEach((ex, j) => {
+    if(!(ex.sets > 0)){
+      const prevEx = w.exercises[j-1];
+      const showMuscle = ex.muscle && !(infoRows.length && prevEx && !(prevEx.sets > 0) && prevEx.muscle === ex.muscle);
+      infoRows.push(`<div class="row">${showMuscle ? `<div class="muscle">${esc(ex.muscle)}</div>` : ''}<div class="iname"><span>${esc(ex.name)}</span>${/^https?:\/\//.test(ex.video || '') ? `<a href="${esc(ex.video)}" target="_blank" rel="noopener">▶ Demo</a>` : ''}</div>${ex.note ? `<div class="inote">${esc(ex.note)}</div>` : ''}</div>`);
+      return;
+    }
+    flushInfo();
+    html.push(exCard(ex, num++, k, d, last));
+  });
+  flushInfo();
+  $('list').innerHTML = html.join('');
+
+  renderFinish();
+  renderHistory();
+}
+
+function exCard(ex, i, k, d, last){
+  {
     const prev = prevSets(last, ex.id);
     const t = targetFor(ex, prev, k);
     const u = unitOf(ex);
@@ -286,12 +353,10 @@ function render(){
         <div class="colhead"><span>Set</span><span>${ex.bodyweight ? '' : 'Weight'}</span><span>${u === 'reps' ? 'Reps' : esc(u)}</span><span></span></div>
         ${rows}
       </div>
+      ${ex.setting ? `<div class="settings"><label for="set-${esc(ex.id)}">${esc(ex.setting)}</label><input id="set-${esc(ex.id)}" data-setting="${esc(ex.id)}" value="${esc(settingNow(k, ex.id))}" autocomplete="off"></div>` : ''}
       ${prevTxt ? `<div class="last">Last time: ${esc(prevTxt)}</div>` : ''}
     </article>`;
-  }).join('');
-
-  renderFinish();
-  renderHistory();
+  }
 }
 
 function summaryText(sess){
@@ -310,7 +375,8 @@ function summaryText(sess){
     if(ex.bodyweight) txt = `${reps.join(' · ')} reps`;
     else if(sameReps) txt = `${s.map(x => fmtW(x.w) || '–').join(' · ')} ${unit} × ${reps[0]}`;
     else txt = `${s.map(x => `${fmtW(x.w) || '–'}×${x.r || '–'}`).join(' · ')} ${unit}`;
-    lines.push(`${name}: ${txt}`);
+    const st = sess.settings && sess.settings[ex.id];
+    lines.push(`${name}: ${txt}${st ? ` (${st})` : ''}`);
   });
   return lines.join('\n');
 }
@@ -367,17 +433,76 @@ async function boot(){
     else{
       db.plan = j.workouts; db.name = j.client.name;
       db.sessions = j.sessions || [];
+      db.daily = j.daily || [];
+      db.dailyLog = Object.assign({}, j.dailyLog || {}, db.dailyPending);
       setStatus(canStore ? '' : 'This browser isn’t saving anything between visits. Open the link in Safari or Chrome.');
       save(); render();
     }
   }catch(e){
     setStatus(db.plan ? 'You’re offline. You can still log; it’ll send when you’re back online.' : 'Couldn’t reach the server. Check your connection and refresh. (' + (e && e.message || 'unknown') + ')');
   }
-  syncPending();
+  syncPending(); syncDaily();
+}
+
+/* ===== 朝 page: daily checklist, Monday to Saturday ===== */
+const KANJI = ['月','火','水','木','金','土'];
+const EN = ['Mon','Tue','Wed','Thu','Fri','Sat'];
+const ymd = dt => `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`;
+function weekDays(offset){
+  const n = new Date(); n.setHours(12,0,0,0);
+  const mon = new Date(n); mon.setDate(n.getDate() - ((n.getDay() + 6) % 7) + offset * 7);
+  return Array.from({length: 6}, (_, i) => { const x = new Date(mon); x.setDate(mon.getDate() + i); return x; });
+}
+function renderDaily(){
+  const tasks = db.daily; const days = weekDays(db.week); const tk = ymd(new Date());
+  let done = 0;
+  const cells = days.map((dt, i) => {
+    const key = ymd(dt); const rec = db.dailyLog[key] || {}; const future = key > tk;
+    return `<div class="asa-day${key === tk ? ' today' : ''}">${KANJI[i]}<small>${EN[i]} ${dt.getDate()}</small></div>` +
+      tasks.map(t => { const on = !!rec[t.id]; if(on) done++;
+        return `<button type="button" class="hanko" data-day="${key}" data-task="${esc(t.id)}" aria-pressed="${on}" ${future ? 'disabled' : ''} aria-label="${esc(t.name)}, ${EN[i]} ${dt.getDate()}${on ? ', done' : ''}"><span>済</span></button>`; }).join('');
+  }).join('');
+  const range = `${days[0].getDate()} ${days[0].toLocaleDateString('en-GB',{month:'short'})} – ${days[5].getDate()} ${days[5].toLocaleDateString('en-GB',{month:'short'})}`;
+  $('daily').innerHTML = `
+    <div class="asa-head"><h2>朝練</h2><div class="sub">Morning calisthenics<br>Tap a box when it’s done</div></div>
+    <div class="asa-week">
+      <button type="button" data-week="-1" aria-label="Previous week">←</button>
+      <strong>${db.week === 0 ? '今週 · This week' : esc(range)}</strong>
+      <button type="button" data-week="1" aria-label="Next week" ${db.week >= 0 ? 'disabled' : ''}>→</button>
+    </div>
+    <div class="asa-grid" style="--n:${tasks.length}">
+      <span></span>${tasks.map(t => `<div class="th">${esc(t.name)}</div>`).join('')}
+      ${cells}
+    </div>
+    <div class="asa-total"><strong>${done}</strong> / ${tasks.length * 6} this week</div>`;
+}
+let dailySyncing = false;
+async function syncDaily(){
+  if(dailySyncing) return; dailySyncing = true;
+  try{
+    for(const day of Object.keys(db.dailyPending)){
+      const doneObj = db.dailyPending[day];
+      const j = await rpc('save_daily', { p_client: AUTH.c, p_key: AUTH.t, p_day: day, p_done: doneObj });
+      if(j && j.ok){ if(db.dailyPending[day] === doneObj) delete db.dailyPending[day]; save(); }
+      else break;
+    }
+  }catch(e){ /* try again later */ }
+  dailySyncing = false;
 }
 
 /* ===== Events ===== */
 document.addEventListener('click', e => {
+  const vw = e.target.closest('[data-view]');
+  if(vw){ db.view = vw.dataset.view; save(); render(); scrollTo({top:0}); return; }
+  const wk = e.target.closest('[data-week]');
+  if(wk){ db.week = Math.min(0, db.week + Number(wk.dataset.week)); save(); renderDaily(); return; }
+  const hk = e.target.closest('[data-day]');
+  if(hk){
+    const day = hk.dataset.day, id = hk.dataset.task;
+    const rec = Object.assign({}, db.dailyLog[day] || {});
+    if(rec[id]) delete rec[id]; else rec[id] = true;
+    db.dailyLog[day] = rec; db.dailyPending[day] = rec; save(); renderDaily(); syncDaily(); return;
+  }
   const tab = e.target.closest('[data-tab]');
   if(tab){ db.tab = tab.dataset.tab; justFinished = null; save(); render(); scrollTo({top:0}); return; }
   const tk = e.target.closest('[data-tick]');
@@ -406,7 +531,9 @@ document.addEventListener('click', e => {
       if(arr.some(x => x.r || x.w)) sets[ex.id] = arr;
     });
     if(!Object.keys(sets).length){ const n = $('sessNote'); n.placeholder = 'Log at least one set before finishing.'; n.focus(); return; }
-    const sess = { id: uid(), workout: k, date: today(), ts: Date.now(), sets, settings:{}, note: (d.note || '').trim() };
+    const settings = {};
+    w.exercises.forEach(ex => { if(ex.setting){ const v = String(settingNow(k, ex.id) || '').trim().slice(0, 300); if(v) settings[ex.id] = v; } });
+    const sess = { id: uid(), workout: k, date: today(), ts: Date.now(), sets, settings, note: (d.note || '').trim() };
     db.pending.push(sess);
     delete db.drafts[k];
     justFinished = sess;
@@ -425,9 +552,10 @@ document.addEventListener('input', e => {
     d.sets[t.dataset.ex][+t.dataset.set][t.dataset.k] = t.value.trim();
     save(); return;
   }
+  if(t.dataset.setting){ d.settings[t.dataset.setting] = t.value; save(); return; }
   if(t.id === 'sessNote'){ d.note = t.value; save(); }
 });
-window.addEventListener('online', syncPending);
+window.addEventListener('online', () => { syncPending(); syncDaily(); });
 window.addEventListener('hashchange', () => location.reload());
 
 boot();
