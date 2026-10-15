@@ -283,7 +283,7 @@ function render(){
   document.title = (db.name ? db.name + '’s ' : '') + 'Workout Log · TALLEN';
 
   const tabs = $('tabs'); tabs.style.setProperty('--n', mainWorkouts().length); tabs.hidden = mainWorkouts().length < 2;
-  tabs.innerHTML = mainWorkouts().map(x => `<button type="button" role="tab" class="tab" data-tab="${esc(x.key)}" aria-selected="${x.key===baseKey(k)}"><b>Workout ${esc(x.key)}</b><span>${esc(x.name)}</span></button>`).join('');
+  tabs.innerHTML = mainWorkouts().map(x => `<button type="button" role="tab" class="tab" data-tab="${esc(x.key)}" aria-selected="${x.key===baseKey(k)}"><b>${esc(x.name || 'Workout ' + x.key)}</b></button>`).join('');
 
   const doneCount = w.exercises.reduce((n,ex) => n + (d.done[ex.id]||[]).filter(Boolean).length, 0);
   const totalSets = w.exercises.reduce((n,ex) => n + ex.sets, 0);
@@ -361,7 +361,7 @@ function exCard(ex, i, k, d, last){
 
 function summaryText(sess){
   const w = workout(sess.workout) || { name:'', exercises:[] };
-  const head = [mainWorkouts().length > 1 ? `Workout ${baseKey(sess.workout)}` : '', w.name, sess.date].filter(Boolean).join(' · ');
+  const head = [w.name || `Workout ${baseKey(sess.workout)}`, sess.date].filter(Boolean).join(' · ');
   const lines = [head];
   if(sess.note) lines.push(`📝 ${sess.note}`);
   lines.push('');
