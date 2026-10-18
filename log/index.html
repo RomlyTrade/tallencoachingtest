@@ -447,7 +447,8 @@ async function boot(){
     const j = await fetchPlan();
     if(!j.ok){ setStatus(j.error === 'not_found' ? 'This link isn’t working. Ask Tom to send you a new one.' : 'Couldn’t load your workouts. Try again in a minute.'); if(!db.plan) return; }
     else{
-      db.plan = j.workouts; db.name = j.client.name;
+      /* A workout whose name starts with ~ is hidden (e.g. parked for a travel week) */
+      db.plan = (j.workouts || []).filter(w => !String(w.name || '').startsWith('~')); db.name = j.client.name;
       db.sessions = j.sessions || [];
       db.daily = j.daily || [];
       db.dailyLog = Object.assign({}, j.dailyLog || {}, db.dailyPending);
