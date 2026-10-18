@@ -117,6 +117,8 @@ button,input,textarea{font:inherit;color:inherit}
 .tick{appearance:none;width:44px;height:44px;border:1.5px solid var(--rule);background:var(--chalk);cursor:pointer;display:grid;place-items:center}
 .tick svg{opacity:.25}
 .tick[aria-pressed="true"]{background:var(--good);border-color:var(--good)}
+.tick:disabled{cursor:default}
+.field input:disabled,.settings input:disabled{opacity:1;color:var(--ink);-webkit-text-fill-color:var(--ink)}
 .tick[aria-pressed="true"] svg{opacity:1;stroke:var(--plate-ink)}
 .colhead{display:grid;grid-template-columns:28px minmax(0,1fr) minmax(0,1fr) 44px;gap:8px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 .last{font-size:12.5px;color:var(--muted)}
@@ -223,6 +225,9 @@ function allSessions(){
   return out.sort((a,b) => (a.ts||0) - (b.ts||0));
 }
 function lastSession(k){ const s = allSessions().filter(x => x.workout === k); return s.length ? s[s.length-1] : null; }
+/* A workout finished this week (Mon–Sun) stays on show, ticked, until Monday */
+function weekStartMs(){ const n = new Date(); n.setHours(0,0,0,0); n.setDate(n.getDate() - ((n.getDay() + 6) % 7)); return n.getTime(); }
+function doneThisWeek(k){ const s = lastSession(k); if(!s || !(Number(s.ts) >= weekStartMs())) return null; const d = db.drafts[k]; return d && d.again === s.id ? null : s; }
 function prevSets(sess, exId){
   const arr = sess && sess.sets && sess.sets[exId];
   return arr ? Array.from(arr, x => x || { w:'', r:'' }) : null;
@@ -280,14 +285,14 @@ function render(){
   if(!db.plan || !db.plan.length){ $('app').hidden = true; return; }
   $('app').hidden = false;
   if(!db.tab || !workout(db.tab) || workout(db.tab).key !== db.tab) db.tab = workouts()[0].key;
-  const k = db.tab; const w = workout(k); const d = draftFor(k); const last = lastSession(k);
+  const k = db.tab; const w = workout(k); const d = draftFor(k); const last = lastSession(k); const wd = doneThisWeek(k);
   $('who').textContent = db.name || 'Your workouts';
   document.title = (db.name ? db.name + '’s ' : '') + 'Workout Log · TALLEN';
 
   const tabs = $('tabs'); tabs.style.setProperty('--n', mainWorkouts().length); tabs.hidden = mainWorkouts().length < 2;
   tabs.innerHTML = mainWorkouts().map(x => `<button type="button" role="tab" class="tab" data-tab="${esc(x.key)}" aria-selected="${x.key===baseKey(k)}">${NAME_ONLY_TABS.includes(AUTH.c) ? `<b>${esc(x.name || 'Workout ' + x.key)}</b>` : `<b>Workout ${esc(x.key)}</b><span>${esc(x.name)}</span>`}</button>`).join('');
 
-  const doneCount = w.exercises.reduce((n,ex) => n + (d.done[ex.id]||[]).filter(Boolean).length, 0);
+  const doneCount = w.exercises.reduce((n,ex) => n + (wd ? (wd.sets[ex.id]||[]).filter(x => x && (x.r || x.w)) : (d.done[ex.id]||[]).filter(Boolean)).length, 0);
   const totalSets = w.exercises.reduce((n,ex) => n + ex.sets, 0);
   const fam = family(k); const vb = $('variety'); vb.hidden = fam.length < 2;
   if(fam.length > 1){
@@ -295,7 +300,7 @@ function render(){
     vb.dataset.tab = next.key;
     vb.textContent = 'Want some variety? Change up the workout.';
   }
-  $('meta').innerHTML = `${mainWorkouts().length < 2 || baseKey(k) !== k ? `<span><strong>${esc(w.name)}</strong></span>` : ''}<span>Last done: <strong>${last ? esc(last.date) : 'not yet'}</strong></span><span><strong class="num">${doneCount}/${totalSets}</strong> sets ticked</span>`;
+  $('meta').innerHTML = `${mainWorkouts().length < 2 || baseKey(k) !== k ? `<span><strong>${esc(w.name)}</strong></span>` : ''}<span>${wd ? 'Done' : 'Last done'}: <strong>${last ? esc(last.date) : 'not yet'}</strong></span><span><strong class="num">${doneCount}/${totalSets}</strong> sets ticked</span>`;
 
   let num = 0; const html = []; let infoRows = [];
   const flushInfo = () => { if(infoRows.length){ html.push(`<article class="info">${infoRows.join('')}</article>`); infoRows = []; } };
@@ -307,7 +312,7 @@ function render(){
       return;
     }
     flushInfo();
-    html.push(exCard(ex, num++, k, d, last));
+    html.push(exCard(ex, num++, k, d, last, wd));
   });
   flushInfo();
   $('list').innerHTML = html.join('');
@@ -316,13 +321,14 @@ function render(){
   renderHistory();
 }
 
-function exCard(ex, i, k, d, last){
+function exCard(ex, i, k, d, last, wd){
   {
+    const ro = !!wd;
     const prev = prevSets(last, ex.id);
-    const t = targetFor(ex, prev, k);
+    const t = ro ? { up:false } : targetFor(ex, prev, k);
     const u = unitOf(ex);
-    const cur = d.sets[ex.id] || [];
-    const done = d.done[ex.id] || [];
+    const cur = ro ? Array.from(wd.sets[ex.id] || [], x => x || {}) : (d.sets[ex.id] || []);
+    const done = ro ? cur.map(x => !!(x && (x.r || x.w))) : (d.done[ex.id] || []);
     const allDone = done.filter(Boolean).length >= ex.sets;
     const rows = Array.from({length: ex.sets}, (_, s) => {
       const p = prev && prev[s];
@@ -334,9 +340,9 @@ function exCard(ex, i, k, d, last){
       const c = cur[s] || {};
       return `<div class="setrow">
         <span class="n${isOpt(ex,s) ? ' opt' : ''}"${isOpt(ex,s) ? ' title="Optional set"' : ''}>${s+1}</span>
-        ${ex.bodyweight ? `<span class="small">Bodyweight</span>` : `<label class="field"><input inputmode="decimal" id="w-${esc(ex.id)}-${s}" data-ex="${esc(ex.id)}" data-set="${s}" data-k="w" value="${esc(c.w ?? '')}" placeholder="${esc(phW)}" aria-label="Set ${s+1} weight in ${esc(wU(ex))}" style="padding-right:${wU(ex).length > 2 ? 60 : 34}px"><span class="u">${esc(wU(ex))}</span></label>`}
-        <label class="field"><input inputmode="numeric" id="r-${esc(ex.id)}-${s}" data-ex="${esc(ex.id)}" data-set="${s}" data-k="r" value="${esc(c.r ?? '')}" placeholder="${esc(phR)}" aria-label="Set ${s+1} ${esc(u)}"><span class="u">${u === 'reps' ? '' : esc(u)}</span></label>
-        <button type="button" class="tick" data-tick="${esc(ex.id)}" data-set="${s}" aria-pressed="${!!done[s]}" aria-label="Mark set ${s+1} done"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="square"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button>
+        ${ex.bodyweight ? `<span class="small">Bodyweight</span>` : `<label class="field"><input inputmode="decimal" id="w-${esc(ex.id)}-${s}" data-ex="${esc(ex.id)}" data-set="${s}" data-k="w" value="${esc(c.w ?? '')}" ${ro ? 'disabled' : ''} placeholder="${esc(phW)}" aria-label="Set ${s+1} weight in ${esc(wU(ex))}" style="padding-right:${wU(ex).length > 2 ? 60 : 34}px"><span class="u">${esc(wU(ex))}</span></label>`}
+        <label class="field"><input inputmode="numeric" id="r-${esc(ex.id)}-${s}" data-ex="${esc(ex.id)}" data-set="${s}" data-k="r" value="${esc(c.r ?? '')}" ${ro ? 'disabled' : ''} placeholder="${esc(phR)}" aria-label="Set ${s+1} ${esc(u)}"><span class="u">${u === 'reps' ? '' : esc(u)}</span></label>
+        <button type="button" class="tick" data-tick="${esc(ex.id)}" data-set="${s}" aria-pressed="${!!done[s]}" ${ro ? 'disabled' : ''} aria-label="Mark set ${s+1} done"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="square"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button>
       </div>`;
     }).join('');
     const prevTxt = prev ? prev.slice(0, ex.sets).map(s => ex.bodyweight ? `${s.r||'–'}` : `${fmtW(s.w)||'–'}×${s.r||'–'}`).join(', ') : '';
@@ -355,8 +361,8 @@ function exCard(ex, i, k, d, last){
         <div class="colhead"><span>Set</span><span>${ex.bodyweight ? '' : 'Weight'}</span><span>${u === 'reps' ? 'Reps' : esc(u)}</span><span></span></div>
         ${rows}
       </div>
-      ${ex.setting ? `<div class="settings"><label for="set-${esc(ex.id)}">${esc(ex.setting)}</label><input id="set-${esc(ex.id)}" data-setting="${esc(ex.id)}" value="${esc(settingNow(k, ex.id))}" autocomplete="off"></div>` : ''}
-      ${prevTxt ? `<div class="last">Last time: ${esc(prevTxt)}</div>` : ''}
+      ${ex.setting ? `<div class="settings"><label for="set-${esc(ex.id)}">${esc(ex.setting)}</label><input id="set-${esc(ex.id)}" data-setting="${esc(ex.id)}" value="${esc(ro ? ((wd.settings || {})[ex.id] || '') : settingNow(k, ex.id))}" ${ro ? 'disabled' : ''} autocomplete="off"></div>` : ''}
+      ${prevTxt && !ro ? `<div class="last">Last time: ${esc(prevTxt)}</div>` : ''}
     </article>`;
   }
 }
@@ -393,6 +399,14 @@ function renderFinish(){
       <p style="margin:0">${sent ? 'Tom’s got it. Next time you open this, your new numbers will be waiting.' : 'Saved on your phone. It’ll send to Tom automatically next time you’re online.'}</p>
       <div class="summary">${esc(summaryText(justFinished))}</div>
       <button type="button" class="btn ghost" id="newSess">Back to my workout</button>`;
+    return;
+  }
+  const wd = doneThisWeek(k);
+  if(wd){
+    $('finish').innerHTML = `
+      <h2 style="font-size:40px">Done ✓</h2>
+      <p style="margin:0">Completed ${esc(wd.date)}. Fresh targets on Monday.</p>
+      <button type="button" class="btn ghost" id="again">Do this workout again</button>`;
     return;
   }
   $('finish').innerHTML = `
@@ -543,6 +557,7 @@ document.addEventListener('click', e => {
     syncPending();
     return;
   }
+  if(e.target.id === 'again'){ const w0 = doneThisWeek(db.tab); if(w0){ draftFor(db.tab).again = w0.id; save(); render(); scrollTo({top:0}); } return; }
   if(e.target.id === 'newSess'){ justFinished = null; render(); scrollTo({top:0}); }
 });
 
