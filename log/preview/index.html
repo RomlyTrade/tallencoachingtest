@@ -1,0 +1,809 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#1E45C8">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="TALLEN Log">
+<title>Workout Log · TALLEN</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=Dongle:wght@400;700&display=swap">
+<style>
+:root{
+  --chalk:#EDEBE6; --card:#F7F6F2; --chalk-deep:#E2DFD8; --ink:#17181C; --muted:#5F605C; --rule:#CFCBC2;
+  --plate:#1E45C8; --plate-ink:#FFFFFF; --plate-soft:#DCE3F8; --good:#1F7A4D; --good-soft:#DCEFE4; --warn:#9A5B00;
+  --display:'Dongle','Archivo',sans-serif;
+  --body:'Archivo',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --chalk:#121318; --card:#1B1D24; --chalk-deep:#262933; --ink:#ECEBE6; --muted:#A3A49E; --rule:#33363F;
+    --plate:#6F8EF5; --plate-ink:#0D1220; --plate-soft:#1F2A4D; --good:#5CC890; --good-soft:#173326; --warn:#E3A84A;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --chalk:#121318; --card:#1B1D24; --chalk-deep:#262933; --ink:#ECEBE6; --muted:#A3A49E; --rule:#33363F;
+  --plate:#6F8EF5; --plate-ink:#0D1220; --plate-soft:#1F2A4D; --good:#5CC890; --good-soft:#173326; --warn:#E3A84A;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0}
+body{background:var(--chalk);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5;padding-inline:16px;padding-block:20px 60px;font-variation-settings:'wdth' 100}
+.wrap{max-width:620px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+h1,h2{font-family:var(--display);font-weight:700;margin:0;line-height:.8;text-wrap:balance}
+.num{font-variant-numeric:tabular-nums}
+button,input,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--plate);outline-offset:2px}
+
+.top{display:flex;justify-content:space-between;align-items:flex-end;gap:12px}
+.brand{font-size:13px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.top h1{font-size:64px;margin-top:6px}
+.top .sub{color:var(--muted);font-size:14px}
+
+.tabs{display:grid;grid-template-columns:repeat(var(--n),minmax(0,1fr));gap:6px}
+.tab{appearance:none;border:1.5px solid var(--rule);background:var(--card);border-radius:0;padding:10px 8px;cursor:pointer;text-align:left;display:flex;flex-direction:column;gap:2px;min-height:44px}
+.tab b{font-size:16px;font-weight:700;font-variation-settings:'wdth' 106;line-height:1.2}
+.tab span{font-size:12px;color:var(--muted);line-height:1.25}
+.tab[aria-selected="true"]{border-color:var(--plate);background:var(--plate);color:var(--plate-ink)}
+.tab[aria-selected="true"] span{color:var(--plate-ink);opacity:.85}
+
+.meta{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:14px;color:var(--muted)}
+.meta strong{color:var(--ink);font-weight:600}
+
+.ex{background:var(--card);border:1px solid var(--rule);padding:14px;display:flex;flex-direction:column;gap:10px}
+.ex.done{border-color:var(--good)}
+.exhead{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.muscle{font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--plate)}
+.optnote{font-size:12.5px;color:var(--plate);font-weight:600;margin-top:2px}
+.setrow .n.opt{color:var(--plate);border:1.5px dashed var(--plate);height:28px;display:grid;place-items:center}
+.exname{font-size:18px;font-weight:700;font-variation-settings:'wdth' 106;line-height:1.25}
+.exspec{font-size:13px;color:var(--muted)}
+.idx{font-family:var(--display);font-weight:700;font-size:36px;line-height:.6;color:var(--plate);padding-top:6px}
+.target{display:flex;gap:8px;align-items:flex-start;background:var(--plate-soft);padding:8px 10px;font-size:14px;line-height:1.35}
+.target.up{background:var(--good-soft)}
+.target .tag{flex:none;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:2px 6px;background:var(--plate);color:var(--plate-ink);margin-top:1px}
+.target.up .tag{background:var(--good);color:var(--plate-ink)}
+.note{font-size:14px;line-height:1.4;border-left:3px solid var(--plate);padding-left:10px}
+.vid{font-size:14px;font-weight:600;color:var(--plate)}
+.settings{display:flex;flex-direction:column;gap:4px}
+.settings label{font-size:12px;font-weight:600;color:var(--muted)}
+.settings input{border:1px solid var(--rule);background:var(--chalk);padding:8px 10px;min-height:44px;width:100%;font-size:16px}
+.info{background:var(--card);border:1px solid var(--rule);padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+.info .row{display:flex;flex-direction:column;gap:2px}
+.info .row + .row{border-top:1px solid var(--rule);padding-top:8px}
+.info .row .muscle{margin-bottom:2px}
+.info .iname{font-weight:600;font-size:15.5px;line-height:1.3;display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.info .iname a{flex:none;font-size:13.5px;font-weight:600;color:var(--plate);text-decoration:none}
+.info .inote{font-size:13.5px;color:var(--muted);line-height:1.35}
+
+.views{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.view{appearance:none;border:1.5px solid var(--rule);background:var(--card);padding:10px 8px;min-height:44px;font-weight:700;cursor:pointer}
+.view[aria-selected="true"]{border-color:var(--ink);background:var(--ink);color:var(--chalk)}
+
+/* 朝 page */
+#daily{--shu:#C8361D;--shu-soft:#F6E1DA;display:flex;flex-direction:column;gap:14px}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) #daily{--shu:#F0684F;--shu-soft:#3A1E19}}
+:root[data-theme="dark"] #daily{--shu:#F0684F;--shu-soft:#3A1E19}
+.asa-head{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;border-bottom:2px solid var(--shu);padding-bottom:8px}
+.asa-head h2{font-family:'Hiragino Mincho ProN','Yu Mincho','Noto Serif JP',serif;font-weight:700;font-size:44px;line-height:1;letter-spacing:.06em;color:var(--shu)}
+.asa-head .sub{font-size:13px;color:var(--muted);text-align:right;line-height:1.35}
+.asa-week{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:14px}
+.asa-week button{appearance:none;border:1.5px solid var(--rule);background:var(--card);min-width:44px;min-height:40px;cursor:pointer;font-weight:700}
+.asa-week button:disabled{opacity:.35;cursor:default}
+.asa-grid{display:grid;grid-template-columns:52px repeat(var(--n),minmax(0,1fr));gap:6px;align-items:center}
+.asa-grid .th{font-size:12px;font-weight:700;color:var(--muted);text-align:center;line-height:1.2;padding-bottom:2px}
+.asa-day{font-family:'Hiragino Mincho ProN','Yu Mincho','Noto Serif JP',serif;font-size:24px;font-weight:700;text-align:center;line-height:1}
+.asa-day small{display:block;font-family:var(--body);font-size:10.5px;font-weight:600;color:var(--muted);margin-top:3px;letter-spacing:.04em}
+.asa-day.today{color:var(--shu)}
+.hanko{appearance:none;height:52px;border:1.5px dashed var(--rule);background:var(--card);cursor:pointer;display:grid;place-items:center;padding:0}
+.hanko:disabled{opacity:.35;cursor:default}
+.hanko span{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;font-family:'Hiragino Mincho ProN','Yu Mincho','Noto Serif JP',serif;font-weight:700;font-size:19px;color:transparent}
+.hanko[aria-pressed="true"]{border-style:solid;border-color:var(--shu);background:var(--shu-soft)}
+.hanko[aria-pressed="true"] span{border:2.5px solid var(--shu);color:var(--shu);transform:rotate(-8deg)}
+.asa-total{font-size:14px;color:var(--muted)}
+.asa-total strong{color:var(--shu)}
+
+.sets{display:flex;flex-direction:column;gap:6px}
+.setrow{display:grid;grid-template-columns:28px minmax(0,1fr) minmax(0,1fr) 44px;gap:8px;align-items:center}
+.setrow .n{font-size:13px;font-weight:700;color:var(--muted);text-align:center}
+.field{position:relative}
+.field input{width:100%;border:1.5px solid var(--rule);background:var(--chalk);padding:8px 34px 8px 10px;min-height:44px;font-size:17px;font-weight:600;font-variant-numeric:tabular-nums}
+.field input::placeholder{color:var(--muted);font-weight:400;opacity:.8}
+.field .u{position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:12px;color:var(--muted);pointer-events:none}
+.tick{appearance:none;width:44px;height:44px;border:1.5px solid var(--rule);background:var(--chalk);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;margin:0;line-height:0}
+.tick svg{display:block;flex:none}
+.field input.est::placeholder{opacity:.38}
+.pickwrap{position:relative;display:block;margin-top:1px}
+.pick{appearance:none;-webkit-appearance:none;border:0;background:transparent;padding:0 26px 0 0;margin:0;width:100%;font:inherit;font-size:18px;font-weight:700;font-variation-settings:'wdth' 106;line-height:1.25;color:var(--ink);cursor:pointer;text-overflow:ellipsis}
+.pickwrap .chev{position:absolute;right:2px;top:50%;transform:translateY(-50%);font-size:14px;color:var(--plate);pointer-events:none}
+.catsub{font-size:11.5px;color:var(--muted);letter-spacing:.02em;margin-top:1px}
+.othername{display:flex;gap:8px}
+.othername input{flex:1;border:1.5px solid var(--plate);background:var(--chalk);padding:8px 10px;min-height:44px;font-size:16px}
+.othername button{appearance:none;border:0;background:var(--plate);color:var(--plate-ink);font-weight:700;padding:0 16px;min-height:44px;cursor:pointer}
+.toggle{appearance:none;display:inline-flex;align-items:center;gap:10px;border:0;background:none;padding:2px 0;font-size:14px;font-weight:600;color:var(--ink);cursor:pointer;align-self:flex-start;min-height:36px}
+.toggle .sw{width:38px;height:22px;border-radius:11px;background:var(--rule);position:relative;flex:none;transition:background .15s}
+.toggle .sw::after{content:'';position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:transform .15s}
+.toggle[aria-pressed="true"] .sw{background:var(--good)}
+.toggle[aria-pressed="true"] .sw::after{transform:translateX(16px)}
+.seg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border:1.5px solid var(--rule)}
+.seg button{appearance:none;border:0;background:var(--chalk);padding:8px 4px;min-height:40px;font-size:13.5px;font-weight:600;color:var(--muted);cursor:pointer}
+.seg button + button{border-left:1.5px solid var(--rule)}
+.seg button[aria-checked="true"]{background:var(--plate);color:var(--plate-ink)}
+.gear{appearance:none;border:1.5px solid var(--rule);background:var(--card);width:44px;height:44px;display:grid;place-items:center;cursor:pointer;color:var(--ink);padding:0;align-self:flex-start}
+.gear svg{display:block}
+.prefs{background:var(--card);border:1px solid var(--rule);padding:14px;display:flex;flex-direction:column;gap:16px}
+.prow{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.prow.col{flex-direction:column;align-items:stretch;gap:6px}
+.plabel{font-weight:700;font-size:15px}
+.plabel small{font-weight:500;color:var(--muted);font-size:12.5px}
+.unitsw{display:grid;grid-template-columns:1fr 1fr;width:128px;height:40px;border-radius:20px;background:var(--chalk-deep);padding:3px;gap:0}
+.unitsw button{appearance:none;border:0;border-radius:17px;background:transparent;color:var(--muted);font-weight:700;font-size:15px;cursor:pointer}
+.unitsw button[aria-checked="true"]{background:#fff;color:#17181C;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+.rrlabels{display:flex;justify-content:space-between;font-size:11.5px;font-weight:600;color:var(--muted);line-height:1.2}
+.rrlabels span{max-width:45%}
+.rrlabels span:last-child{text-align:right}
+.rr{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px}
+.rr button{appearance:none;border:1.5px solid var(--rule);background:var(--chalk);min-height:44px;font-weight:700;font-size:16px;cursor:pointer;color:var(--ink)}
+.rr button[aria-pressed="true"]{background:var(--plate);border-color:var(--plate);color:var(--plate-ink)}
+.linkbtn{appearance:none;border:0;background:none;padding:0;color:var(--plate);font:inherit;font-weight:600;text-decoration:underline;cursor:pointer}
+.tick svg{opacity:.25}
+.tick[aria-pressed="true"]{background:var(--good);border-color:var(--good)}
+.tick:disabled{cursor:default}
+.field input:disabled,.settings input:disabled{opacity:1;color:var(--ink);-webkit-text-fill-color:var(--ink)}
+.tick[aria-pressed="true"] svg{opacity:1;stroke:var(--plate-ink)}
+.colhead{display:grid;grid-template-columns:28px minmax(0,1fr) minmax(0,1fr) 44px;gap:8px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.last{font-size:12.5px;color:var(--muted)}
+
+.finish{display:flex;flex-direction:column;gap:10px;background:var(--card);border:1px solid var(--rule);padding:14px}
+.finish textarea{border:1px solid var(--rule);background:var(--chalk);padding:10px;min-height:70px;width:100%;resize:vertical}
+.btn{appearance:none;border:0;background:var(--plate);color:var(--plate-ink);padding:14px 18px;font-weight:700;font-variation-settings:'wdth' 108;font-size:16px;cursor:pointer;min-height:48px;text-align:center;text-decoration:none;display:block}
+.btn.ghost{background:transparent;color:var(--plate);border:1.5px solid var(--plate)}
+.btnrow{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.summary{white-space:pre-wrap;font-size:13.5px;background:var(--chalk);border:1px dashed var(--rule);padding:10px;user-select:all;font-variant-numeric:tabular-nums}
+.small{font-size:13px;color:var(--muted)}
+.banner{font-size:13.5px;background:var(--chalk-deep);padding:10px 12px}
+details{background:var(--card);border:1px solid var(--rule);padding:10px 14px}
+details summary{cursor:pointer;font-weight:600;font-size:14px}
+details textarea{width:100%;min-height:80px;margin-top:8px;border:1px solid var(--rule);background:var(--chalk);padding:8px;font-size:12px}
+.hist{font-size:13px;display:flex;flex-direction:column;gap:4px;margin-top:8px}
+.hist div{display:flex;justify-content:space-between;gap:8px;border-bottom:1px solid var(--rule);padding:4px 0}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="brand">TALLEN Coaching</div>
+      <h1 id="who">Your workouts</h1>
+    </div>
+    <button type="button" class="gear" data-gear aria-label="Settings" aria-expanded="false"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
+  </header>
+  <section class="prefs" id="prefs" hidden></section>
+
+  <div class="banner" id="status" role="status" hidden></div>
+
+  <nav class="views" id="views" role="tablist" aria-label="Pages" hidden></nav>
+  <section id="daily" hidden></section>
+
+  <div id="app" hidden>
+    <div style="display:flex;flex-direction:column;gap:18px">
+      <nav class="tabs" id="tabs" role="tablist" aria-label="Workouts"></nav>
+      <button type="button" class="btn ghost" id="variety" hidden></button>
+      <div class="meta" id="meta"></div>
+      <div id="list" style="display:flex;flex-direction:column;gap:12px"></div>
+      <section class="finish" id="finish"></section>
+      <details id="histBox"><summary>Past sessions</summary><div class="hist" id="hist"></div></details>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ===== Config ===== */
+const SUPABASE_URL = 'https://fxvrquxurenrfmenqnnu.supabase.co';   // e.g. https://abcd1234.supabase.co
+const SUPABASE_KEY = 'sb_publishable_RAv9EjgkbjA5F8QgVEJHow_3oyylnUO';    // the public "anon" / "publishable" key (safe to be public)
+function rpc(fn, args){
+  const headers = { 'Content-Type':'application/json', apikey: SUPABASE_KEY };
+  if(!SUPABASE_KEY.startsWith('sb_')) headers.Authorization = 'Bearer ' + SUPABASE_KEY;
+  return fetch(`${SUPABASE_URL.replace(/\/+$/,'')}/rest/v1/rpc/${fn}`, { method:'POST', headers, body: JSON.stringify(args) })
+    .then(async r => { if(!r.ok){ let t=''; try{ t = (await r.text()).slice(0,160); }catch(_){} throw new Error('http ' + r.status + ' ' + t); } return r.json(); });
+}
+
+/* ===== Who is this? (from the private link: /log/#c=karen&t=KEY) ===== */
+function readAuth(){
+  const h = new URLSearchParams(location.hash.slice(1));
+  let c = h.get('c'), t = h.get('t');
+  try{
+    if(c && t) localStorage.setItem('tallen-auth', JSON.stringify({c, t}));
+    else { const a = JSON.parse(localStorage.getItem('tallen-auth') || 'null'); if(a){ c = a.c; t = a.t; } }
+  }catch(e){}
+  return c && t ? { c: c.toLowerCase(), t } : null;
+}
+const AUTH = readAuth();
+/* Clients whose tabs show only the workout name (no 'Workout A' line) */
+const NAME_ONLY_TABS = ['carl', 'athvaithan', 'ben', 'ian', 'mark', 'sarahlynn']; // tabs: name only
+const KEY = 'tallen-log2:' + (AUTH ? AUTH.c : 'none');
+
+/* ===== Local copy (works offline, survives refresh) ===== */
+let canStore = true;
+function load(){ try{ const v = localStorage.getItem(KEY); return v ? JSON.parse(v) : null; }catch(e){ canStore = false; return null; } }
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(db)); }catch(e){ canStore = false; } }
+let db = load() || {};
+db.plan ||= null; db.name ||= ''; db.sessions ||= []; db.pending ||= []; db.drafts ||= {}; db.settings ||= {}; db.tab ||= null;
+db.daily ||= []; db.dailyLog ||= {}; db.dailyPending ||= {}; db.view ||= 'gym'; db.week ||= 0;
+db.prefs ||= {}; db.lib ||= null;
+
+/* ===== Helpers ===== */
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fmtW = w => (w === '' || w == null || isNaN(Number(w))) ? '' : (Math.round(Number(w)*100)/100).toString();
+const today = () => new Date().toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
+const uid = () => (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2));
+const workouts = () => (db.plan || []);
+const workout = k => workouts().find(w => w.key === k) || workouts()[0];
+/* Alternate workouts use the main key plus a number: A2 is the variety version of A */
+const baseKey = k => String(k).replace(/\d+$/, '') || String(k);
+const mainWorkouts = () => { const m = workouts().filter(w => baseKey(w.key) === w.key); return m.length ? m : workouts(); };
+const family = k => workouts().filter(w => baseKey(w.key) === baseKey(k));
+const unitOf = ex => ex.unit || 'reps';
+const wU = ex => ex.wUnit || 'kg';
+const repTxt = ex => ex.reps[0] === ex.reps[1] ? `${ex.reps[0]}` : `${ex.reps[0]}–${ex.reps[1]}`;
+const isOpt = (ex, s) => (ex.optional || []).includes(s + 1);
+const reqCount = ex => Math.max(1, ex.sets - (ex.optional || []).filter(n => n <= ex.sets).length);
+const startAt = (ex, i) => ex.start == null ? null : (Array.isArray(ex.start) ? ex.start[Math.min(i, ex.start.length-1)] : ex.start);
+const wList = (ws, label) => { const v = ws.map(fmtW); return v.every(x => x === v[0]) ? `${v[0]} ${label}` : `${v.join(', ')} ${label}`; };
+
+/* ===== Units: weights are saved in the unit they were lifted in; the switch only changes what's shown ===== */
+const KG_PER_LB = 0.45359237;
+const baseU = ex => /lb/i.test(ex.wUnit || '') ? 'lb' : 'kg';
+const uSuffix = ex => String(ex.wUnit || 'kg').replace(/^\s*(kg|lbs?)/i, '');
+const dispU = () => (db.prefs && db.prefs.unit) || db.defUnit || 'kg';
+const uLabel = ex => dispU() + uSuffix(ex);
+const conv = (w, from, to) => from === to ? Number(w) : (to === 'lb' ? Number(w) / KG_PER_LB : Number(w) * KG_PER_LB);
+const STEPS = { kg:{ db:2.5, bb:2.5, machine:2.5, cable:2.5, kb:4, other:2.5, bw:2.5 }, lb:{ db:5, bb:5, machine:5, cable:5, kb:5, other:5, bw:5 } };
+const rnd = (w, step) => step > 0 ? Math.round(Math.round(w / step) * step * 100) / 100 : Math.round(w * 100) / 100;
+const rangeTxt = (lo, hi) => lo === hi ? `${lo}` : `${lo}–${hi}`;
+
+/* ===== Exercise library: categories with options the client can swap between ===== */
+function optFor(ex, pick){
+  const blank = { id: pick || '', name: ex.name, equipment: ex.bodyweight ? 'bw' : 'other', factor: null, compound: false, boxLabel: '', boxType: 'text', note: '', video: '' };
+  if(!ex.cat) return Object.assign(blank, { boxLabel: ex.setting || '' });
+  if(String(pick).startsWith('other:')) return Object.assign(blank, { name: String(pick).slice(6), equipment: 'other' });
+  return (db.lib && db.lib.ex[pick]) || blank;
+}
+const pickOf = (sess, ex) => (sess && sess.picks && sess.picks[ex.id]) || ex.lib || '';
+const boxOf = (sess, ex) => (sess && sess.settings && sess.settings[ex.id]) || '';
+const modeDefault = (ex, opt) => opt.boxType === 'mode' ? ((opt.id === ex.lib && ex.boxDefault) || 'Bodyweight') : '';
+const isBW = (opt, box) => opt.equipment === 'bw' && !(opt.boxType === 'mode' && box && box !== 'Bodyweight');
+const isOwnPlanPick = (ex, opt) => !ex.cat || opt.id === ex.lib;
+const stepFor = (ex, opt, U) => (isOwnPlanPick(ex, opt) && baseU(ex) === U && Number(ex.inc) > 0) ? Number(ex.inc) : (STEPS[U][opt.equipment] || STEPS[U].other);
+const noAuto = (ex, opt) => isOwnPlanPick(ex, opt) && Number(ex.inc) === 0 && opt.equipment !== 'bw';
+function rangeFor(ex, opt){
+  const p = db.prefs || {};
+  return (opt.compound && p.rlo && p.rhi) ? [Number(p.rlo), Number(p.rhi)] : [ex.reps[0], ex.reps[1]];
+}
+function exInWorkout(key, slot){ const w = workouts().find(x => x.key === key); return w ? w.exercises.find(e => e.id === slot) : null; }
+function currentPick(k, ex){
+  const d = draftFor(k);
+  if(d.picks && d.picks[ex.id]) return d.picks[ex.id];
+  const prev = allSessions().filter(s => s.workout === k && s.sets && s.sets[ex.id]).pop();
+  return prev ? pickOf(prev, ex) : (ex.lib || '');
+}
+function boxNow(k, ex, opt){
+  const d = draftFor(k);
+  if(d.settings[ex.id] != null) return d.settings[ex.id];
+  if(!opt.boxLabel) return '';
+  if(!ex.cat) return lastSetting(ex.id);
+  const all = allSessions();
+  for(let i = all.length - 1; i >= 0; i--){
+    const s = all[i];
+    for(const slot of Object.keys(s.picks || {})){ if(s.picks[slot] === opt.id && s.settings && s.settings[slot] != null && s.settings[slot] !== '') return s.settings[slot]; }
+  }
+  if(opt.id === ex.lib && ex.boxDefault) return ex.boxDefault;
+  return modeDefault(ex, opt);
+}
+function customsFor(cat){
+  const names = new Set();
+  workouts().forEach(w => w.exercises.forEach(e => { if(e.cat === cat && String(e.lib).startsWith('other:')) names.add(e.lib.slice(6)); }));
+  allSessions().forEach(s => Object.entries(s.picks || {}).forEach(([slot, v]) => {
+    if(!String(v).startsWith('other:')) return;
+    const e = exInWorkout(s.workout, slot); if(e && e.cat === cat) names.add(String(v).slice(6));
+  }));
+  return [...names];
+}
+
+
+function allSessions(){
+  const seen = new Set(); const out = [];
+  [...db.sessions, ...db.pending].forEach(s => { if(s && !seen.has(s.id)){ seen.add(s.id); out.push(s); } });
+  return out.sort((a,b) => (a.ts||0) - (b.ts||0));
+}
+function lastSession(k){ const s = allSessions().filter(x => x.workout === k); return s.length ? s[s.length-1] : null; }
+/* A workout finished this week (Mon–Sun) stays on show, ticked, until Monday */
+function weekStartMs(){ const n = new Date(); n.setHours(0,0,0,0); n.setDate(n.getDate() - ((n.getDay() + 6) % 7)); return n.getTime(); }
+function doneThisWeek(k){ const s = lastSession(k); if(!s || !(Number(s.ts) >= weekStartMs())) return null; const d = db.drafts[k]; return d && d.again === s.id ? null : s; }
+function prevSets(sess, exId){
+  const arr = sess && sess.sets && sess.sets[exId];
+  return arr ? Array.from(arr, x => x || { w:'', r:'' }) : null;
+}
+function draftFor(k){ const d = db.drafts[k] ||= { sets:{}, done:{}, note:'' }; d.settings ||= {}; return d; }
+/* A saved 'setting' box (e.g. bench setting): the last value they typed, carried forward */
+function lastSetting(exId){ const a = allSessions(); for(let i = a.length - 1; i >= 0; i--){ const v = a[i].settings && a[i].settings[exId]; if(v) return v; } return ''; }
+function settingNow(k, exId){ const d = draftFor(k); return d.settings[exId] != null ? d.settings[exId] : lastSetting(exId); }
+
+/* ===== Targets =====
+   - Next time shows the same exercise and the weight actually used last time.
+   - Any required set 4+ reps under the bottom of the range: every set drops one step, target stays.
+   - Every required set at the top of the range 3 sessions running at the same weight: every set goes up one step
+     (for assisted pull-ups, the assistance comes down a step instead). */
+const HITS_NEEDED = 3;
+function histFor(k, ex, opt, mode){
+  return allSessions().filter(s => s.workout === k && s.sets && s.sets[ex.id] && pickOf(s, ex) === opt.id
+      && (!mode || (boxOf(s, ex) || modeDefault(ex, opt)) === mode))
+    .reverse().map(s => Array.from(s.sets[ex.id], x => x || {})).filter(a => a.some(x => x.r || x.w));
+}
+function estimateFor(ex, opt, U, step){
+  if(!opt.factor || !db.lib) return null;
+  const all = allSessions();
+  for(let i = all.length - 1; i >= 0; i--){
+    const s = all[i];
+    for(const slot of Object.keys(s.sets || {})){
+      const e2 = exInWorkout(s.workout, slot); if(!e2 || e2.cat !== ex.cat) continue;
+      const o2 = optFor(e2, pickOf(s, e2)); if(!o2.factor || o2.id === opt.id) continue;
+      const vals = (s.sets[slot] || []).filter(x => x && x.w !== '' && x.w != null && !isNaN(Number(x.w)) && Number(x.w) > 0)
+        .map(x => conv(Number(x.w), x.u || baseU(e2), U));
+      if(!vals.length) continue;
+      const mean = vals.reduce((a, b) => a + b, 0) / vals.length;
+      const est = rnd(mean * opt.factor / o2.factor, step);
+      return est > 0 ? est : null;
+    }
+  }
+  return null;
+}
+function targetFor(ex, k, opt, box){
+  const U = dispU(); const [lo, hi] = rangeFor(ex, opt); const bw = isBW(opt, box); const step = stepFor(ex, opt, U);
+  const mode = opt.boxType === 'mode' ? (box || 'Bodyweight') : '';
+  const assisted = mode === 'Assisted';
+  const n = ex.sets; const req = reqCount(ex);
+  const hist = histFor(k, ex, opt, mode);
+  const toU = x => { if(!x || x.w === '' || x.w == null || isNaN(Number(x.w))) return null; const from = x.u || baseU(ex); const v = conv(Number(x.w), from, U); return from === U ? v : rnd(v, step); };
+  if(!hist.length){
+    if(bw) return { lo, hi };
+    if(isOwnPlanPick(ex, opt) && ex.start != null){
+      return { lo, hi, ws: Array.from({length: n}, (_, i) => { const v = startAt(ex, i); return baseU(ex) === U ? v : rnd(conv(v, baseU(ex), U), step); }) };
+    }
+    const e = estimateFor(ex, opt, U, step);
+    return e != null ? { lo, hi, ws: Array(n).fill(e), est: true } : { lo, hi };
+  }
+  const last = hist[0];
+  const firstW = toU(last.find(x => x && x.w !== '' && x.w != null));
+  const lastWs = Array.from({length: n}, (_, i) => { const v = toU(last[i]); return v != null ? v : firstW; });
+  const repsOf = i => last[i] && /^\d+$/.test(String(last[i].r)) ? Number(last[i].r) : null;
+  const reqSets = last.slice(0, req);
+  const tooShort = reqSets.some(x => x && /^\d+$/.test(String(x.r)) && Number(x.r) <= lo - 4);
+  const lastTxt = last.slice(0, n).map(x => bw || x.w === '' || x.w == null ? `${x.r || '–'}` : `${fmtW(toU(x))}×${x.r || '–'}`).join(', ');
+  if(tooShort && !bw && !noAuto(ex, opt)){
+    return { lo, hi, ws: lastWs.map(v => v == null ? v : Math.max(0, rnd(v + (assisted ? step : -step), step))), repsAll: hi, lastTxt };
+  }
+  const hitAll = a => { const r = a.slice(0, req); return r.length >= req && r.every(x => x && Number(x.r) >= hi); };
+  const same = (a, b) => { for(let i = 0; i < req; i++){ const x = a[i] || {}, y = b[i] || {}; if(String(x.w || '') !== String(y.w || '') || (x.u || '') !== (y.u || '')) return false; } return true; };
+  let streak = 0; for(const a of hist){ if(hitAll(a) && same(a, last)) streak++; else break; }
+  if(streak >= HITS_NEEDED){
+    if(bw) return { lo, hi, up: true, text: 'Top of the range on every set, 3 sessions running. Make it harder: slower lowering or a pause.', repsAll: lo, lastTxt };
+    if(!noAuto(ex, opt)){
+      const ws = lastWs.map(v => v == null ? v : Math.max(0, rnd(v + (assisted ? -step : step), step)));
+      const lbl = uLabel(ex);
+      return { lo, hi, ws, up: true, repsAll: lo, lastTxt,
+        text: assisted ? `You hit ${hi} reps on every set, 3 sessions running. Take ${fmtW(step)} ${lbl} less assistance: ${wList(ws, lbl)} today.`
+                       : `You hit ${hi} reps on every set, 3 sessions running. Go up ${fmtW(step)} ${lbl}: ${wList(ws, lbl)} today.` };
+    }
+  }
+  return { lo, hi, ws: bw ? null : lastWs, repsEach: Array.from({length: n}, (_, i) => repsOf(i) == null ? null : Math.min(repsOf(i), hi)), lastTxt };
+}
+
+/* ===== Status line ===== */
+function setStatus(msg){ const el = $('status'); el.hidden = !msg; el.textContent = msg || ''; }
+
+/* ===== Render ===== */
+function render(){
+  const hasDaily = db.daily && db.daily.length;
+  if(!hasDaily) db.view = 'gym';
+  $('views').hidden = !hasDaily || !(db.plan && db.plan.length);
+  $('views').innerHTML = hasDaily ? `<button type="button" role="tab" class="view" data-view="gym" aria-selected="${db.view==='gym'}">Workouts</button><button type="button" role="tab" class="view" data-view="daily" aria-selected="${db.view==='daily'}">朝 Morning</button>` : '';
+  if(db.view === 'daily'){ $('app').hidden = true; $('daily').hidden = false; $('who').textContent = db.name || 'Your workouts'; renderDaily(); return; }
+  $('daily').hidden = true;
+  if(!db.plan || !db.plan.length){ $('app').hidden = true; return; }
+  $('app').hidden = false;
+  if(!db.tab || !workout(db.tab) || workout(db.tab).key !== db.tab) db.tab = workouts()[0].key;
+  const k = db.tab; const w = workout(k); const d = draftFor(k); const last = lastSession(k); const wd = doneThisWeek(k);
+  $('who').textContent = db.name || 'Your workouts';
+  document.title = (db.name ? db.name + '’s ' : '') + 'Workout Log · TALLEN';
+
+  const tabs = $('tabs'); tabs.style.setProperty('--n', mainWorkouts().length); tabs.hidden = mainWorkouts().length < 2;
+  tabs.innerHTML = mainWorkouts().map(x => `<button type="button" role="tab" class="tab" data-tab="${esc(x.key)}" aria-selected="${x.key===baseKey(k)}">${NAME_ONLY_TABS.includes(AUTH.c) ? `<b>${esc(x.name || 'Workout ' + x.key)}</b>` : `<b>Workout ${esc(x.key)}</b><span>${esc(x.name)}</span>`}</button>`).join('');
+
+  const doneCount = w.exercises.reduce((n,ex) => n + (wd ? (wd.sets[ex.id]||[]).filter(x => x && (x.r || x.w)) : (d.done[ex.id]||[]).filter(Boolean)).length, 0);
+  const totalSets = w.exercises.reduce((n,ex) => n + ex.sets, 0);
+  const fam = family(k); const vb = $('variety'); vb.hidden = fam.length < 2;
+  if(fam.length > 1){
+    const next = fam[(fam.findIndex(x => x.key === k) + 1) % fam.length];
+    vb.dataset.tab = next.key;
+    vb.textContent = 'Want some variety? Change up the workout.';
+  }
+  $('meta').innerHTML = `${mainWorkouts().length < 2 || baseKey(k) !== k ? `<span><strong>${esc(w.name)}</strong></span>` : ''}<span>${wd ? 'Done' : 'Last done'}: <strong>${last ? esc(last.date) : 'not yet'}</strong></span><span><strong class="num">${doneCount}/${totalSets}</strong> sets ticked</span>`;
+
+  let num = 0; const html = []; let infoRows = [];
+  const flushInfo = () => { if(infoRows.length){ html.push(`<article class="info">${infoRows.join('')}</article>`); infoRows = []; } };
+  w.exercises.forEach((ex, j) => {
+    if(!(ex.sets > 0)){
+      const prevEx = w.exercises[j-1];
+      const showMuscle = ex.muscle && !(infoRows.length && prevEx && !(prevEx.sets > 0) && prevEx.muscle === ex.muscle);
+      infoRows.push(`<div class="row">${showMuscle ? `<div class="muscle">${esc(ex.muscle)}</div>` : ''}<div class="iname"><span>${esc(ex.name)}</span>${/^https?:\/\//.test(ex.video || '') ? `<a href="${esc(ex.video)}" target="_blank" rel="noopener">▶ Demo</a>` : ''}</div>${ex.note ? `<div class="inote">${esc(ex.note)}</div>` : ''}</div>`);
+      return;
+    }
+    flushInfo();
+    html.push(exCard(ex, num++, k, d, last, wd));
+  });
+  flushInfo();
+  $('list').innerHTML = html.join('');
+
+  renderFinish();
+  renderHistory();
+}
+
+function pickMenu(ex, opt, ro){
+  if(!ex.cat || ro || !db.lib) return `<div class="exname">${esc(opt.name)}</div>`;
+  const list = (db.lib.byCat[ex.cat] || []).map(o => [o.id, o.name]);
+  customsFor(ex.cat).forEach(nm => list.push(['other:' + nm, nm]));
+  if(String(opt.id).startsWith('other:') && !list.some(x => x[0] === opt.id)) list.push([opt.id, opt.name]);
+  return `<label class="pickwrap"><select class="pick" data-pick="${esc(ex.id)}" aria-label="Choose exercise">${list.map(([v, nm]) => `<option value="${esc(v)}"${v === opt.id ? ' selected' : ''}>${esc(nm)}</option>`).join('')}<option value="__other">Other…</option></select><span class="chev" aria-hidden="true">⇄</span></label>`;
+}
+function boxUI(ex, opt, box, ro){
+  if(!opt.boxLabel) return '';
+  if(opt.boxType === 'toggle') return `<button type="button" class="toggle" data-toggle="${esc(ex.id)}" aria-pressed="${!!box}" ${ro ? 'disabled' : ''}><span class="sw"></span>${esc(opt.boxLabel)}</button>`;
+  if(opt.boxType === 'mode'){
+    const cur = box || 'Bodyweight';
+    return `<div class="seg" role="radiogroup" aria-label="Type">${opt.boxLabel.split('|').map(l => `<button type="button" role="radio" data-mode="${esc(ex.id)}" data-val="${esc(l)}" aria-checked="${l === cur}" ${ro ? 'disabled' : ''}>${esc(l)}</button>`).join('')}</div>`;
+  }
+  return `<div class="settings"><label for="set-${esc(ex.id)}">${esc(opt.boxLabel)}</label><input id="set-${esc(ex.id)}" data-setting="${esc(ex.id)}" value="${esc(box)}" ${ro ? 'disabled' : ''} autocomplete="off"></div>`;
+}
+function exCard(ex, i, k, d, last, wd){
+  const ro = !!wd;
+  const pick = ro ? pickOf(wd, ex) : currentPick(k, ex);
+  const opt = optFor(ex, pick);
+  const box = ro ? boxOf(wd, ex) : boxNow(k, ex, opt);
+  const bw = isBW(opt, box);
+  const t = ro ? { lo: rangeFor(ex, opt)[0], hi: rangeFor(ex, opt)[1] } : targetFor(ex, k, opt, box);
+  const U = dispU(); const lbl = uLabel(ex);
+  const cur = ro ? Array.from(wd.sets[ex.id] || [], x => x || {}) : (d.sets[ex.id] || []);
+  const done = ro ? cur.map(x => !!(x && (x.r || x.w))) : (d.done[ex.id] || []);
+  const allDone = done.filter(Boolean).length >= ex.sets;
+  const assisted = opt.boxType === 'mode' && box === 'Assisted';
+  const rows = Array.from({length: ex.sets}, (_, s) => {
+    const c = cur[s] || {};
+    let wv = c.w ?? '';
+    if(ro && wv !== '' && !isNaN(Number(wv))){ const from = c.u || baseU(ex); wv = fmtW(from === U ? Number(wv) : rnd(conv(Number(wv), from, U), stepFor(ex, opt, U))); }
+    const phW = t.ws && t.ws[s] != null ? fmtW(t.ws[s]) : '';
+    const phR = t.repsAll != null ? String(t.repsAll) : (t.repsEach && t.repsEach[s] != null ? String(t.repsEach[s]) : rangeTxt(t.lo, t.hi));
+    return `<div class="setrow">
+      <span class="n${isOpt(ex,s) ? ' opt' : ''}"${isOpt(ex,s) ? ' title="Optional set"' : ''}>${s+1}</span>
+      ${bw ? `<span class="small">Bodyweight</span>` : `<label class="field"><input inputmode="decimal" class="${t.est && !wv ? 'est' : ''}" id="w-${esc(ex.id)}-${s}" data-ex="${esc(ex.id)}" data-set="${s}" data-k="w" value="${esc(wv)}" ${ro ? 'disabled' : ''} placeholder="${esc(phW)}" aria-label="Set ${s+1} ${assisted ? 'assistance' : 'weight'} in ${esc(lbl)}" style="padding-right:${lbl.length > 2 ? 60 : 34}px"><span class="u">${esc(lbl)}</span></label>`}
+      <label class="field"><input inputmode="numeric" id="r-${esc(ex.id)}-${s}" data-ex="${esc(ex.id)}" data-set="${s}" data-k="r" value="${esc(c.r ?? '')}" ${ro ? 'disabled' : ''} placeholder="${esc(phR)}" aria-label="Set ${s+1} reps"></label>
+      <button type="button" class="tick" data-tick="${esc(ex.id)}" data-set="${s}" aria-pressed="${!!done[s]}" ${ro ? 'disabled' : ''} aria-label="Mark set ${s+1} done"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="square"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button>
+    </div>`;
+  }).join('');
+  const opts = (ex.optional || []).filter(n => n <= ex.sets);
+  const cat = ex.cat && db.lib ? db.lib.cats[ex.cat] : null;
+  const video = opt.video || ex.video;
+  return `<article class="ex${allDone ? ' done' : ''}">
+    <div class="exhead">
+      <div style="min-width:0;flex:1">${cat ? `<div class="muscle">${esc(cat.name)}</div>${cat.subtext ? `<div class="catsub">${esc(cat.subtext)}</div>` : ''}` : (ex.muscle ? `<div class="muscle">${esc(ex.muscle)}</div>` : '')}
+      ${pickMenu(ex, opt, ro)}
+      <div class="exspec">${ex.sets} sets · ${rangeTxt(t.lo, t.hi)} reps${ex.perSide ? ' each side' : ''}${ex.rest ? ` · rest ${esc(ex.rest)}` : ''}</div>
+      ${opts.length ? `<div class="optnote">Set ${opts.join(' & ')} ${opts.length > 1 ? 'are' : 'is'} optional if you’re short on time</div>` : ''}</div>
+      <span class="idx">${i+1}</span>
+    </div>
+    ${!ro && d.otherFor === ex.id ? `<div class="othername"><input data-othername="${esc(ex.id)}" placeholder="Name of the exercise" maxlength="60" autocomplete="off"><button type="button" data-otherok="${esc(ex.id)}">Add</button></div>` : ''}
+    ${t.up ? `<div class="target up"><span class="tag">Level up</span><span>${esc(t.text)}</span></div>` : ''}
+    ${[opt.note, ex.note].filter(Boolean).map(nt => `<div class="note">${esc(nt)}</div>`).join('')}
+    ${/^https?:\/\//.test(video || '') ? `<a class="vid" href="${esc(video)}" target="_blank" rel="noopener">▶ Watch the demo</a>` : ''}
+    ${opt.boxType === 'mode' ? boxUI(ex, opt, box, ro) : ''}
+    <div class="sets">
+      <div class="colhead"><span>Set</span><span>${bw ? '' : (assisted ? 'Assistance' : 'Weight')}</span><span>Reps</span><span></span></div>
+      ${rows}
+    </div>
+    ${opt.boxType !== 'mode' ? boxUI(ex, opt, box, ro) : ''}
+    ${t.lastTxt && !ro ? `<div class="last">Last time: ${esc(t.lastTxt)}</div>` : ''}
+  </article>`;
+}
+
+function summaryText(sess){
+  const w = workout(sess.workout) || { name:'', exercises:[] };
+  const head = NAME_ONLY_TABS.includes(AUTH.c) ? [w.name || `Workout ${baseKey(sess.workout)}`, sess.date].join(' · ') : [mainWorkouts().length > 1 ? `Workout ${baseKey(sess.workout)}` : '', w.name, sess.date].filter(Boolean).join(' · ');
+  const lines = [head];
+  if(sess.note) lines.push(`📝 ${sess.note}`);
+  lines.push('');
+  w.exercises.forEach(ex => {
+    const s = (sess.sets[ex.id]||[]).filter(x => x && (x.r || x.w));
+    if(!s.length) return;
+    const opt = optFor(ex, pickOf(sess, ex)); const box = boxOf(sess, ex);
+    const name = opt.name.replace(/\s*\(.*?\)\s*/g, ' ').trim();
+    const reps = s.map(x => x.r || '–'); const sameReps = reps.every(r => r === reps[0]);
+    const unit = (s[0].u || baseU(ex)) + uSuffix(ex);
+    let txt;
+    if(isBW(opt, box) || s.every(x => x.w === '' || x.w == null)) txt = `${reps.join(' · ')} reps`;
+    else if(sameReps) txt = `${s.map(x => fmtW(x.w) || '–').join(' · ')} ${unit} × ${reps[0]}`;
+    else txt = `${s.map(x => `${fmtW(x.w) || '–'}×${x.r || '–'}`).join(' · ')} ${unit}`;
+    lines.push(`${name}: ${txt}${box ? ` (${box})` : ''}`);
+  });
+  return lines.join('\n');
+}
+
+let justFinished = null;
+function renderFinish(){
+  const k = db.tab; const d = draftFor(k);
+  if(justFinished && justFinished.workout === k){
+    const sent = !db.pending.some(p => p.id === justFinished.id);
+    $('finish').innerHTML = `
+      <h2 style="font-size:44px">Session saved</h2>
+      <p style="margin:0">${sent ? 'Tom’s got it. Next time you open this, your new numbers will be waiting.' : 'Saved on your phone. It’ll send to Tom automatically next time you’re online.'}</p>
+      <div class="summary">${esc(summaryText(justFinished))}</div>
+      <button type="button" class="btn ghost" id="newSess">Back to my workout</button>`;
+    return;
+  }
+  const wd = doneThisWeek(k);
+  if(wd){
+    $('finish').innerHTML = `
+      <h2 style="font-size:40px">Done ✓</h2>
+      <p style="margin:0">Completed ${esc(wd.date)}. Fresh targets on Monday.</p>
+      <button type="button" class="btn ghost" id="again">Do this workout again</button>`;
+    return;
+  }
+  $('finish').innerHTML = `
+    <label for="sessNote" style="font-weight:600">Anything I should know?</label>
+    <textarea id="sessNote" placeholder="Aches, a lift that felt easy…">${esc(d.note||'')}</textarea>
+    <button type="button" class="btn" id="finishBtn">Finish & send to Tom</button>`;
+}
+
+function renderHistory(){
+  const all = allSessions().slice().reverse();
+  $('hist').innerHTML = all.length ? all.slice(0, 15).map(s => `<div><span>${esc(s.date)}</span><span>${esc((workout(s.workout)||{}).name || 'Workout ' + s.workout)}${db.pending.some(p => p.id === s.id) ? ' · not sent yet' : ''}</span></div>`).join('') : '<p class="small">No sessions saved yet.</p>';
+}
+
+/* ===== Server ===== */
+async function fetchPlan(){
+  return rpc('get_log2', { p_client: AUTH.c, p_key: AUTH.t });
+}
+let syncing = false;
+async function syncPending(){
+  if(syncing || !db.pending.length) return;
+  syncing = true;
+  try{
+    for(const sess of db.pending.slice()){
+      const j = await rpc('save_session2', { p_client: AUTH.c, p_key: AUTH.t, p_session: sess, p_summary: summaryText(sess) });
+      if(j && j.ok){ db.pending = db.pending.filter(p => p.id !== sess.id); if(!db.sessions.some(s => s.id === sess.id)) db.sessions.push(sess); save(); }
+      else throw new Error(j && j.error || 'save failed');
+    }
+  }catch(e){ /* try again later */ }
+  syncing = false;
+  const y = scrollY; render(); scrollTo(0, y);
+}
+
+async function boot(){
+  if(!AUTH){ setStatus('This link is missing your personal code. Open the link Tom sent you.'); return; }
+  if(db.plan) render();
+  else setStatus('Loading your workouts…');
+  try{
+    const j = await fetchPlan();
+    if(!j.ok){ setStatus(j.error === 'not_found' ? 'This link isn’t working. Ask Tom to send you a new one.' : 'Couldn’t load your workouts. Try again in a minute.'); if(!db.plan) return; }
+    else{
+      /* A workout whose name starts with ~ is hidden (e.g. parked for a travel week) */
+      db.plan = (j.workouts || []).filter(w => !String(w.name || '').startsWith('~')); db.name = j.client.name;
+      db.sessions = j.sessions || [];
+      db.daily = j.daily || [];
+      const lib = j.library || { categories: [], exercises: [] };
+      db.lib = { cats: {}, ex: {}, byCat: {} };
+      lib.categories.forEach(c => { db.lib.cats[c.id] = c; db.lib.byCat[c.id] = []; });
+      lib.exercises.forEach(x => { db.lib.ex[x.id] = x; (db.lib.byCat[x.cat] ||= []).push(x); });
+      if(!db.prefsDirty) db.prefs = j.prefs || {};
+      const units = (j.workouts || []).flatMap(w => w.exercises).filter(e => e.sets > 0).map(baseU);
+      db.defUnit = units.filter(u => u === 'lb').length > units.length / 2 ? 'lb' : 'kg';
+      db.dailyLog = Object.assign({}, j.dailyLog || {}, db.dailyPending);
+      setStatus(canStore ? '' : 'This browser isn’t saving anything between visits. Open the link in Safari or Chrome.');
+      save(); render();
+    }
+  }catch(e){
+    setStatus(db.plan ? 'You’re offline. You can still log; it’ll send when you’re back online.' : 'Couldn’t reach the server. Check your connection and refresh. (' + (e && e.message || 'unknown') + ')');
+  }
+  syncPending(); syncDaily(); syncPrefs();
+}
+
+/* ===== Settings: units and rep range ===== */
+function renderPrefs(){
+  const U = dispU(); const p = db.prefs || {}; const has = !!(p.rlo && p.rhi);
+  $('prefs').innerHTML = `
+    <div class="prow"><span class="plabel">Units</span>
+      <div class="unitsw" role="radiogroup" aria-label="Units"><button type="button" role="radio" data-unit="kg" aria-checked="${U === 'kg'}">kg</button><button type="button" role="radio" data-unit="lb" aria-checked="${U === 'lb'}">lb</button></div></div>
+    <div class="prow col"><span class="plabel">Target rep range <small>· compound lifts</small></span>
+      <div class="rrlabels"><span>Best for strength gain</span><span>Best for building muscle</span></div>
+      <div class="rr">${[8,9,10,11,12].map(nm => `<button type="button" data-rr="${nm}" aria-pressed="${has && nm >= p.rlo && nm <= p.rhi}">${nm}</button>`).join('')}</div>
+      <div class="small">${has ? `Your range: ${rangeTxt(p.rlo, p.rhi)} reps. <button type="button" class="linkbtn" data-rrreset>Use Tom’s plan instead</button>` : 'Using Tom’s plan. Tap a number to choose your own range.'}</div>
+    </div>`;
+}
+function setPrefs(next){ db.prefs = next; db.prefsDirty = true; save(); renderPrefs(); const y = scrollY; render(); scrollTo(0, y); syncPrefs(); }
+let prefsSyncing = false;
+async function syncPrefs(){
+  if(prefsSyncing || !db.prefsDirty || !AUTH) return; prefsSyncing = true;
+  try{ const j = await rpc('save_prefs', { p_client: AUTH.c, p_key: AUTH.t, p_prefs: db.prefs }); if(j && j.ok){ db.prefsDirty = false; save(); } }catch(e){ /* try again later */ }
+  prefsSyncing = false;
+}
+function convertDrafts(from, to){
+  Object.values(db.drafts).forEach(d => Object.values(d.sets || {}).forEach(arr => (arr || []).forEach(x => {
+    if(x && x.w !== '' && x.w != null && !isNaN(Number(x.w))) x.w = String(rnd(conv(Number(x.w), from, to), to === 'kg' ? 0.5 : 1));
+  })));
+}
+
+/* ===== 朝 page: daily checklist, Monday to Saturday ===== */
+const KANJI = ['月','火','水','木','金','土'];
+const EN = ['Mon','Tue','Wed','Thu','Fri','Sat'];
+const ymd = dt => `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`;
+function weekDays(offset){
+  const n = new Date(); n.setHours(12,0,0,0);
+  const mon = new Date(n); mon.setDate(n.getDate() - ((n.getDay() + 6) % 7) + offset * 7);
+  return Array.from({length: 6}, (_, i) => { const x = new Date(mon); x.setDate(mon.getDate() + i); return x; });
+}
+function renderDaily(){
+  const tasks = db.daily; const days = weekDays(db.week); const tk = ymd(new Date());
+  let done = 0;
+  const cells = days.map((dt, i) => {
+    const key = ymd(dt); const rec = db.dailyLog[key] || {}; const future = key > tk;
+    return `<div class="asa-day${key === tk ? ' today' : ''}">${KANJI[i]}<small>${EN[i]} ${dt.getDate()}</small></div>` +
+      tasks.map(t => { const on = !!rec[t.id]; if(on) done++;
+        return `<button type="button" class="hanko" data-day="${key}" data-task="${esc(t.id)}" aria-pressed="${on}" ${future ? 'disabled' : ''} aria-label="${esc(t.name)}, ${EN[i]} ${dt.getDate()}${on ? ', done' : ''}"><span>済</span></button>`; }).join('');
+  }).join('');
+  const range = `${days[0].getDate()} ${days[0].toLocaleDateString('en-GB',{month:'short'})} – ${days[5].getDate()} ${days[5].toLocaleDateString('en-GB',{month:'short'})}`;
+  $('daily').innerHTML = `
+    <div class="asa-head"><h2>朝練</h2></div>
+    <div class="asa-week">
+      <button type="button" data-week="-1" aria-label="Previous week">←</button>
+      <strong>${db.week === 0 ? '今週 · This week' : esc(range)}</strong>
+      <button type="button" data-week="1" aria-label="Next week" ${db.week >= 0 ? 'disabled' : ''}>→</button>
+    </div>
+    <div class="asa-grid" style="--n:${tasks.length}">
+      <span></span>${tasks.map(t => `<div class="th">${esc(t.name)}</div>`).join('')}
+      ${cells}
+    </div>
+    <div class="asa-total"><strong>${done}</strong> / ${tasks.length * 6} this week</div>`;
+}
+let dailySyncing = false;
+async function syncDaily(){
+  if(dailySyncing) return; dailySyncing = true;
+  try{
+    for(const day of Object.keys(db.dailyPending)){
+      const doneObj = db.dailyPending[day];
+      const j = await rpc('save_daily', { p_client: AUTH.c, p_key: AUTH.t, p_day: day, p_done: doneObj });
+      if(j && j.ok){ if(db.dailyPending[day] === doneObj) delete db.dailyPending[day]; save(); }
+      else break;
+    }
+  }catch(e){ /* try again later */ }
+  dailySyncing = false;
+}
+
+/* ===== Events ===== */
+document.addEventListener('click', e => {
+  if(e.target.closest('[data-gear]')){ const el = $('prefs'); el.hidden = !el.hidden; e.target.closest('[data-gear]').setAttribute('aria-expanded', String(!el.hidden)); if(!el.hidden) renderPrefs(); return; }
+  const un = e.target.closest('[data-unit]');
+  if(un){ const to = un.dataset.unit, from = dispU(); if(to !== from){ convertDrafts(from, to); setPrefs(Object.assign({}, db.prefs, { unit: to })); } return; }
+  const rr = e.target.closest('[data-rr]');
+  if(rr){
+    const nm = Number(rr.dataset.rr); const p = db.prefs || {}; let lo = p.rlo, hi = p.rhi;
+    if(!lo || !hi){ lo = hi = nm; }
+    else if(nm < lo) lo = nm; else if(nm > hi) hi = nm;
+    else if(nm - lo <= hi - nm) lo = nm; else hi = nm;
+    setPrefs(Object.assign({}, p, { rlo: lo, rhi: hi })); return;
+  }
+  if(e.target.closest('[data-rrreset]')){ const p = Object.assign({}, db.prefs); delete p.rlo; delete p.rhi; setPrefs(p); return; }
+  const tg = e.target.closest('[data-toggle]');
+  if(tg){ const d = draftFor(db.tab); const ex = exInWorkout(db.tab, tg.dataset.toggle); const opt = optFor(ex, currentPick(db.tab, ex));
+    d.settings[ex.id] = boxNow(db.tab, ex, opt) ? '' : opt.boxLabel; save(); const y = scrollY; render(); scrollTo(0, y); return; }
+  const md = e.target.closest('[data-mode]');
+  if(md){ const d = draftFor(db.tab); d.settings[md.dataset.mode] = md.dataset.val; delete d.sets[md.dataset.mode]; delete d.done[md.dataset.mode]; save(); const y = scrollY; render(); scrollTo(0, y); return; }
+  const ok = e.target.closest('[data-otherok]');
+  if(ok){ const inp = document.querySelector(`[data-othername="${CSS.escape(ok.dataset.otherok)}"]`); const nm = (inp && inp.value || '').trim().replace(/\s+/g, ' ').slice(0, 60);
+    if(!nm){ inp && inp.focus(); return; } setPick(ok.dataset.otherok, 'other:' + nm); return; }
+  const vw = e.target.closest('[data-view]');
+  if(vw){ db.view = vw.dataset.view; save(); render(); scrollTo({top:0}); return; }
+  const wk = e.target.closest('[data-week]');
+  if(wk){ db.week = Math.min(0, db.week + Number(wk.dataset.week)); save(); renderDaily(); return; }
+  const hk = e.target.closest('[data-day]');
+  if(hk){
+    const day = hk.dataset.day, id = hk.dataset.task;
+    const rec = Object.assign({}, db.dailyLog[day] || {});
+    if(rec[id]) delete rec[id]; else rec[id] = true;
+    db.dailyLog[day] = rec; db.dailyPending[day] = rec; save(); renderDaily(); syncDaily(); return;
+  }
+  const tab = e.target.closest('[data-tab]');
+  if(tab){ db.tab = tab.dataset.tab; justFinished = null; save(); render(); scrollTo({top:0}); return; }
+  const tk = e.target.closest('[data-tick]');
+  if(tk){
+    const d = draftFor(db.tab); const id = tk.dataset.tick; const s = +tk.dataset.set;
+    d.done[id] ||= []; d.done[id][s] = !d.done[id][s];
+    if(d.done[id][s]){
+      d.sets[id] ||= []; d.sets[id][s] ||= {};
+      const wi = document.getElementById(`w-${id}-${s}`), ri = document.getElementById(`r-${id}-${s}`);
+      if(wi && !wi.value && wi.placeholder && !isNaN(parseFloat(wi.placeholder))) d.sets[id][s].w = wi.placeholder;
+      if(ri && !ri.value && ri.placeholder && /^\d+$/.test(ri.placeholder)) d.sets[id][s].r = ri.placeholder;
+    }
+    save(); const y = scrollY; render(); scrollTo(0, y); return;
+  }
+  if(e.target.id === 'finishBtn'){ finishSession(); return; }
+  if(e.target.id === 'again'){ const w0 = doneThisWeek(db.tab); if(w0){ draftFor(db.tab).again = w0.id; save(); render(); scrollTo({top:0}); } return; }
+  if(e.target.id === 'newSess'){ justFinished = null; render(); scrollTo({top:0}); }
+});
+
+function setPick(slot, value){
+  const d = draftFor(db.tab); d.picks ||= {};
+  d.picks[slot] = value; delete d.sets[slot]; delete d.done[slot]; delete d.settings[slot]; d.otherFor = null;
+  save(); const y = scrollY; render(); scrollTo(0, y);
+}
+function finishSession(){
+  const k = db.tab; const d = draftFor(k); const w = workout(k); const U = dispU();
+  const sets = {}, settings = {}, picks = {};
+  w.exercises.forEach(ex => {
+    if(!(ex.sets > 0)) return;
+    const pick = currentPick(k, ex); const opt = optFor(ex, pick); const box = boxNow(k, ex, opt); const bw = isBW(opt, box);
+    const arr = Array.from({length: ex.sets}, (_, i) => {
+      const x = (d.sets[ex.id] || [])[i] || {};
+      const r = x.r ? String(x.r) : '';
+      let wt = !bw && x.w ? String(x.w) : '';
+      if(!wt && r && !bw){ const ph = document.getElementById(`w-${ex.id}-${i}`)?.placeholder; if(ph && !isNaN(parseFloat(ph))) wt = ph; }
+      return { w: wt, r, u: U };
+    });
+    if(arr.some(x => x.r || x.w)){
+      sets[ex.id] = arr;
+      if(ex.cat) picks[ex.id] = pick;
+      if(opt.boxLabel && box) settings[ex.id] = String(box).trim().slice(0, 300);
+    }
+  });
+  if(!Object.keys(sets).length){ const n = $('sessNote'); n.placeholder = 'Log at least one set before finishing.'; n.focus(); return; }
+  const sess = { id: uid(), workout: k, date: today(), ts: Date.now(), sets, settings, picks, note: (d.note || '').trim() };
+  db.pending.push(sess);
+  delete db.drafts[k];
+  justFinished = sess;
+  save(); render(); $('finish').scrollIntoView({block:'start'});
+  syncPending();
+}
+document.addEventListener('change', e => {
+  const t = e.target;
+  if(t.dataset && t.dataset.pick){
+    if(t.value === '__other'){ const d = draftFor(db.tab); d.otherFor = t.dataset.pick; save(); const y = scrollY; render(); scrollTo(0, y);
+      const inp = document.querySelector(`[data-othername="${CSS.escape(t.dataset.pick)}"]`); inp && inp.focus(); return; }
+    setPick(t.dataset.pick, t.value);
+  }
+});
+document.addEventListener('keydown', e => {
+  if(e.key === 'Enter' && e.target.dataset && e.target.dataset.othername){ e.preventDefault(); document.querySelector(`[data-otherok="${CSS.escape(e.target.dataset.othername)}"]`)?.click(); }
+});
+document.addEventListener('input', e => {
+  const t = e.target; if(!db.tab) return; const d = draftFor(db.tab);
+  if(t.dataset.ex){
+    d.sets[t.dataset.ex] ||= [];
+    d.sets[t.dataset.ex][+t.dataset.set] ||= {};
+    d.sets[t.dataset.ex][+t.dataset.set][t.dataset.k] = t.value.trim();
+    save(); return;
+  }
+  if(t.dataset.setting){ d.settings[t.dataset.setting] = t.value; save(); return; }
+  if(t.id === 'sessNote'){ d.note = t.value; save(); }
+});
+window.addEventListener('online', () => { syncPending(); syncDaily(); syncPrefs(); });
+window.addEventListener('hashchange', () => location.reload());
+
+boot();
+</script>
+
+</body>
+</html>
