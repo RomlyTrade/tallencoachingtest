@@ -274,7 +274,7 @@ const rangeTxt = (lo, hi) => lo === hi ? `${lo}` : `${lo}–${hi}`;
 function optFor(ex, pick){
   const blank = { id: pick || '', name: ex.name, equipment: ex.bodyweight ? 'bw' : 'other', factor: null, compound: false, boxLabel: '', boxType: 'text', note: '', video: '' };
   if(!ex.cat) return Object.assign(blank, { boxLabel: ex.setting || '' });
-  if(String(pick).startsWith('other:')) return Object.assign(blank, { name: String(pick).slice(6), equipment: 'other' });
+  if(String(pick).startsWith('other:')) return Object.assign(blank, { name: String(pick).slice(6), equipment: (pick === ex.lib && ex.bodyweight) ? 'bw' : 'other' });
   return (db.lib && db.lib.ex[pick]) || blank;
 }
 const pickOf = (sess, ex) => (sess && sess.picks && sess.picks[ex.id]) || ex.lib || '';
