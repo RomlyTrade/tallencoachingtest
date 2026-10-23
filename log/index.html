@@ -525,6 +525,7 @@ function exCard(ex, i, k, d, last, wd){
     </div>
     ${opt.boxType !== 'mode' ? boxUI(ex, opt, box, ro) : ''}
     ${!ro && nobar && opt.id === 'pull-ups' ? `<button type="button" class="btn ghost slim" data-nobar="${esc(ex.id)}">No pull-up bar</button>` : ''}
+    ${!ro && nobar && opt.id === 'db-pullover' ? `<button type="button" class="btn ghost slim" data-hasbar="${esc(ex.id)}">I have a pull-up bar</button>` : ''}
     ${t.lastTxt && !ro ? `<div class="last">Last time: ${esc(t.lastTxt)}</div>` : ''}
   </article>`;
 }
@@ -722,6 +723,8 @@ document.addEventListener('click', e => {
   if(md){ const d = draftFor(db.tab); d.settings[md.dataset.mode] = md.dataset.val; delete d.sets[md.dataset.mode]; delete d.done[md.dataset.mode]; save(); const y = scrollY; render(); scrollTo(0, y); return; }
   const nb = e.target.closest('[data-nobar]');
   if(nb){ setPick(nb.dataset.nobar, 'db-pullover'); return; }
+  const hb = e.target.closest('[data-hasbar]');
+  if(hb){ setPick(hb.dataset.hasbar, 'pull-ups'); return; }
   const ok = e.target.closest('[data-otherok]');
   if(ok){ const inp = document.querySelector(`[data-othername="${CSS.escape(ok.dataset.otherok)}"]`); const nm = (inp && inp.value || '').trim().replace(/\s+/g, ' ').slice(0, 60);
     if(!nm){ inp && inp.focus(); return; } setPick(ok.dataset.otherok, 'other:' + nm); return; }
