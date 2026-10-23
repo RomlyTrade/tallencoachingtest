@@ -232,7 +232,9 @@ const KEY = 'tallen-log2:' + (AUTH ? AUTH.c : 'none');
 let canStore = true;
 function load(){ try{ const v = localStorage.getItem(KEY); return v ? JSON.parse(v) : null; }catch(e){ canStore = false; return null; } }
 function save(){ try{ localStorage.setItem(KEY, JSON.stringify(db)); }catch(e){ canStore = false; } }
-let db = load() || {};
+/* First visit on the new page: carry over anything saved by the old page (unsent sessions, half-logged sets) */
+function loadOld(){ try{ const v = localStorage.getItem('tallen-log:' + (AUTH ? AUTH.c : 'none')); return v ? JSON.parse(v) : null; }catch(e){ return null; } }
+let db = load() || loadOld() || {};
 db.plan ||= null; db.name ||= ''; db.sessions ||= []; db.pending ||= []; db.drafts ||= {}; db.settings ||= {}; db.tab ||= null;
 db.daily ||= []; db.dailyLog ||= {}; db.dailyPending ||= {}; db.view ||= 'gym'; db.week ||= 0;
 db.prefs ||= {}; db.lib ||= null;
