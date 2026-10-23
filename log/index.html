@@ -114,7 +114,42 @@ button,input,textarea{font:inherit;color:inherit}
 .field input{width:100%;border:1.5px solid var(--rule);background:var(--chalk);padding:8px 34px 8px 10px;min-height:44px;font-size:17px;font-weight:600;font-variant-numeric:tabular-nums}
 .field input::placeholder{color:var(--muted);font-weight:400;opacity:.8}
 .field .u{position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:12px;color:var(--muted);pointer-events:none}
-.tick{appearance:none;width:44px;height:44px;border:1.5px solid var(--rule);background:var(--chalk);cursor:pointer;display:grid;place-items:center}
+.tick{appearance:none;width:44px;height:44px;border:1.5px solid var(--rule);background:var(--chalk);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;margin:0;line-height:0}
+.tick svg{display:block;flex:none}
+.field input.est::placeholder{opacity:.38}
+.pickwrap{position:relative;display:block;margin-top:1px}
+.pick{appearance:none;-webkit-appearance:none;border:0;background:transparent;padding:0 26px 0 0;margin:0;width:100%;font:inherit;font-size:18px;font-weight:700;font-variation-settings:'wdth' 106;line-height:1.25;color:var(--ink);cursor:pointer;text-overflow:ellipsis}
+.pickwrap .chev{position:absolute;right:2px;top:50%;transform:translateY(-50%);font-size:14px;color:var(--plate);pointer-events:none}
+.catsub{font-size:11.5px;color:var(--muted);letter-spacing:.02em;margin-top:1px}
+.othername{display:flex;gap:8px}
+.othername input{flex:1;border:1.5px solid var(--plate);background:var(--chalk);padding:8px 10px;min-height:44px;font-size:16px}
+.othername button{appearance:none;border:0;background:var(--plate);color:var(--plate-ink);font-weight:700;padding:0 16px;min-height:44px;cursor:pointer}
+.toggle{appearance:none;display:inline-flex;align-items:center;gap:10px;border:0;background:none;padding:2px 0;font-size:14px;font-weight:600;color:var(--ink);cursor:pointer;align-self:flex-start;min-height:36px}
+.toggle .sw{width:38px;height:22px;border-radius:11px;background:var(--rule);position:relative;flex:none;transition:background .15s}
+.toggle .sw::after{content:'';position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:transform .15s}
+.toggle[aria-pressed="true"] .sw{background:var(--good)}
+.toggle[aria-pressed="true"] .sw::after{transform:translateX(16px)}
+.seg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border:1.5px solid var(--rule)}
+.seg button{appearance:none;border:0;background:var(--chalk);padding:8px 4px;min-height:40px;font-size:13.5px;font-weight:600;color:var(--muted);cursor:pointer}
+.seg button + button{border-left:1.5px solid var(--rule)}
+.seg button[aria-checked="true"]{background:var(--plate);color:var(--plate-ink)}
+.gear{appearance:none;border:1.5px solid var(--rule);background:var(--card);width:44px;height:44px;display:grid;place-items:center;cursor:pointer;color:var(--ink);padding:0;align-self:flex-start}
+.gear svg{display:block}
+.prefs{background:var(--card);border:1px solid var(--rule);padding:14px;display:flex;flex-direction:column;gap:16px}
+.prow{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.prow.col{flex-direction:column;align-items:stretch;gap:6px}
+.plabel{font-weight:700;font-size:15px}
+.plabel small{font-weight:500;color:var(--muted);font-size:12.5px}
+.unitsw{display:grid;grid-template-columns:1fr 1fr;width:128px;height:40px;border-radius:20px;background:var(--chalk-deep);padding:3px;gap:0}
+.unitsw button{appearance:none;border:0;border-radius:17px;background:transparent;color:var(--muted);font-weight:700;font-size:15px;cursor:pointer}
+.unitsw button[aria-checked="true"]{background:#fff;color:#17181C;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+.rrlabels{display:flex;justify-content:space-between;font-size:11.5px;font-weight:600;color:var(--muted);line-height:1.2}
+.rrlabels span{max-width:45%}
+.rrlabels span:last-child{text-align:right}
+.rr{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px}
+.rr button{appearance:none;border:1.5px solid var(--rule);background:var(--chalk);min-height:44px;font-weight:700;font-size:16px;cursor:pointer;color:var(--ink)}
+.rr button[aria-pressed="true"]{background:var(--plate);border-color:var(--plate);color:var(--plate-ink)}
+.linkbtn{appearance:none;border:0;background:none;padding:0;color:var(--plate);font:inherit;font-weight:600;text-decoration:underline;cursor:pointer}
 .tick svg{opacity:.25}
 .tick[aria-pressed="true"]{background:var(--good);border-color:var(--good)}
 .tick:disabled{cursor:default}
@@ -146,7 +181,9 @@ details textarea{width:100%;min-height:80px;margin-top:8px;border:1px solid var(
       <div class="brand">TALLEN Coaching</div>
       <h1 id="who">Your workouts</h1>
     </div>
+    <button type="button" class="gear" data-gear aria-label="Settings" aria-expanded="false"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
   </header>
+  <section class="prefs" id="prefs" hidden></section>
 
   <div class="banner" id="status" role="status" hidden></div>
 
@@ -189,15 +226,18 @@ function readAuth(){
 const AUTH = readAuth();
 /* Clients whose tabs show only the workout name (no 'Workout A' line) */
 const NAME_ONLY_TABS = ['carl', 'athvaithan', 'ben', 'ian', 'mark', 'sarahlynn']; // tabs: name only
-const KEY = 'tallen-log:' + (AUTH ? AUTH.c : 'none');
+const KEY = 'tallen-log2:' + (AUTH ? AUTH.c : 'none');
 
 /* ===== Local copy (works offline, survives refresh) ===== */
 let canStore = true;
 function load(){ try{ const v = localStorage.getItem(KEY); return v ? JSON.parse(v) : null; }catch(e){ canStore = false; return null; } }
 function save(){ try{ localStorage.setItem(KEY, JSON.stringify(db)); }catch(e){ canStore = false; } }
-let db = load() || {};
+/* First visit on the new page: carry over anything saved by the old page (unsent sessions, half-logged sets) */
+function loadOld(){ try{ const v = localStorage.getItem('tallen-log:' + (AUTH ? AUTH.c : 'none')); return v ? JSON.parse(v) : null; }catch(e){ return null; } }
+let db = load() || loadOld() || {};
 db.plan ||= null; db.name ||= ''; db.sessions ||= []; db.pending ||= []; db.drafts ||= {}; db.settings ||= {}; db.tab ||= null;
 db.daily ||= []; db.dailyLog ||= {}; db.dailyPending ||= {}; db.view ||= 'gym'; db.week ||= 0;
+db.prefs ||= {}; db.lib ||= null;
 
 /* ===== Helpers ===== */
 const $ = id => document.getElementById(id);
@@ -217,7 +257,67 @@ const repTxt = ex => ex.reps[0] === ex.reps[1] ? `${ex.reps[0]}` : `${ex.reps[0]
 const isOpt = (ex, s) => (ex.optional || []).includes(s + 1);
 const reqCount = ex => Math.max(1, ex.sets - (ex.optional || []).filter(n => n <= ex.sets).length);
 const startAt = (ex, i) => ex.start == null ? null : (Array.isArray(ex.start) ? ex.start[Math.min(i, ex.start.length-1)] : ex.start);
-const wList = (ex, ws) => { const v = ws.map(fmtW); return v.every(x => x === v[0]) ? `${v[0]} ${wU(ex)}` : `${v.join(', ')} ${wU(ex)}`; };
+const wList = (ws, label) => { const v = ws.map(fmtW); return v.every(x => x === v[0]) ? `${v[0]} ${label}` : `${v.join(', ')} ${label}`; };
+
+/* ===== Units: weights are saved in the unit they were lifted in; the switch only changes what's shown ===== */
+const KG_PER_LB = 0.45359237;
+const baseU = ex => /lb/i.test(ex.wUnit || '') ? 'lb' : 'kg';
+const uSuffix = ex => String(ex.wUnit || 'kg').replace(/^\s*(kg|lbs?)/i, '');
+const dispU = () => (db.prefs && db.prefs.unit) || db.defUnit || 'kg';
+const uLabel = ex => dispU() + uSuffix(ex);
+const conv = (w, from, to) => from === to ? Number(w) : (to === 'lb' ? Number(w) / KG_PER_LB : Number(w) * KG_PER_LB);
+const STEPS = { kg:{ db:2.5, bb:2.5, machine:2.5, cable:2.5, kb:4, other:2.5, bw:2.5 }, lb:{ db:5, bb:5, machine:5, cable:5, kb:5, other:5, bw:5 } };
+const rnd = (w, step) => step > 0 ? Math.round(Math.round(w / step) * step * 100) / 100 : Math.round(w * 100) / 100;
+const rangeTxt = (lo, hi) => lo === hi ? `${lo}` : `${lo}–${hi}`;
+
+/* ===== Exercise library: categories with options the client can swap between ===== */
+function optFor(ex, pick){
+  const blank = { id: pick || '', name: ex.name, equipment: ex.bodyweight ? 'bw' : 'other', factor: null, compound: false, boxLabel: '', boxType: 'text', note: '', video: '' };
+  if(!ex.cat) return Object.assign(blank, { boxLabel: ex.setting || '' });
+  if(String(pick).startsWith('other:')) return Object.assign(blank, { name: String(pick).slice(6), equipment: 'other' });
+  return (db.lib && db.lib.ex[pick]) || blank;
+}
+const pickOf = (sess, ex) => (sess && sess.picks && sess.picks[ex.id]) || ex.lib || '';
+const boxOf = (sess, ex) => (sess && sess.settings && sess.settings[ex.id]) || '';
+const modeDefault = (ex, opt) => opt.boxType === 'mode' ? ((opt.id === ex.lib && ex.boxDefault) || 'Bodyweight') : '';
+const isBW = (opt, box) => opt.equipment === 'bw' && !(opt.boxType === 'mode' && box && box !== 'Bodyweight');
+const isOwnPlanPick = (ex, opt) => !ex.cat || opt.id === ex.lib;
+const stepFor = (ex, opt, U) => (isOwnPlanPick(ex, opt) && baseU(ex) === U && Number(ex.inc) > 0) ? Number(ex.inc) : (STEPS[U][opt.equipment] || STEPS[U].other);
+const noAuto = (ex, opt) => isOwnPlanPick(ex, opt) && Number(ex.inc) === 0 && opt.equipment !== 'bw';
+function rangeFor(ex, opt){
+  const p = db.prefs || {};
+  return (opt.compound && p.rlo && p.rhi) ? [Number(p.rlo), Number(p.rhi)] : [ex.reps[0], ex.reps[1]];
+}
+function exInWorkout(key, slot){ const w = workouts().find(x => x.key === key); return w ? w.exercises.find(e => e.id === slot) : null; }
+function currentPick(k, ex){
+  const d = draftFor(k);
+  if(d.picks && d.picks[ex.id]) return d.picks[ex.id];
+  const prev = allSessions().filter(s => s.workout === k && s.sets && s.sets[ex.id]).pop();
+  return prev ? pickOf(prev, ex) : (ex.lib || '');
+}
+function boxNow(k, ex, opt){
+  const d = draftFor(k);
+  if(d.settings[ex.id] != null) return d.settings[ex.id];
+  if(!opt.boxLabel) return '';
+  if(!ex.cat) return lastSetting(ex.id);
+  const all = allSessions();
+  for(let i = all.length - 1; i >= 0; i--){
+    const s = all[i];
+    for(const slot of Object.keys(s.picks || {})){ if(s.picks[slot] === opt.id && s.settings && s.settings[slot] != null && s.settings[slot] !== '') return s.settings[slot]; }
+  }
+  if(opt.id === ex.lib && ex.boxDefault) return ex.boxDefault;
+  return modeDefault(ex, opt);
+}
+function customsFor(cat){
+  const names = new Set();
+  workouts().forEach(w => w.exercises.forEach(e => { if(e.cat === cat && String(e.lib).startsWith('other:')) names.add(e.lib.slice(6)); }));
+  allSessions().forEach(s => Object.entries(s.picks || {}).forEach(([slot, v]) => {
+    if(!String(v).startsWith('other:')) return;
+    const e = exInWorkout(s.workout, slot); if(e && e.cat === cat) names.add(String(v).slice(6));
+  }));
+  return [...names];
+}
+
 
 function allSessions(){
   const seen = new Set(); const out = [];
@@ -237,38 +337,74 @@ function draftFor(k){ const d = db.drafts[k] ||= { sets:{}, done:{}, note:'' }; 
 function lastSetting(exId){ const a = allSessions(); for(let i = a.length - 1; i >= 0; i--){ const v = a[i].settings && a[i].settings[exId]; if(v) return v; } return ''; }
 function settingNow(k, exId){ const d = draftFor(k); return d.settings[exId] != null ? d.settings[exId] : lastSetting(exId); }
 
-/* Level up only after every required set hits the top of the rep range
-   HITS_NEEDED sessions in a row at the same weight */
+/* ===== Targets =====
+   - Next time shows the same exercise and the weight actually used last time.
+   - Any required set 4+ reps under the bottom of the range: every set drops one step, target stays.
+   - Every required set at the top of the range 3 sessions running at the same weight: every set goes up one step
+     (for assisted pull-ups, the assistance comes down a step instead). */
 const HITS_NEEDED = 3;
-function hitTop(ex, sets){
-  const n = reqCount(ex); const req = (sets || []).slice(0, n);
-  return req.length >= n && req.every(s => s && Number(s.r) >= ex.reps[1]);
+function histFor(k, ex, opt, mode){
+  return allSessions().filter(s => s.workout === k && s.sets && s.sets[ex.id] && pickOf(s, ex) === opt.id
+      && (!mode || (boxOf(s, ex) || modeDefault(ex, opt)) === mode))
+    .reverse().map(s => Array.from(s.sets[ex.id], x => x || {})).filter(a => a.some(x => x.r || x.w));
 }
-function sameWeights(ex, a, b){
-  for(let i = 0; i < reqCount(ex); i++){ if(Number(a[i] && a[i].w) !== Number(b[i] && b[i].w)) return false; }
-  return true;
-}
-function hitStreak(ex, k){
-  const hist = allSessions().filter(s => s.workout === k).reverse()
-    .map(s => prevSets(s, ex.id)).filter(p => p && p.some(x => x.r));
-  let n = 0;
-  for(const p of hist){ if(hitTop(ex, p) && sameWeights(ex, p, hist[0])) n++; else break; }
-  return n;
-}
-function targetFor(ex, prev, k){
-  const hi = ex.reps[1]; const u = unitOf(ex);
-  if(!prev || !prev.length || prev.every(s => !s.r)){
-    if(ex.start == null) return { up:false };
-    return { up:false, ws: Array.from({length: ex.sets}, (_, i) => startAt(ex, i)) };
+function estimateFor(ex, opt, U, step){
+  if(!opt.factor || !db.lib) return null;
+  const all = allSessions();
+  for(let i = all.length - 1; i >= 0; i--){
+    const s = all[i];
+    for(const slot of Object.keys(s.sets || {})){
+      const e2 = exInWorkout(s.workout, slot); if(!e2 || e2.cat !== ex.cat) continue;
+      const o2 = optFor(e2, pickOf(s, e2)); if(!o2.factor || o2.id === opt.id) continue;
+      const vals = (s.sets[slot] || []).filter(x => x && x.w !== '' && x.w != null && !isNaN(Number(x.w)) && Number(x.w) > 0)
+        .map(x => conv(Number(x.w), x.u || baseU(e2), U));
+      if(!vals.length) continue;
+      const mean = vals.reduce((a, b) => a + b, 0) / vals.length;
+      const est = rnd(mean * opt.factor / o2.factor, step);
+      return est > 0 ? est : null;
+    }
   }
-  const allTop = hitTop(ex, prev) && hitStreak(ex, k) >= HITS_NEEDED;
-  const lastWs = Array.from({length: ex.sets}, (_, i) => { const v = prev[i] && Number(prev[i].w); return v ? v : (startAt(ex, i) ?? 0); });
-  if(allTop && ex.inc > 0 && !ex.bodyweight){
-    const ws = lastWs.map(v => v + ex.inc);
-    return { up:true, ws, text:`You hit ${hi} ${u} on every set. Go up ${fmtW(ex.inc)} ${wU(ex)}: ${wList(ex, ws)} today.` };
+  return null;
+}
+function targetFor(ex, k, opt, box){
+  const U = dispU(); const [lo, hi] = rangeFor(ex, opt); const bw = isBW(opt, box); const step = stepFor(ex, opt, U);
+  const mode = opt.boxType === 'mode' ? (box || 'Bodyweight') : '';
+  const assisted = mode === 'Assisted';
+  const n = ex.sets; const req = reqCount(ex);
+  const hist = histFor(k, ex, opt, mode);
+  const toU = x => { if(!x || x.w === '' || x.w == null || isNaN(Number(x.w))) return null; const from = x.u || baseU(ex); const v = conv(Number(x.w), from, U); return from === U ? v : rnd(v, step); };
+  if(!hist.length){
+    if(bw) return { lo, hi };
+    if(isOwnPlanPick(ex, opt) && ex.start != null){
+      return { lo, hi, ws: Array.from({length: n}, (_, i) => { const v = startAt(ex, i); return baseU(ex) === U ? v : rnd(conv(v, baseU(ex), U), step); }) };
+    }
+    const e = estimateFor(ex, opt, U, step);
+    return e != null ? { lo, hi, ws: Array(n).fill(e), est: true } : { lo, hi };
   }
-  if(allTop) return { up:true, text:'Top of the range on every set. Make it harder: slower lowering or a pause.' };
-  return { up:false, ws: lastWs };
+  const last = hist[0];
+  const firstW = toU(last.find(x => x && x.w !== '' && x.w != null));
+  const lastWs = Array.from({length: n}, (_, i) => { const v = toU(last[i]); return v != null ? v : firstW; });
+  const repsOf = i => last[i] && /^\d+$/.test(String(last[i].r)) ? Number(last[i].r) : null;
+  const reqSets = last.slice(0, req);
+  const tooShort = reqSets.some(x => x && /^\d+$/.test(String(x.r)) && Number(x.r) <= lo - 4);
+  const lastTxt = last.slice(0, n).map(x => bw || x.w === '' || x.w == null ? `${x.r || '–'}` : `${fmtW(toU(x))}×${x.r || '–'}`).join(', ');
+  if(tooShort && !bw && !noAuto(ex, opt)){
+    return { lo, hi, ws: lastWs.map(v => v == null ? v : Math.max(0, rnd(v + (assisted ? step : -step), step))), repsAll: hi, lastTxt };
+  }
+  const hitAll = a => { const r = a.slice(0, req); return r.length >= req && r.every(x => x && Number(x.r) >= hi); };
+  const same = (a, b) => { for(let i = 0; i < req; i++){ const x = a[i] || {}, y = b[i] || {}; if(String(x.w || '') !== String(y.w || '') || (x.u || '') !== (y.u || '')) return false; } return true; };
+  let streak = 0; for(const a of hist){ if(hitAll(a) && same(a, last)) streak++; else break; }
+  if(streak >= HITS_NEEDED){
+    if(bw) return { lo, hi, up: true, text: 'Top of the range on every set, 3 sessions running. Make it harder: slower lowering or a pause.', repsAll: lo, lastTxt };
+    if(!noAuto(ex, opt)){
+      const ws = lastWs.map(v => v == null ? v : Math.max(0, rnd(v + (assisted ? -step : step), step)));
+      const lbl = uLabel(ex);
+      return { lo, hi, ws, up: true, repsAll: lo, lastTxt,
+        text: assisted ? `You hit ${hi} reps on every set, 3 sessions running. Take ${fmtW(step)} ${lbl} less assistance: ${wList(ws, lbl)} today.`
+                       : `You hit ${hi} reps on every set, 3 sessions running. Go up ${fmtW(step)} ${lbl}: ${wList(ws, lbl)} today.` };
+    }
+  }
+  return { lo, hi, ws: bw ? null : lastWs, repsEach: Array.from({length: n}, (_, i) => repsOf(i) == null ? null : Math.min(repsOf(i), hi)), lastTxt };
 }
 
 /* ===== Status line ===== */
@@ -321,70 +457,90 @@ function render(){
   renderHistory();
 }
 
-function exCard(ex, i, k, d, last, wd){
-  {
-    const ro = !!wd;
-    const prev = prevSets(last, ex.id);
-    const t = ro ? { up:false } : targetFor(ex, prev, k);
-    const u = unitOf(ex);
-    const cur = ro ? Array.from(wd.sets[ex.id] || [], x => x || {}) : (d.sets[ex.id] || []);
-    const done = ro ? cur.map(x => !!(x && (x.r || x.w))) : (d.done[ex.id] || []);
-    const allDone = done.filter(Boolean).length >= ex.sets;
-    const rows = Array.from({length: ex.sets}, (_, s) => {
-      const p = prev && prev[s];
-      const phW = t.ws && t.ws[s] != null ? fmtW(t.ws[s]) : (p && p.w ? fmtW(p.w) : '');
-      /* Rep target: what they managed last time (capped at the plan's top number);
-         after a weight increase, back to the bottom of the range */
-      const phR = (t.up && t.ws) ? String(ex.reps[0])
-                : (p && /^\d+$/.test(String(p.r)) ? String(Math.min(Number(p.r), ex.reps[1])) : repTxt(ex));
-      const c = cur[s] || {};
-      return `<div class="setrow">
-        <span class="n${isOpt(ex,s) ? ' opt' : ''}"${isOpt(ex,s) ? ' title="Optional set"' : ''}>${s+1}</span>
-        ${ex.bodyweight ? `<span class="small">Bodyweight</span>` : `<label class="field"><input inputmode="decimal" id="w-${esc(ex.id)}-${s}" data-ex="${esc(ex.id)}" data-set="${s}" data-k="w" value="${esc(c.w ?? '')}" ${ro ? 'disabled' : ''} placeholder="${esc(phW)}" aria-label="Set ${s+1} weight in ${esc(wU(ex))}" style="padding-right:${wU(ex).length > 2 ? 60 : 34}px"><span class="u">${esc(wU(ex))}</span></label>`}
-        <label class="field"><input inputmode="numeric" id="r-${esc(ex.id)}-${s}" data-ex="${esc(ex.id)}" data-set="${s}" data-k="r" value="${esc(c.r ?? '')}" ${ro ? 'disabled' : ''} placeholder="${esc(phR)}" aria-label="Set ${s+1} ${esc(u)}"><span class="u">${u === 'reps' ? '' : esc(u)}</span></label>
-        <button type="button" class="tick" data-tick="${esc(ex.id)}" data-set="${s}" aria-pressed="${!!done[s]}" ${ro ? 'disabled' : ''} aria-label="Mark set ${s+1} done"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="square"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button>
-      </div>`;
-    }).join('');
-    const prevTxt = prev ? prev.slice(0, ex.sets).map(s => ex.bodyweight ? `${s.r||'–'}` : `${fmtW(s.w)||'–'}×${s.r||'–'}`).join(', ') : '';
-    const opt = (ex.optional||[]).filter(n => n <= ex.sets);
-    return `<article class="ex${allDone ? ' done' : ''}">
-      <div class="exhead">
-        <div>${ex.muscle ? `<div class="muscle">${esc(ex.muscle)}</div>` : ''}<div class="exname">${esc(ex.name)}</div>
-        <div class="exspec">${ex.sets} sets · ${repTxt(ex)} ${esc(u)}${ex.perSide ? ' each side' : ''}${ex.rest ? ` · rest ${esc(ex.rest)}` : ''}</div>
-        ${opt.length ? `<div class="optnote">Set ${opt.join(' & ')} ${opt.length > 1 ? 'are' : 'is'} optional if you’re short on time</div>` : ''}</div>
-        <span class="idx">${i+1}</span>
-      </div>
-      ${t.up ? `<div class="target up"><span class="tag">Level up</span><span>${esc(t.text)}</span></div>` : ''}
-      ${ex.note ? `<div class="note">${esc(ex.note)}</div>` : ''}
-      ${/^https?:\/\//.test(ex.video || '') ? `<a class="vid" href="${esc(ex.video)}" target="_blank" rel="noopener">▶ Watch the demo</a>` : ''}
-      <div class="sets">
-        <div class="colhead"><span>Set</span><span>${ex.bodyweight ? '' : 'Weight'}</span><span>${u === 'reps' ? 'Reps' : esc(u)}</span><span></span></div>
-        ${rows}
-      </div>
-      ${ex.setting ? `<div class="settings"><label for="set-${esc(ex.id)}">${esc(ex.setting)}</label><input id="set-${esc(ex.id)}" data-setting="${esc(ex.id)}" value="${esc(ro ? ((wd.settings || {})[ex.id] || '') : settingNow(k, ex.id))}" ${ro ? 'disabled' : ''} autocomplete="off"></div>` : ''}
-      ${prevTxt && !ro ? `<div class="last">Last time: ${esc(prevTxt)}</div>` : ''}
-    </article>`;
+function pickMenu(ex, opt, ro){
+  if(!ex.cat || ro || !db.lib) return `<div class="exname">${esc(opt.name)}</div>`;
+  const list = (db.lib.byCat[ex.cat] || []).map(o => [o.id, o.name]);
+  customsFor(ex.cat).forEach(nm => list.push(['other:' + nm, nm]));
+  if(String(opt.id).startsWith('other:') && !list.some(x => x[0] === opt.id)) list.push([opt.id, opt.name]);
+  return `<label class="pickwrap"><select class="pick" data-pick="${esc(ex.id)}" aria-label="Choose exercise">${list.map(([v, nm]) => `<option value="${esc(v)}"${v === opt.id ? ' selected' : ''}>${esc(nm)}</option>`).join('')}<option value="__other">Other…</option></select><span class="chev" aria-hidden="true">⇄</span></label>`;
+}
+function boxUI(ex, opt, box, ro){
+  if(!opt.boxLabel) return '';
+  if(opt.boxType === 'toggle') return `<button type="button" class="toggle" data-toggle="${esc(ex.id)}" aria-pressed="${!!box}" ${ro ? 'disabled' : ''}><span class="sw"></span>${esc(opt.boxLabel)}</button>`;
+  if(opt.boxType === 'mode'){
+    const cur = box || 'Bodyweight';
+    return `<div class="seg" role="radiogroup" aria-label="Type">${opt.boxLabel.split('|').map(l => `<button type="button" role="radio" data-mode="${esc(ex.id)}" data-val="${esc(l)}" aria-checked="${l === cur}" ${ro ? 'disabled' : ''}>${esc(l)}</button>`).join('')}</div>`;
   }
+  return `<div class="settings"><label for="set-${esc(ex.id)}">${esc(opt.boxLabel)}</label><input id="set-${esc(ex.id)}" data-setting="${esc(ex.id)}" value="${esc(box)}" ${ro ? 'disabled' : ''} autocomplete="off"></div>`;
+}
+function exCard(ex, i, k, d, last, wd){
+  const ro = !!wd;
+  const pick = ro ? pickOf(wd, ex) : currentPick(k, ex);
+  const opt = optFor(ex, pick);
+  const box = ro ? boxOf(wd, ex) : boxNow(k, ex, opt);
+  const bw = isBW(opt, box);
+  const t = ro ? { lo: rangeFor(ex, opt)[0], hi: rangeFor(ex, opt)[1] } : targetFor(ex, k, opt, box);
+  const U = dispU(); const lbl = uLabel(ex);
+  const cur = ro ? Array.from(wd.sets[ex.id] || [], x => x || {}) : (d.sets[ex.id] || []);
+  const done = ro ? cur.map(x => !!(x && (x.r || x.w))) : (d.done[ex.id] || []);
+  const allDone = done.filter(Boolean).length >= ex.sets;
+  const assisted = opt.boxType === 'mode' && box === 'Assisted';
+  const rows = Array.from({length: ex.sets}, (_, s) => {
+    const c = cur[s] || {};
+    let wv = c.w ?? '';
+    if(ro && wv !== '' && !isNaN(Number(wv))){ const from = c.u || baseU(ex); wv = fmtW(from === U ? Number(wv) : rnd(conv(Number(wv), from, U), stepFor(ex, opt, U))); }
+    const phW = t.ws && t.ws[s] != null ? fmtW(t.ws[s]) : '';
+    const phR = t.repsAll != null ? String(t.repsAll) : (t.repsEach && t.repsEach[s] != null ? String(t.repsEach[s]) : rangeTxt(t.lo, t.hi));
+    return `<div class="setrow">
+      <span class="n${isOpt(ex,s) ? ' opt' : ''}"${isOpt(ex,s) ? ' title="Optional set"' : ''}>${s+1}</span>
+      ${bw ? `<span class="small">Bodyweight</span>` : `<label class="field"><input inputmode="decimal" class="${t.est && !wv ? 'est' : ''}" id="w-${esc(ex.id)}-${s}" data-ex="${esc(ex.id)}" data-set="${s}" data-k="w" value="${esc(wv)}" ${ro ? 'disabled' : ''} placeholder="${esc(phW)}" aria-label="Set ${s+1} ${assisted ? 'assistance' : 'weight'} in ${esc(lbl)}" style="padding-right:${lbl.length > 2 ? 60 : 34}px"><span class="u">${esc(lbl)}</span></label>`}
+      <label class="field"><input inputmode="numeric" id="r-${esc(ex.id)}-${s}" data-ex="${esc(ex.id)}" data-set="${s}" data-k="r" value="${esc(c.r ?? '')}" ${ro ? 'disabled' : ''} placeholder="${esc(phR)}" aria-label="Set ${s+1} reps"></label>
+      <button type="button" class="tick" data-tick="${esc(ex.id)}" data-set="${s}" aria-pressed="${!!done[s]}" ${ro ? 'disabled' : ''} aria-label="Mark set ${s+1} done"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="square"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button>
+    </div>`;
+  }).join('');
+  const opts = (ex.optional || []).filter(n => n <= ex.sets);
+  const cat = ex.cat && db.lib ? db.lib.cats[ex.cat] : null;
+  const video = opt.video || ex.video;
+  return `<article class="ex${allDone ? ' done' : ''}">
+    <div class="exhead">
+      <div style="min-width:0;flex:1">${cat ? `<div class="muscle">${esc(cat.name)}</div>${cat.subtext ? `<div class="catsub">${esc(cat.subtext)}</div>` : ''}` : (ex.muscle ? `<div class="muscle">${esc(ex.muscle)}</div>` : '')}
+      ${pickMenu(ex, opt, ro)}
+      <div class="exspec">${ex.sets} sets · ${rangeTxt(t.lo, t.hi)} reps${ex.perSide ? ' each side' : ''}${ex.rest ? ` · rest ${esc(ex.rest)}` : ''}</div>
+      ${opts.length ? `<div class="optnote">Set ${opts.join(' & ')} ${opts.length > 1 ? 'are' : 'is'} optional if you’re short on time</div>` : ''}</div>
+      <span class="idx">${i+1}</span>
+    </div>
+    ${!ro && d.otherFor === ex.id ? `<div class="othername"><input data-othername="${esc(ex.id)}" placeholder="Name of the exercise" maxlength="60" autocomplete="off"><button type="button" data-otherok="${esc(ex.id)}">Add</button></div>` : ''}
+    ${t.up ? `<div class="target up"><span class="tag">Level up</span><span>${esc(t.text)}</span></div>` : ''}
+    ${[opt.note, ex.note].filter(Boolean).map(nt => `<div class="note">${esc(nt)}</div>`).join('')}
+    ${/^https?:\/\//.test(video || '') ? `<a class="vid" href="${esc(video)}" target="_blank" rel="noopener">▶ Watch the demo</a>` : ''}
+    ${opt.boxType === 'mode' ? boxUI(ex, opt, box, ro) : ''}
+    <div class="sets">
+      <div class="colhead"><span>Set</span><span>${bw ? '' : (assisted ? 'Assistance' : 'Weight')}</span><span>Reps</span><span></span></div>
+      ${rows}
+    </div>
+    ${opt.boxType !== 'mode' ? boxUI(ex, opt, box, ro) : ''}
+    ${t.lastTxt && !ro ? `<div class="last">Last time: ${esc(t.lastTxt)}</div>` : ''}
+  </article>`;
 }
 
 function summaryText(sess){
   const w = workout(sess.workout) || { name:'', exercises:[] };
-  const head = NAME_ONLY_TABS.includes(AUTH.c) ? [w.name || `Workout ${baseKey(sess.workout)}`, sess.date] : [mainWorkouts().length > 1 ? `Workout ${baseKey(sess.workout)}` : '', w.name, sess.date].filter(Boolean).join(' · ');
+  const head = NAME_ONLY_TABS.includes(AUTH.c) ? [w.name || `Workout ${baseKey(sess.workout)}`, sess.date].join(' · ') : [mainWorkouts().length > 1 ? `Workout ${baseKey(sess.workout)}` : '', w.name, sess.date].filter(Boolean).join(' · ');
   const lines = [head];
   if(sess.note) lines.push(`📝 ${sess.note}`);
   lines.push('');
   w.exercises.forEach(ex => {
     const s = (sess.sets[ex.id]||[]).filter(x => x && (x.r || x.w));
     if(!s.length) return;
-    const name = ex.name.replace(/\s*\(.*?\)\s*/g, ' ').trim();
+    const opt = optFor(ex, pickOf(sess, ex)); const box = boxOf(sess, ex);
+    const name = opt.name.replace(/\s*\(.*?\)\s*/g, ' ').trim();
     const reps = s.map(x => x.r || '–'); const sameReps = reps.every(r => r === reps[0]);
-    const unit = wU(ex);
+    const unit = (s[0].u || baseU(ex)) + uSuffix(ex);
     let txt;
-    if(ex.bodyweight) txt = `${reps.join(' · ')} reps`;
+    if(isBW(opt, box) || s.every(x => x.w === '' || x.w == null)) txt = `${reps.join(' · ')} reps`;
     else if(sameReps) txt = `${s.map(x => fmtW(x.w) || '–').join(' · ')} ${unit} × ${reps[0]}`;
     else txt = `${s.map(x => `${fmtW(x.w) || '–'}×${x.r || '–'}`).join(' · ')} ${unit}`;
-    const st = sess.settings && sess.settings[ex.id];
-    lines.push(`${name}: ${txt}${st ? ` (${st})` : ''}`);
+    lines.push(`${name}: ${txt}${box ? ` (${box})` : ''}`);
   });
   return lines.join('\n');
 }
@@ -422,7 +578,7 @@ function renderHistory(){
 
 /* ===== Server ===== */
 async function fetchPlan(){
-  return rpc('get_log', { p_client: AUTH.c, p_key: AUTH.t });
+  return rpc('get_log2', { p_client: AUTH.c, p_key: AUTH.t });
 }
 let syncing = false;
 async function syncPending(){
@@ -430,7 +586,7 @@ async function syncPending(){
   syncing = true;
   try{
     for(const sess of db.pending.slice()){
-      const j = await rpc('save_session', { p_client: AUTH.c, p_key: AUTH.t, p_session: sess, p_summary: summaryText(sess) });
+      const j = await rpc('save_session2', { p_client: AUTH.c, p_key: AUTH.t, p_session: sess, p_summary: summaryText(sess) });
       if(j && j.ok){ db.pending = db.pending.filter(p => p.id !== sess.id); if(!db.sessions.some(s => s.id === sess.id)) db.sessions.push(sess); save(); }
       else throw new Error(j && j.error || 'save failed');
     }
@@ -451,6 +607,13 @@ async function boot(){
       db.plan = (j.workouts || []).filter(w => !String(w.name || '').startsWith('~')); db.name = j.client.name;
       db.sessions = j.sessions || [];
       db.daily = j.daily || [];
+      const lib = j.library || { categories: [], exercises: [] };
+      db.lib = { cats: {}, ex: {}, byCat: {} };
+      lib.categories.forEach(c => { db.lib.cats[c.id] = c; db.lib.byCat[c.id] = []; });
+      lib.exercises.forEach(x => { db.lib.ex[x.id] = x; (db.lib.byCat[x.cat] ||= []).push(x); });
+      if(!db.prefsDirty) db.prefs = j.prefs || {};
+      const units = (j.workouts || []).flatMap(w => w.exercises).filter(e => e.sets > 0).map(baseU);
+      db.defUnit = units.filter(u => u === 'lb').length > units.length / 2 ? 'lb' : 'kg';
       db.dailyLog = Object.assign({}, j.dailyLog || {}, db.dailyPending);
       setStatus(canStore ? '' : 'This browser isn’t saving anything between visits. Open the link in Safari or Chrome.');
       save(); render();
@@ -458,7 +621,32 @@ async function boot(){
   }catch(e){
     setStatus(db.plan ? 'You’re offline. You can still log; it’ll send when you’re back online.' : 'Couldn’t reach the server. Check your connection and refresh. (' + (e && e.message || 'unknown') + ')');
   }
-  syncPending(); syncDaily();
+  syncPending(); syncDaily(); syncPrefs();
+}
+
+/* ===== Settings: units and rep range ===== */
+function renderPrefs(){
+  const U = dispU(); const p = db.prefs || {}; const has = !!(p.rlo && p.rhi);
+  $('prefs').innerHTML = `
+    <div class="prow"><span class="plabel">Units</span>
+      <div class="unitsw" role="radiogroup" aria-label="Units"><button type="button" role="radio" data-unit="kg" aria-checked="${U === 'kg'}">kg</button><button type="button" role="radio" data-unit="lb" aria-checked="${U === 'lb'}">lb</button></div></div>
+    <div class="prow col"><span class="plabel">Target rep range <small>· compound lifts</small></span>
+      <div class="rrlabels"><span>Best for strength gain</span><span>Best for building muscle</span></div>
+      <div class="rr">${[8,9,10,11,12].map(nm => `<button type="button" data-rr="${nm}" aria-pressed="${has && nm >= p.rlo && nm <= p.rhi}">${nm}</button>`).join('')}</div>
+      <div class="small">${has ? `Your range: ${rangeTxt(p.rlo, p.rhi)} reps. <button type="button" class="linkbtn" data-rrreset>Use Tom’s plan instead</button>` : 'Using Tom’s plan. Tap a number to choose your own range.'}</div>
+    </div>`;
+}
+function setPrefs(next){ db.prefs = next; db.prefsDirty = true; save(); renderPrefs(); const y = scrollY; render(); scrollTo(0, y); syncPrefs(); }
+let prefsSyncing = false;
+async function syncPrefs(){
+  if(prefsSyncing || !db.prefsDirty || !AUTH) return; prefsSyncing = true;
+  try{ const j = await rpc('save_prefs', { p_client: AUTH.c, p_key: AUTH.t, p_prefs: db.prefs }); if(j && j.ok){ db.prefsDirty = false; save(); } }catch(e){ /* try again later */ }
+  prefsSyncing = false;
+}
+function convertDrafts(from, to){
+  Object.values(db.drafts).forEach(d => Object.values(d.sets || {}).forEach(arr => (arr || []).forEach(x => {
+    if(x && x.w !== '' && x.w != null && !isNaN(Number(x.w))) x.w = String(rnd(conv(Number(x.w), from, to), to === 'kg' ? 0.5 : 1));
+  })));
 }
 
 /* ===== 朝 page: daily checklist, Monday to Saturday ===== */
@@ -509,6 +697,26 @@ async function syncDaily(){
 
 /* ===== Events ===== */
 document.addEventListener('click', e => {
+  if(e.target.closest('[data-gear]')){ const el = $('prefs'); el.hidden = !el.hidden; e.target.closest('[data-gear]').setAttribute('aria-expanded', String(!el.hidden)); if(!el.hidden) renderPrefs(); return; }
+  const un = e.target.closest('[data-unit]');
+  if(un){ const to = un.dataset.unit, from = dispU(); if(to !== from){ convertDrafts(from, to); setPrefs(Object.assign({}, db.prefs, { unit: to })); } return; }
+  const rr = e.target.closest('[data-rr]');
+  if(rr){
+    const nm = Number(rr.dataset.rr); const p = db.prefs || {}; let lo = p.rlo, hi = p.rhi;
+    if(!lo || !hi){ lo = hi = nm; }
+    else if(nm < lo) lo = nm; else if(nm > hi) hi = nm;
+    else if(nm - lo <= hi - nm) lo = nm; else hi = nm;
+    setPrefs(Object.assign({}, p, { rlo: lo, rhi: hi })); return;
+  }
+  if(e.target.closest('[data-rrreset]')){ const p = Object.assign({}, db.prefs); delete p.rlo; delete p.rhi; setPrefs(p); return; }
+  const tg = e.target.closest('[data-toggle]');
+  if(tg){ const d = draftFor(db.tab); const ex = exInWorkout(db.tab, tg.dataset.toggle); const opt = optFor(ex, currentPick(db.tab, ex));
+    d.settings[ex.id] = boxNow(db.tab, ex, opt) ? '' : opt.boxLabel; save(); const y = scrollY; render(); scrollTo(0, y); return; }
+  const md = e.target.closest('[data-mode]');
+  if(md){ const d = draftFor(db.tab); d.settings[md.dataset.mode] = md.dataset.val; delete d.sets[md.dataset.mode]; delete d.done[md.dataset.mode]; save(); const y = scrollY; render(); scrollTo(0, y); return; }
+  const ok = e.target.closest('[data-otherok]');
+  if(ok){ const inp = document.querySelector(`[data-othername="${CSS.escape(ok.dataset.otherok)}"]`); const nm = (inp && inp.value || '').trim().replace(/\s+/g, ' ').slice(0, 60);
+    if(!nm){ inp && inp.focus(); return; } setPick(ok.dataset.otherok, 'other:' + nm); return; }
   const vw = e.target.closest('[data-view]');
   if(vw){ db.view = vw.dataset.view; save(); render(); scrollTo({top:0}); return; }
   const wk = e.target.closest('[data-week]');
@@ -534,34 +742,54 @@ document.addEventListener('click', e => {
     }
     save(); const y = scrollY; render(); scrollTo(0, y); return;
   }
-  if(e.target.id === 'finishBtn'){
-    const k = db.tab; const d = draftFor(k); const w = workout(k);
-    const sets = {};
-    w.exercises.forEach(ex => {
-      const arr = Array.from({length: ex.sets}, (_, i) => {
-        const x = (d.sets[ex.id] || [])[i] || {};
-        const r = x.r ? String(x.r) : '';
-        let wt = x.w ? String(x.w) : '';
-        if(!wt && r && !ex.bodyweight){ const ph = document.getElementById(`w-${ex.id}-${i}`)?.placeholder; if(ph && !isNaN(parseFloat(ph))) wt = ph; }
-        return { w: wt, r };
-      });
-      if(arr.some(x => x.r || x.w)) sets[ex.id] = arr;
-    });
-    if(!Object.keys(sets).length){ const n = $('sessNote'); n.placeholder = 'Log at least one set before finishing.'; n.focus(); return; }
-    const settings = {};
-    w.exercises.forEach(ex => { if(ex.setting){ const v = String(settingNow(k, ex.id) || '').trim().slice(0, 300); if(v) settings[ex.id] = v; } });
-    const sess = { id: uid(), workout: k, date: today(), ts: Date.now(), sets, settings, note: (d.note || '').trim() };
-    db.pending.push(sess);
-    delete db.drafts[k];
-    justFinished = sess;
-    save(); render(); $('finish').scrollIntoView({block:'start'});
-    syncPending();
-    return;
-  }
+  if(e.target.id === 'finishBtn'){ finishSession(); return; }
   if(e.target.id === 'again'){ const w0 = doneThisWeek(db.tab); if(w0){ draftFor(db.tab).again = w0.id; save(); render(); scrollTo({top:0}); } return; }
   if(e.target.id === 'newSess'){ justFinished = null; render(); scrollTo({top:0}); }
 });
 
+function setPick(slot, value){
+  const d = draftFor(db.tab); d.picks ||= {};
+  d.picks[slot] = value; delete d.sets[slot]; delete d.done[slot]; delete d.settings[slot]; d.otherFor = null;
+  save(); const y = scrollY; render(); scrollTo(0, y);
+}
+function finishSession(){
+  const k = db.tab; const d = draftFor(k); const w = workout(k); const U = dispU();
+  const sets = {}, settings = {}, picks = {};
+  w.exercises.forEach(ex => {
+    if(!(ex.sets > 0)) return;
+    const pick = currentPick(k, ex); const opt = optFor(ex, pick); const box = boxNow(k, ex, opt); const bw = isBW(opt, box);
+    const arr = Array.from({length: ex.sets}, (_, i) => {
+      const x = (d.sets[ex.id] || [])[i] || {};
+      const r = x.r ? String(x.r) : '';
+      let wt = !bw && x.w ? String(x.w) : '';
+      if(!wt && r && !bw){ const ph = document.getElementById(`w-${ex.id}-${i}`)?.placeholder; if(ph && !isNaN(parseFloat(ph))) wt = ph; }
+      return { w: wt, r, u: U };
+    });
+    if(arr.some(x => x.r || x.w)){
+      sets[ex.id] = arr;
+      if(ex.cat) picks[ex.id] = pick;
+      if(opt.boxLabel && box) settings[ex.id] = String(box).trim().slice(0, 300);
+    }
+  });
+  if(!Object.keys(sets).length){ const n = $('sessNote'); n.placeholder = 'Log at least one set before finishing.'; n.focus(); return; }
+  const sess = { id: uid(), workout: k, date: today(), ts: Date.now(), sets, settings, picks, note: (d.note || '').trim() };
+  db.pending.push(sess);
+  delete db.drafts[k];
+  justFinished = sess;
+  save(); render(); $('finish').scrollIntoView({block:'start'});
+  syncPending();
+}
+document.addEventListener('change', e => {
+  const t = e.target;
+  if(t.dataset && t.dataset.pick){
+    if(t.value === '__other'){ const d = draftFor(db.tab); d.otherFor = t.dataset.pick; save(); const y = scrollY; render(); scrollTo(0, y);
+      const inp = document.querySelector(`[data-othername="${CSS.escape(t.dataset.pick)}"]`); inp && inp.focus(); return; }
+    setPick(t.dataset.pick, t.value);
+  }
+});
+document.addEventListener('keydown', e => {
+  if(e.key === 'Enter' && e.target.dataset && e.target.dataset.othername){ e.preventDefault(); document.querySelector(`[data-otherok="${CSS.escape(e.target.dataset.othername)}"]`)?.click(); }
+});
 document.addEventListener('input', e => {
   const t = e.target; if(!db.tab) return; const d = draftFor(db.tab);
   if(t.dataset.ex){
@@ -573,7 +801,7 @@ document.addEventListener('input', e => {
   if(t.dataset.setting){ d.settings[t.dataset.setting] = t.value; save(); return; }
   if(t.id === 'sessNote'){ d.note = t.value; save(); }
 });
-window.addEventListener('online', () => { syncPending(); syncDaily(); });
+window.addEventListener('online', () => { syncPending(); syncDaily(); syncPrefs(); });
 window.addEventListener('hashchange', () => location.reload());
 
 boot();
