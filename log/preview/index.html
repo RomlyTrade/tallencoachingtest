@@ -304,11 +304,18 @@ function boxNow(k, ex, opt){
   if(!opt.boxLabel) return '';
   if(!ex.cat) return lastSetting(ex.id);
   const all = allSessions();
+  /* 1) what was used last time in this same slot of this workout */
+  for(let i = all.length - 1; i >= 0; i--){
+    const s = all[i];
+    if(s.workout === k && s.sets && s.sets[ex.id] && pickOf(s, ex) === opt.id) return boxOf(s, ex) || (opt.boxType === 'mode' ? modeDefault(ex, opt) : '');
+  }
+  /* 2) the plan's own setting for this slot */
+  if(opt.id === ex.lib && ex.boxDefault) return ex.boxDefault;
+  /* 3) what they last used for this exercise anywhere else */
   for(let i = all.length - 1; i >= 0; i--){
     const s = all[i];
     for(const slot of Object.keys(s.picks || {})){ if(s.picks[slot] === opt.id && s.settings && s.settings[slot] != null && s.settings[slot] !== '') return s.settings[slot]; }
   }
-  if(opt.id === ex.lib && ex.boxDefault) return ex.boxDefault;
   return modeDefault(ex, opt);
 }
 function customsFor(cat){
