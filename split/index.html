@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1E45C8">
+<title>Find Your Split · TALLEN Coaching</title>
+<meta name="description" content="Five quick questions to find the training split that fits your week, your experience and your goals.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=Dongle:wght@400;700&display=swap">
+<style>
+:root{
+  --chalk:#EDEBE6; --card:#F7F6F2; --chalk-deep:#E2DFD8; --ink:#17181C; --muted:#5F605C; --rule:#CFCBC2;
+  --plate:#1E45C8; --plate-ink:#FFFFFF; --plate-soft:#DCE3F8; --good:#1F7A4D;
+  --display:'Dongle','Archivo',sans-serif;
+  --body:'Archivo',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --chalk:#121318; --card:#1B1D24; --chalk-deep:#262933; --ink:#ECEBE6; --muted:#A3A49E; --rule:#33363F;
+    --plate:#6F8EF5; --plate-ink:#0D1220; --plate-soft:#1F2A4D; --good:#5CC890;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --chalk:#121318; --card:#1B1D24; --chalk-deep:#262933; --ink:#ECEBE6; --muted:#A3A49E; --rule:#33363F;
+  --plate:#6F8EF5; --plate-ink:#0D1220; --plate-soft:#1F2A4D; --good:#5CC890;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0}
+body{background:var(--chalk);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.5;padding:20px 16px 48px;min-height:100svh}
+.wrap{max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:22px}
+button,input{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--plate);outline-offset:3px}
+.brand{font-size:13px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);text-decoration:none}
+h1,h2{font-family:var(--display);font-weight:700;margin:0;line-height:.8;text-wrap:balance}
+h1{font-size:68px}
+h2{font-size:52px}
+.lead{margin:0;color:var(--muted);font-size:17px;max-width:44ch}
+.progress{height:4px;background:var(--chalk-deep);overflow:hidden}
+.progress i{display:block;height:100%;background:var(--plate);transition:width .25s}
+.step{display:flex;flex-direction:column;gap:18px}
+.qnum{font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--plate)}
+.hint{font-size:14px;color:var(--muted);margin-top:-8px}
+
+.btn{appearance:none;border:0;background:var(--plate);color:var(--plate-ink);padding:15px 18px;font-weight:700;font-size:17px;cursor:pointer;min-height:52px;width:100%}
+.btn:disabled{opacity:.4;cursor:default}
+.btn.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--rule)}
+.nav{display:grid;grid-template-columns:1fr 2fr;gap:8px}
+
+/* scroll wheel */
+.wheelrow{display:flex;align-items:center;gap:18px}
+.wheel{position:relative;width:170px;height:220px;flex:none;border:1.5px solid var(--rule);background:var(--card)}
+.wheel::before{content:'';position:absolute;left:0;right:0;top:88px;height:44px;background:var(--plate-soft);border-top:1.5px solid var(--plate);border-bottom:1.5px solid var(--plate);pointer-events:none}
+.wheel::after{content:'';position:absolute;inset:0;pointer-events:none;background:linear-gradient(var(--card),transparent 30%,transparent 70%,var(--card))}
+.wheel ol{position:relative;list-style:none;margin:0;padding:88px 0;height:100%;overflow-y:scroll;scroll-snap-type:y mandatory;scrollbar-width:none;overscroll-behavior:contain}
+.wheel ol::-webkit-scrollbar{display:none}
+.wheel li{height:44px;display:grid;place-items:center;scroll-snap-align:center;font-size:18px;font-weight:600;color:var(--muted);cursor:pointer;user-select:none;font-variant-numeric:tabular-nums}
+.wheel li[aria-selected="true"]{color:var(--ink);font-weight:800}
+.badge{font-family:var(--display);font-size:clamp(28px,8vw,44px);line-height:.9;font-weight:700;color:var(--plate);min-width:0}
+.wheelrow .wheel{width:min(170px,38vw)}
+
+/* choices */
+.choices{display:grid;gap:8px}
+.choices.two{grid-template-columns:1fr 1fr}
+.choice{appearance:none;border:1.5px solid var(--rule);background:var(--card);padding:14px;min-height:56px;font-weight:700;font-size:17px;cursor:pointer;text-align:left;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.choice[aria-pressed="true"],.choice[aria-checked="true"]{border-color:var(--plate);background:var(--plate);color:var(--plate-ink)}
+.choice .tick{opacity:0;font-weight:800}
+.choice[aria-pressed="true"] .tick,.choice[aria-checked="true"] .tick{opacity:1}
+
+/* form */
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-weight:700;font-size:15px}
+.field input{border:1.5px solid var(--rule);background:var(--card);padding:12px;min-height:50px;font-size:17px;width:100%}
+.check{display:flex;gap:10px;align-items:flex-start;font-size:15px;cursor:pointer}
+.check input{width:22px;height:22px;margin:1px 0 0;flex:none;accent-color:var(--plate)}
+.small{font-size:13.5px;color:var(--muted);margin:0}
+.err{font-size:14px;color:#B42318;margin:0}
+.hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+
+/* result */
+.result{background:var(--card);border:1px solid var(--rule);padding:18px;display:flex;flex-direction:column;gap:14px}
+.line{display:flex;flex-direction:column;gap:8px;padding-bottom:14px;border-bottom:1px solid var(--rule)}
+.line:last-child{border-bottom:0;padding-bottom:0}
+.line p{margin:0;font-size:17px}
+.line.main p{font-size:20px}
+.line.main strong{font-family:var(--display);font-size:44px;line-height:.85;display:block;margin-top:4px;color:var(--plate)}
+.ask{appearance:none;align-self:flex-start;border:1.5px solid var(--plate);background:transparent;color:var(--plate);font-weight:700;font-size:15px;padding:8px 12px;min-height:40px;cursor:pointer;text-align:left}
+.ask::before{content:'? ';font-weight:800}
+
+/* sheet */
+.sheet{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center;z-index:10}
+.sheet .panel{background:var(--chalk);width:100%;max-width:560px;padding:20px 16px 28px;display:flex;flex-direction:column;gap:10px}
+.sheet h3{margin:0 0 4px;font-size:19px}
+.sheet .q{margin:0 0 6px;color:var(--muted);font-size:15px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="brand" href="/">TALLEN Coaching</a>
+  <div class="progress" aria-hidden="true"><i id="bar" style="width:0%"></i></div>
+  <main id="screen"></main>
+</div>
+<div class="sheet" id="sheet" hidden role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+  <div class="panel">
+    <h3 id="sheetTitle">Let’s talk it through</h3>
+    <p class="q" id="sheetQ"></p>
+    <button type="button" class="btn" data-book="call">📞 Free 5–10 min phone call</button>
+    <button type="button" class="btn" data-book="inperson">🏋️ Free Square One session, in person in Upminster</button>
+    <button type="button" class="btn ghost" data-close>Not now</button>
+  </div>
+</div>
+<script>
+const SUPABASE_URL = 'https://fxvrquxurenrfmenqnnu.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_RAv9EjgkbjA5F8QgVEJHow_3oyylnUO';
+const WHATSAPP = '447920016005';
+function rpc(fn, args){
+  return fetch(`${SUPABASE_URL}/rest/v1/rpc/${fn}`, { method:'POST', headers:{ 'Content-Type':'application/json', apikey: SUPABASE_KEY }, body: JSON.stringify(args) })
+    .then(r => r.ok ? r.json() : Promise.reject(new Error('http ' + r.status)));
+}
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ===== Questions ===== */
+const EXP = [...Array.from({length: 12}, (_, m) => ({ months: m, text: m === 0 ? 'None yet' : `${m} month${m > 1 ? 's' : ''}` })),
+  { months: 12, text: '1 year' }, { months: 18, text: '1½ years' }, { months: 24, text: '2 years' }, { months: 30, text: '2½ years' },
+  { months: 36, text: '3 years' }, { months: 48, text: '4 years' }, { months: 60, text: '5+ years' }];
+const level = m => m < 6 ? 'Just starting' : m < 12 ? 'Beginner' : m < 30 ? 'Intermediate' : m < 60 ? 'Well Versed' : 'Advanced';
+const DAYS = [1,2,3,4,5,6,7].map(d => ({ d, text: `${d} day${d > 1 ? 's' : ''}` }));
+const TIMES = [30, 45, 60, 90];
+const GOALS = ['Build Muscle', 'General Fitness', 'Cardio', 'Fat Loss', 'Mobility / Posture', 'Strength'];
+const EQUIP = ['Full gym', 'Dumbbells at home', 'Bodyweight only'];
+
+const st = { step: 0, exp: 0, days: 2, time: null, goals: [], equip: null, name: '', email: '', consent: false, leadId: null, result: null };
+const TOTAL = 6;
+
+/* ===== Result ===== */
+function splitFor(days, months){
+  const g = months < 12 ? 'beg' : 'more';
+  const t = {
+    1: 'Full Body, once a week', 2: 'Full Body, 2 days a week',
+    3: g === 'beg' ? 'Full Body, 3 days a week' : 'Upper / Lower / Full Body, 3 days a week',
+    4: 'Upper / Lower, 4 days a week',
+    5: g === 'beg' ? 'Upper / Lower + Full Body, 5 days a week' : 'Upper / Lower + Push / Pull / Legs, 5 days a week',
+    6: g === 'beg' ? 'Upper / Lower, 6 days a week' : 'Push / Pull / Legs, 6 days a week',
+    7: g === 'beg' ? 'Upper / Lower, 6 days a week + 1 recovery day' : 'Push / Pull / Legs, 6 days a week + 1 recovery day'
+  };
+  return t[days];
+}
+function resultLines(){
+  const lines = [{ main: true, text: splitFor(st.days, st.exp), ask: 'What goes in each day?' }];
+  const g = new Set(st.goals);
+  if(g.has('Fat Loss') || g.has('Cardio') || g.has('General Fitness')) lines.push({ text: 'Plus short cardio finishers and a daily step target.', ask: 'How fast, how far, what machine?' });
+  if(g.has('Mobility / Posture')) lines.push({ text: 'Plus 10 minutes of mobility each session.', ask: 'Which stretches?' });
+  if(g.has('Strength')) lines.push({ text: 'Lower reps on your main lifts (6–8).', ask: 'Which lifts, and how heavy?' });
+  if(g.has('Build Muscle')) lines.push({ text: 'Mostly 8–12 reps, close to failure.', ask: 'How close is close?' });
+  if(st.time === 30) lines.push({ text: 'Short, focused sessions: 4–5 exercises each.', ask: 'Which 4–5?' });
+  if(st.equip === 'Dumbbells at home') lines.push({ text: 'Built around dumbbells.', ask: 'Which exercises do I use?' });
+  if(st.equip === 'Bodyweight only') lines.push({ text: 'Built around bodyweight.', ask: 'Which exercises do I use?' });
+  return lines;
+}
+
+/* ===== Wheel ===== */
+function wheelHTML(id, items, sel, label){
+  return `<div class="wheel"><ol id="${id}" tabindex="0" role="listbox" aria-label="${esc(label)}">${items.map((it, i) =>
+    `<li role="option" id="${id}-${i}" data-i="${i}" aria-selected="${i === sel}">${esc(it.text)}</li>`).join('')}</ol></div>`;
+}
+function bindWheel(id, count, get, set){
+  const ol = $(id); const H = 44; let t;
+  const mark = i => { ol.querySelectorAll('li').forEach((li, j) => li.setAttribute('aria-selected', String(j === i))); ol.setAttribute('aria-activedescendant', `${id}-${i}`); };
+  const go = (i, smooth) => { i = Math.max(0, Math.min(count - 1, i)); ol.scrollTo({ top: i * H, behavior: smooth ? 'smooth' : 'auto' }); set(i); mark(i); };
+  requestAnimationFrame(() => go(get(), false));
+  ol.addEventListener('scroll', () => { clearTimeout(t); t = setTimeout(() => { const i = Math.round(ol.scrollTop / H); if(i !== get()){ set(i); } mark(i); }, 70); });
+  ol.addEventListener('click', e => { const li = e.target.closest('li'); if(li) go(+li.dataset.i, true); });
+  ol.addEventListener('keydown', e => {
+    if(e.key === 'ArrowDown'){ e.preventDefault(); go(get() + 1, true); }
+    if(e.key === 'ArrowUp'){ e.preventDefault(); go(get() - 1, true); }
+  });
+}
+
+/* ===== Screens ===== */
+function nav(nextLabel, nextOk){
+  return `<div class="nav">${st.step > 1 ? '<button type="button" class="btn ghost" data-back>Back</button>' : '<span></span>'}<button type="button" class="btn" data-next ${nextOk ? '' : 'disabled'}>${nextLabel}</button></div>`;
+}
+function render(){
+  $('bar').style.width = Math.round(Math.min(st.step, TOTAL) / TOTAL * 100) + '%';
+  const s = $('screen'); let h = '';
+  if(st.step === 0){
+    h = `<div class="step"><h1>Find your split</h1>
+      <p class="lead">Five quick questions about your week, your experience and your goals. You’ll get the training split that fits you best, in under a minute.</p>
+      <button type="button" class="btn" data-next>Start</button></div>`;
+  } else if(st.step === 1){
+    h = `<div class="step"><div class="qnum">Question 1 of 5</div><h2>How long have you been training?</h2>
+      <div class="wheelrow">${wheelHTML('expW', EXP, st.exp, 'Training experience')}<div class="badge" id="expLabel" aria-live="polite">${level(EXP[st.exp].months)}</div></div>
+      ${nav('Next', true)}</div>`;
+  } else if(st.step === 2){
+    h = `<div class="step"><div class="qnum">Question 2 of 5</div><h2>How many days a week can you train?</h2>
+      <div class="wheelrow">${wheelHTML('dayW', DAYS, st.days - 1, 'Days per week')}</div>${nav('Next', true)}</div>`;
+  } else if(st.step === 3){
+    h = `<div class="step"><div class="qnum">Question 3 of 5</div><h2>How long is each session?</h2>
+      <div class="choices two" role="radiogroup" aria-label="Session length">${TIMES.map(m => `<button type="button" role="radio" class="choice" data-time="${m}" aria-checked="${st.time === m}">${m} min<span class="tick">✓</span></button>`).join('')}</div>
+      ${nav('Next', st.time != null)}</div>`;
+  } else if(st.step === 4){
+    h = `<div class="step"><div class="qnum">Question 4 of 5</div><h2>What are your goals?</h2><div class="hint">Pick up to 2</div>
+      <div class="choices">${GOALS.map(g => `<button type="button" class="choice" data-goal="${esc(g)}" aria-pressed="${st.goals.includes(g)}">${esc(g)}<span class="tick">✓</span></button>`).join('')}</div>
+      ${nav('Next', st.goals.length > 0)}</div>`;
+  } else if(st.step === 5){
+    h = `<div class="step"><div class="qnum">Question 5 of 5</div><h2>What will you train with?</h2>
+      <div class="choices" role="radiogroup" aria-label="Equipment">${EQUIP.map(e => `<button type="button" role="radio" class="choice" data-equip="${esc(e)}" aria-checked="${st.equip === e}">${esc(e)}<span class="tick">✓</span></button>`).join('')}</div>
+      ${nav('Next', !!st.equip)}</div>`;
+  } else if(st.step === 6){
+    h = `<form class="step" id="leadForm" novalidate><h2>Where should I send your split?</h2>
+      <div class="field"><label for="nm">First name</label><input id="nm" autocomplete="given-name" maxlength="60" value="${esc(st.name)}" required></div>
+      <div class="field"><label for="em">Email</label><input id="em" type="email" inputmode="email" autocomplete="email" maxlength="120" value="${esc(st.email)}" required></div>
+      <label class="check"><input type="checkbox" id="consent" ${st.consent ? 'checked' : ''}><span>Send me training tips and offers by email. Unsubscribe any time.</span></label>
+      <div class="hp" aria-hidden="true"><label>Leave this empty <input id="hp" tabindex="-1" autocomplete="off"></label></div>
+      <p class="err" id="formErr" hidden></p>
+      <div class="nav"><button type="button" class="btn ghost" data-back>Back</button><button type="submit" class="btn" id="sendBtn">Show my split</button></div>
+      <p class="small">Your result appears straight away. I’ll only email you if you tick the box.</p></form>`;
+  } else {
+    const lines = st.result;
+    h = `<div class="step"><h2>${esc(st.name)}, here’s your split</h2>
+      <div class="result">${lines.map((l, i) => `<div class="line${l.main ? ' main' : ''}">${l.main ? `<p>Your best fit:<strong>${esc(l.text)}</strong></p>` : `<p>${esc(l.text)}</p>`}<button type="button" class="ask" data-ask="${i}">${esc(l.ask)}</button></div>`).join('')}</div>
+      <p class="small">Tap any question and I’ll answer it personally, on a quick call or in person at the gym.</p></div>`;
+  }
+  s.innerHTML = h;
+  if(st.step === 1) bindWheel('expW', EXP.length, () => st.exp, i => { st.exp = i; $('expLabel').textContent = level(EXP[i].months); });
+  if(st.step === 2) bindWheel('dayW', DAYS.length, () => st.days - 1, i => { st.days = i + 1; });
+  const focus = s.querySelector('h1,h2'); if(focus && st.step > 0){ focus.setAttribute('tabindex', '-1'); focus.focus({ preventScroll: true }); }
+  scrollTo({ top: 0 });
+}
+
+/* ===== Events ===== */
+let askIdx = null;
+document.addEventListener('click', e => {
+  if(e.target.closest('[data-next]')){ if(st.step < 6){ st.step++; render(); } return; }
+  if(e.target.closest('[data-back]')){ st.step = Math.max(1, st.step - 1); render(); return; }
+  const tm = e.target.closest('[data-time]'); if(tm){ st.time = +tm.dataset.time; render(); return; }
+  const eq = e.target.closest('[data-equip]'); if(eq){ st.equip = eq.dataset.equip; render(); return; }
+  const gl = e.target.closest('[data-goal]');
+  if(gl){ const g = gl.dataset.goal; if(st.goals.includes(g)) st.goals = st.goals.filter(x => x !== g); else { st.goals.push(g); if(st.goals.length > 2) st.goals.shift(); } render(); return; }
+  const ask = e.target.closest('[data-ask]');
+  if(ask){ askIdx = +ask.dataset.ask; $('sheetQ').textContent = '“' + st.result[askIdx].ask + '”'; $('sheet').hidden = false; $('sheet').querySelector('[data-book]').focus(); return; }
+  if(e.target.closest('[data-close]') || e.target.id === 'sheet'){ $('sheet').hidden = true; return; }
+  const bk = e.target.closest('[data-book]');
+  if(bk){
+    const l = st.result[askIdx]; const main = st.result[0].text;
+    const want = bk.dataset.book === 'call' ? 'I’d like a free 5–10 min phone call about it.' : 'I’d like to book a free Square One session in Upminster.';
+    const msg = `Hi Tom, it’s ${st.name}. I did your split quiz and got: ${main}.\n\nMy question: ${l.ask}\n\n${want}`;
+    if(st.leadId) rpc('lead_tap', { p_id: st.leadId, p_tap: `${l.ask} · ${bk.dataset.book === 'call' ? 'Phone call' : 'Square One'}` }).catch(() => {});
+    $('sheet').hidden = true;
+    location.href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(msg)}`;
+  }
+});
+document.addEventListener('keydown', e => { if(e.key === 'Escape') $('sheet').hidden = true; });
+document.addEventListener('submit', async e => {
+  if(e.target.id !== 'leadForm') return;
+  e.preventDefault();
+  st.name = $('nm').value.trim(); st.email = $('em').value.trim(); st.consent = $('consent').checked;
+  const err = $('formErr'); err.hidden = true;
+  if(!st.name){ err.textContent = 'Add your first name.'; err.hidden = false; $('nm').focus(); return; }
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(st.email)){ err.textContent = 'That email doesn’t look right.'; err.hidden = false; $('em').focus(); return; }
+  st.result = resultLines();
+  const answers = { experience: EXP[st.exp].text, level: level(EXP[st.exp].months), days: st.days, minutes: st.time, goals: st.goals, equipment: st.equip };
+  const summary = `${st.result[0].text}\nExperience: ${answers.experience} (${answers.level})\n${st.days} days · ${st.time} min\nGoals: ${st.goals.join(', ')}\nEquipment: ${st.equip}`;
+  if(!$('hp').value){
+    $('sendBtn').disabled = true;
+    try{ const j = await rpc('save_lead', { p_lead: { name: st.name, email: st.email, consent: st.consent, answers, result: st.result[0].text, summary } }); if(j && j.ok) st.leadId = j.id; }catch(_){ /* still show the result */ }
+  }
+  st.step = 7; render();
+});
+render();
+</script>
+</body>
+</html>
