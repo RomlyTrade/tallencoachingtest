@@ -80,6 +80,15 @@ td.c,th.c{text-align:center}
 .hit.y{background:var(--good-soft);color:var(--good)}
 .hit.n{background:var(--bad-soft);color:var(--bad)}
 .legend{font-size:12.5px;color:var(--muted)}
+.sect{font-family:var(--display);font-size:44px;line-height:.8;margin-top:10px}
+.leads{display:flex;flex-direction:column;gap:8px}
+.lead{background:var(--card);border:1px solid var(--rule);padding:12px 14px;display:flex;flex-direction:column;gap:4px;font-size:14px}
+.lead .top{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.lead b{font-size:16px}
+.lead .when{font-size:12.5px;color:var(--muted);white-space:nowrap}
+.lead .res{font-weight:600;color:var(--plate)}
+.lead .meta{color:var(--muted)}
+.lead .tap{font-size:13px}
 @media (max-width:420px){ td,th{padding:5px 4px} .stat b{font-size:40px} }
 </style>
 </head>
@@ -99,6 +108,8 @@ td.c,th.c{text-align:center}
       </div>
       <div class="stats" id="stats"></div>
       <div class="clients" id="clients"></div>
+      <h2 class="sect">Quiz leads</h2>
+      <div class="leads" id="leads"></div>
       <p class="legend">Target = top of the rep range for that exercise (the client's own range for compound lifts if they've set one). Last week = the previous time they did that exercise in that session.</p>
     </div>
   </div>
@@ -187,6 +198,15 @@ function render(){
     </section>`;
   });
   $('clients').innerHTML = cards.join('') || '<p class="empty">No clients yet.</p>';
+  const leads = data.leads || [];
+  $('leads').innerHTML = leads.length ? leads.slice(0, 50).map(l => {
+    const a = l.answers || {}; const when = new Date(l.at).toLocaleString('en-GB', { weekday:'short', day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' });
+    return `<div class="lead"><div class="top"><b>${esc(l.name)}</b><span class="when">${esc(when)}</span></div>
+      <div><a href="mailto:${esc(l.email)}">${esc(l.email)}</a>${l.consent ? ' · ✓ happy to get emails' : ' · no marketing emails'}</div>
+      <div class="res">${esc(l.result)}</div>
+      <div class="meta">${esc([a.experience && `${a.experience} (${a.level})`, a.days && `${a.days} days`, a.minutes && `${a.minutes} min`, (a.goals || []).join(' + '), a.equipment].filter(Boolean).join(' · '))}</div>
+      ${(l.taps || []).map(t => `<div class="tap">❓ Asked: ${esc(t.q)}</div>`).join('')}</div>`;
+  }).join('') : '<p class="empty">No quiz submissions yet.</p>';
   $('stats').innerHTML = `
     <div class="stat"><b class="num">${inWeek.length}</b><span>${inWeek.length === 1 ? 'session' : 'sessions'} logged</span></div>
     <div class="stat"><b class="num">${trained}/${clients.length}</b><span>clients trained</span></div>
