@@ -203,7 +203,7 @@ function render(){
     const a = l.answers || {}; const when = new Date(l.at).toLocaleString('en-GB', { weekday:'short', day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' });
     return `<div class="lead"><div class="top"><b>${esc(l.name)}</b><span class="when">${esc(when)}</span></div>
       <div><a href="mailto:${esc(l.email)}">${esc(l.email)}</a>${l.consent ? ' · ✓ happy to get emails' : ' · no marketing emails'}</div>
-      <div class="res">${esc(l.result)}</div>
+      <div class="res">${esc(l.result)}</div>${a.source ? `<div class="meta">From: ${esc(String(a.source).replace(/\/$/, ''))}</div>` : ''}
       <div class="meta">${esc([a.experience && `${a.experience} (${a.level})`, a.days && `${a.days} days`, a.minutes && `${a.minutes} min`, (a.goals || []).join(' + '), a.equipment].filter(Boolean).join(' · '))}</div>
       ${(l.taps || []).map(t => `<div class="tap">❓ Asked: ${esc(t.q)}</div>`).join('')}</div>`;
   }).join('') : '<p class="empty">No quiz submissions yet.</p>';
