@@ -263,7 +263,7 @@ document.addEventListener('submit', async e => {
   if(!st.name){ err.textContent = 'Add your first name.'; err.hidden = false; $('nm').focus(); return; }
   if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(st.email)){ err.textContent = 'That email doesn’t look right.'; err.hidden = false; $('em').focus(); return; }
   st.result = resultLines();
-  const answers = { experience: EXP[st.exp].text, level: level(EXP[st.exp].months), days: st.days, minutes: st.time, goals: st.goals, equipment: st.equip };
+  const answers = { source: location.hostname + location.pathname, experience: EXP[st.exp].text, level: level(EXP[st.exp].months), days: st.days, minutes: st.time, goals: st.goals, equipment: st.equip };
   const summary = `${st.result[0].text}\nExperience: ${answers.experience} (${answers.level})\n${st.days} days · ${st.time} min\nGoals: ${st.goals.join(', ')}\nEquipment: ${st.equip}`;
   if(!$('hp').value){
     $('sendBtn').disabled = true;
