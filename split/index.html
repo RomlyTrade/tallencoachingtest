@@ -88,7 +88,6 @@ h2{font-size:52px}
 .line.main p{font-size:20px}
 .line.main strong{font-family:var(--display);font-size:44px;line-height:.85;display:block;margin-top:4px;color:var(--plate)}
 .ask{appearance:none;align-self:flex-start;border:1.5px solid var(--plate);background:transparent;color:var(--plate);font-weight:700;font-size:15px;padding:8px 12px;min-height:40px;cursor:pointer;text-align:left}
-.ask::before{content:'? ';font-weight:800}
 
 /* sheet */
 .sheet{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center;z-index:10}
@@ -217,8 +216,7 @@ function render(){
       <label class="check"><input type="checkbox" id="consent" ${st.consent ? 'checked' : ''}><span>Send me training tips and offers by email. Unsubscribe any time.</span></label>
       <div class="hp" aria-hidden="true"><label>Leave this empty <input id="hp" tabindex="-1" autocomplete="off"></label></div>
       <p class="err" id="formErr" hidden></p>
-      <div class="nav"><button type="button" class="btn ghost" data-back>Back</button><button type="submit" class="btn" id="sendBtn">Show my split</button></div>
-      <p class="small">Your result appears straight away. I’ll only email you if you tick the box.</p></form>`;
+      <div class="nav"><button type="button" class="btn ghost" data-back>Back</button><button type="submit" class="btn" id="sendBtn">Show my split</button></div></form>`;
   } else {
     const lines = st.result;
     h = `<div class="step"><h2>${esc(st.name)}, here’s your split</h2>
