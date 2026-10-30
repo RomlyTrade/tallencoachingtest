@@ -214,8 +214,7 @@ function render(){
   } else {
     const lines = st.result;
     h = `<div class="step"><h2>${esc(st.name)}, here’s your split</h2>
-      <div class="result">${lines.map((l, i) => `<div class="line${l.main ? ' main' : ''}">${l.main ? `<p>Your best fit:<strong>${esc(l.text)}</strong></p>` : `<p>${esc(l.text)}</p>`}<button type="button" class="ask" data-ask="${i}">${esc(l.ask)}</button></div>`).join('')}</div>
-      <p class="small">Tap any question and I’ll answer it personally, on a quick call or in person at the gym.</p></div>`;
+      <div class="result">${lines.map((l, i) => `<div class="line${l.main ? ' main' : ''}">${l.main ? `<p>Your best fit:<strong>${esc(l.text)}</strong></p>` : `<p>${esc(l.text)}</p>`}<button type="button" class="ask" data-ask="${i}">${esc(l.ask)}</button></div>`).join('')}</div></div>`;
   }
   s.innerHTML = h;
   if(st.step === 1) bindWheel('expW', EXP.length, () => st.exp, i => { st.exp = i; $('expLabel').textContent = level(EXP[i].months); });
