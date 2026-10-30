@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#1E45C8">
 <title>Find Your Split · TALLEN Coaching</title>
-<meta name="description" content="Five quick questions to find the training split that fits your week, your experience and your goals.">
+<meta name="description" content="Four quick questions to find the training split that fits your week, your experience and your goals.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=Dongle:wght@400;700&display=swap">
 <style>
@@ -128,12 +128,11 @@ const EXP = [...Array.from({length: 12}, (_, m) => ({ months: m, text: m === 0 ?
   { months: 36, text: '3 years' }, { months: 48, text: '4 years' }, { months: 60, text: '5+ years' }];
 const level = m => m < 6 ? 'Just starting' : m < 12 ? 'Beginner' : m < 30 ? 'Intermediate' : m < 60 ? 'Well Versed' : 'Advanced';
 const DAYS = [1,2,3,4,5,6,7].map(d => ({ d, text: `${d} day${d > 1 ? 's' : ''}` }));
-const TIMES = [30, 45, 60, 90];
 const GOALS = ['Build Muscle', 'General Fitness', 'Cardio', 'Fat Loss', 'Mobility / Posture', 'Strength'];
 const EQUIP = ['Full gym', 'Dumbbells at home', 'Bodyweight only'];
 
-const st = { step: 0, exp: 0, days: 2, time: null, goals: [], equip: null, name: '', email: '', consent: false, leadId: null, result: null };
-const TOTAL = 6;
+const st = { step: 0, exp: 0, days: 2, goals: [], equip: null, name: '', email: '', consent: false, leadId: null, result: null };
+const TOTAL = 5;
 
 /* ===== Result ===== */
 function splitFor(days, months){
@@ -155,7 +154,6 @@ function resultLines(){
   if(g.has('Mobility / Posture')) lines.push({ text: 'Plus 10 minutes of mobility each session.', ask: 'Which stretches?' });
   if(g.has('Strength')) lines.push({ text: 'Lower reps on your main lifts (6–8).', ask: 'Which lifts, and how heavy?' });
   if(g.has('Build Muscle')) lines.push({ text: 'Mostly 8–12 reps, close to failure.', ask: 'How close is close?' });
-  if(st.time === 30) lines.push({ text: 'Short, focused sessions: 4–5 exercises each.', ask: 'Which 4–5?' });
   if(st.equip === 'Dumbbells at home') lines.push({ text: 'Built around dumbbells.', ask: 'Which exercises do I use?' });
   if(st.equip === 'Bodyweight only') lines.push({ text: 'Built around bodyweight.', ask: 'Which exercises do I use?' });
   return lines;
@@ -188,28 +186,24 @@ function render(){
   const s = $('screen'); let h = '';
   if(st.step === 0){
     h = `<div class="step"><h1>Find your split</h1>
-      <p class="lead">Five quick questions about your week, your experience and your goals. You’ll get the training split that fits you best, in under a minute.</p>
+      <p class="lead">Four quick questions about your week, your experience and your goals. You’ll get the training split that fits you best, in under a minute.</p>
       <button type="button" class="btn" data-next>Start</button></div>`;
   } else if(st.step === 1){
-    h = `<div class="step"><div class="qnum">Question 1 of 5</div><h2>How long have you been training?</h2>
+    h = `<div class="step"><div class="qnum">Question 1 of 4</div><h2>How long have you been training?</h2>
       <div class="wheelrow">${wheelHTML('expW', EXP, st.exp, 'Training experience')}<div class="badge" id="expLabel" aria-live="polite">${level(EXP[st.exp].months)}</div></div>
       ${nav('Next', true)}</div>`;
   } else if(st.step === 2){
-    h = `<div class="step"><div class="qnum">Question 2 of 5</div><h2>How many days a week can you train?</h2>
+    h = `<div class="step"><div class="qnum">Question 2 of 4</div><h2>How many days a week can you train?</h2>
       <div class="wheelrow">${wheelHTML('dayW', DAYS, st.days - 1, 'Days per week')}</div>${nav('Next', true)}</div>`;
   } else if(st.step === 3){
-    h = `<div class="step"><div class="qnum">Question 3 of 5</div><h2>How long is each session?</h2>
-      <div class="choices two" role="radiogroup" aria-label="Session length">${TIMES.map(m => `<button type="button" role="radio" class="choice" data-time="${m}" aria-checked="${st.time === m}">${m} min<span class="tick">✓</span></button>`).join('')}</div>
-      ${nav('Next', st.time != null)}</div>`;
-  } else if(st.step === 4){
-    h = `<div class="step"><div class="qnum">Question 4 of 5</div><h2>What are your goals?</h2><div class="hint">Pick up to 2</div>
+    h = `<div class="step"><div class="qnum">Question 3 of 4</div><h2>What are your goals?</h2><div class="hint">Pick up to 2</div>
       <div class="choices">${GOALS.map(g => `<button type="button" class="choice" data-goal="${esc(g)}" aria-pressed="${st.goals.includes(g)}">${esc(g)}<span class="tick">✓</span></button>`).join('')}</div>
       ${nav('Next', st.goals.length > 0)}</div>`;
-  } else if(st.step === 5){
-    h = `<div class="step"><div class="qnum">Question 5 of 5</div><h2>What will you train with?</h2>
+  } else if(st.step === 4){
+    h = `<div class="step"><div class="qnum">Question 4 of 4</div><h2>What will you train with?</h2>
       <div class="choices" role="radiogroup" aria-label="Equipment">${EQUIP.map(e => `<button type="button" role="radio" class="choice" data-equip="${esc(e)}" aria-checked="${st.equip === e}">${esc(e)}<span class="tick">✓</span></button>`).join('')}</div>
       ${nav('Next', !!st.equip)}</div>`;
-  } else if(st.step === 6){
+  } else if(st.step === 5){
     h = `<form class="step" id="leadForm" novalidate><h2>Where should I send your split?</h2>
       <div class="field"><label for="nm">First name</label><input id="nm" autocomplete="given-name" maxlength="60" value="${esc(st.name)}" required></div>
       <div class="field"><label for="em">Email</label><input id="em" type="email" inputmode="email" autocomplete="email" maxlength="120" value="${esc(st.email)}" required></div>
@@ -233,9 +227,8 @@ function render(){
 /* ===== Events ===== */
 let askIdx = null;
 document.addEventListener('click', e => {
-  if(e.target.closest('[data-next]')){ if(st.step < 6){ st.step++; render(); } return; }
+  if(e.target.closest('[data-next]')){ if(st.step < 5){ st.step++; render(); } return; }
   if(e.target.closest('[data-back]')){ st.step = Math.max(1, st.step - 1); render(); return; }
-  const tm = e.target.closest('[data-time]'); if(tm){ st.time = +tm.dataset.time; render(); return; }
   const eq = e.target.closest('[data-equip]'); if(eq){ st.equip = eq.dataset.equip; render(); return; }
   const gl = e.target.closest('[data-goal]');
   if(gl){ const g = gl.dataset.goal; if(st.goals.includes(g)) st.goals = st.goals.filter(x => x !== g); else { st.goals.push(g); if(st.goals.length > 2) st.goals.shift(); } render(); return; }
@@ -261,13 +254,13 @@ document.addEventListener('submit', async e => {
   if(!st.name){ err.textContent = 'Add your first name.'; err.hidden = false; $('nm').focus(); return; }
   if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(st.email)){ err.textContent = 'That email doesn’t look right.'; err.hidden = false; $('em').focus(); return; }
   st.result = resultLines();
-  const answers = { source: location.hostname + location.pathname, experience: EXP[st.exp].text, level: level(EXP[st.exp].months), days: st.days, minutes: st.time, goals: st.goals, equipment: st.equip };
-  const summary = `${st.result[0].text}\nExperience: ${answers.experience} (${answers.level})\n${st.days} days · ${st.time} min\nGoals: ${st.goals.join(', ')}\nEquipment: ${st.equip}`;
+  const answers = { source: location.hostname + location.pathname, experience: EXP[st.exp].text, level: level(EXP[st.exp].months), days: st.days, goals: st.goals, equipment: st.equip };
+  const summary = `${st.result[0].text}\nExperience: ${answers.experience} (${answers.level})\n${st.days} days a week\nGoals: ${st.goals.join(', ')}\nEquipment: ${st.equip}`;
   if(!$('hp').value){
     $('sendBtn').disabled = true;
     try{ const j = await rpc('save_lead', { p_lead: { name: st.name, email: st.email, consent: st.consent, answers, result: st.result[0].text, summary } }); if(j && j.ok) st.leadId = j.id; }catch(_){ /* still show the result */ }
   }
-  st.step = 7; render();
+  st.step = 6; render();
 });
 render();
 </script>
