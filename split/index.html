@@ -142,7 +142,7 @@ function splitFor(days, months, equip){
     3: g === 'beg' ? 'Full Body, 3 days a week' : 'Upper / Lower / Full Body, 3 days a week',
     4: 'Upper / Lower, 4 days a week',
     5: equip === 'Full gym' ? 'Upper / Lower / Upper / Lower / Group Class (Bonus)' : equip === 'Dumbbells at home' ? 'Upper / Lower / Upper / Lower / Mobility (Optional)' : g === 'beg' ? 'Upper / Lower + Full Body, 5 days a week' : 'Upper / Lower + Push / Pull / Legs, 5 days a week',
-    6: 'Upper / Lower / Upper / Lower / Find a sport hobby and do it on remaining 3 days, (find time for recovery)',
+    6: 'Upper / Lower / Upper / Lower / Find a sport hobby and do it on remaining 2 days, (find time for recovery)',
     7: 'Upper / Lower / Upper / Lower / Find a sport hobby and do it on remaining 3 days, (find time for recovery)'
   };
   return t[days];
@@ -154,8 +154,6 @@ function resultLines(){
   if(g.has('Mobility / Posture')) lines.push({ text: 'Plus 10 minutes of mobility each session.', ask: 'Which stretches?' });
   if(g.has('Strength')) lines.push({ text: 'Lower reps on your main lifts (6–8).', ask: 'Which lifts, and how heavy?' });
   if(g.has('Build Muscle')) lines.push({ text: 'Mostly 8–12 reps, close to failure.', ask: 'How close is close?' });
-  if(st.equip === 'Dumbbells at home') lines.push({ text: 'Built around dumbbells.', ask: 'Which exercises do I use?' });
-  if(st.equip === 'Bodyweight only') lines.push({ text: 'Built around bodyweight.', ask: 'Which exercises do I use?' });
   return lines;
 }
 
@@ -186,7 +184,6 @@ function render(){
   const s = $('screen'); let h = '';
   if(st.step === 0){
     h = `<div class="step"><h1>Find your split</h1>
-      <p class="lead">Four quick questions about your week, your experience and your goals. You’ll get the training split that fits you best, in under a minute.</p>
       <button type="button" class="btn" data-next>Start</button></div>`;
   } else if(st.step === 1){
     h = `<div class="step"><div class="qnum">Question 1 of 4</div><h2>How long have you been training?</h2>
@@ -196,7 +193,7 @@ function render(){
     h = `<div class="step"><div class="qnum">Question 2 of 4</div><h2>How many days a week can you train?</h2>
       <div class="wheelrow">${wheelHTML('dayW', DAYS, st.days - 1, 'Days per week')}</div>${nav('Next', true)}</div>`;
   } else if(st.step === 3){
-    h = `<div class="step"><div class="qnum">Question 3 of 4</div><h2>What are your goals?</h2><div class="hint">Pick up to 2</div>
+    h = `<div class="step"><div class="qnum">Question 3 of 4</div><h2>What are your goals?</h2>
       <div class="choices">${GOALS.map(g => `<button type="button" class="choice" data-goal="${esc(g)}" aria-pressed="${st.goals.includes(g)}">${esc(g)}<span class="tick">✓</span></button>`).join('')}</div>
       ${nav('Next', st.goals.length > 0)}</div>`;
   } else if(st.step === 4){
