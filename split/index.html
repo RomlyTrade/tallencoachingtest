@@ -126,7 +126,7 @@ const EXP = [...Array.from({length: 12}, (_, m) => ({ months: m, text: m === 0 ?
   { months: 36, text: '3 years' }, { months: 48, text: '4 years' }, { months: 60, text: '5+ years' }];
 const level = m => m < 6 ? 'Just starting' : m < 12 ? 'Beginner' : m < 30 ? 'Intermediate' : m < 60 ? 'Well Versed' : 'Advanced';
 const DAYS = [1,2,3,4,5,6,7].map(d => ({ d, text: `${d} day${d > 1 ? 's' : ''}` }));
-const GOALS = ['Build Muscle', 'General Fitness', 'Cardio', 'Fat Loss', 'Mobility / Posture', 'Strength'];
+const GOALS = ['Lose Fat', 'Gain Muscle', 'Recomp', 'Maintain'];
 const EQUIP = ['Full gym', 'Dumbbells at home', 'Bodyweight only'];
 
 const st = { step: 0, exp: 0, days: 2, goals: [], equip: null, name: '', email: '', consent: false, leadId: null, result: null };
@@ -150,10 +150,10 @@ function resultLines(){
   if(st.equip === 'Bodyweight only') return [{ main: true, text: 'Get a gym membership.' }];
   const lines = [{ main: true, text: splitFor(st.days, EXP[st.exp].months, st.equip) }];
   const g = new Set(st.goals);
-  if(g.has('Fat Loss') || g.has('Cardio') || g.has('General Fitness')) lines.push({ text: 'Plus short cardio finishers and a daily step target.', ask: 'How fast, how far, what machine?' });
-  if(g.has('Mobility / Posture')) lines.push({ text: 'Plus 10 minutes of mobility each session.', ask: 'Which stretches?' });
-  if(g.has('Strength')) lines.push({ text: 'Lower reps on your main lifts (6–8).', ask: 'Which lifts, and how heavy?' });
-  if(g.has('Build Muscle')) lines.push({ text: 'Mostly 8–12 reps, close to failure.', ask: 'How close is close?' });
+  if(g.has('Lose Fat')) lines.push({ text: 'Plus short cardio finishers and a daily step target.', ask: 'How fast, how far, what machine?' });
+  if(g.has('Gain Muscle')) lines.push({ text: 'Mostly 8–12 reps, close to failure.', ask: 'How close is close?' });
+  if(g.has('Recomp')) lines.push({ ask: 'What do I eat to recomp?' });
+  if(g.has('Maintain')) lines.push({ ask: 'What do I eat to maintain?' });
   return lines;
 }
 
@@ -193,7 +193,7 @@ function render(){
     h = `<div class="step"><div class="qnum">Question 2 of 4</div><h2>How many days a week can you train?</h2>
       <div class="wheelrow">${wheelHTML('dayW', DAYS, st.days - 1, 'Days per week')}</div>${nav('Next', true)}</div>`;
   } else if(st.step === 3){
-    h = `<div class="step"><div class="qnum">Question 3 of 4</div><h2>What are your goals?</h2>
+    h = `<div class="step"><div class="qnum">Question 3 of 4</div><h2>What’s your goal?</h2>
       <div class="choices">${GOALS.map(g => `<button type="button" class="choice" data-goal="${esc(g)}" aria-pressed="${st.goals.includes(g)}">${esc(g)}<span class="tick">✓</span></button>`).join('')}</div>
       ${nav('Next', st.goals.length > 0)}</div>`;
   } else if(st.step === 4){
@@ -211,7 +211,7 @@ function render(){
   } else {
     const lines = st.result;
     h = `<div class="step"><h2>${esc(st.name)}, here’s your split</h2>
-      <div class="result">${lines.map((l, i) => `<div class="line${l.main ? ' main' : ''}">${l.main ? `<p>Your best fit:<strong>${esc(l.text)}</strong></p>` : `<p>${esc(l.text)}</p>`}${l.ask ? `<button type="button" class="ask" data-ask="${i}">${esc(l.ask)}</button>` : ''}</div>`).join('')}</div></div>`;
+      <div class="result">${lines.map((l, i) => `<div class="line${l.main ? ' main' : ''}">${l.main ? `<p>Your best fit:<strong>${esc(l.text)}</strong></p>` : l.text ? `<p>${esc(l.text)}</p>` : ''}${l.ask ? `<button type="button" class="ask" data-ask="${i}">${esc(l.ask)}</button>` : ''}</div>`).join('')}</div></div>`;
   }
   s.innerHTML = h;
   if(st.step === 1) bindWheel('expW', EXP.length, () => st.exp, i => { st.exp = i; $('expLabel').textContent = level(EXP[i].months); });
@@ -227,7 +227,7 @@ document.addEventListener('click', e => {
   if(e.target.closest('[data-back]')){ st.step = Math.max(1, st.step - 1); render(); return; }
   const eq = e.target.closest('[data-equip]'); if(eq){ st.equip = eq.dataset.equip; render(); return; }
   const gl = e.target.closest('[data-goal]');
-  if(gl){ const g = gl.dataset.goal; if(st.goals.includes(g)) st.goals = st.goals.filter(x => x !== g); else { st.goals.push(g); if(st.goals.length > 2) st.goals.shift(); } render(); return; }
+  if(gl){ const g = gl.dataset.goal; st.goals = [g]; render(); return; }
   const ask = e.target.closest('[data-ask]');
   if(ask){ askIdx = +ask.dataset.ask; $('sheet').hidden = false; $('sheet').querySelector('[data-book]').focus(); return; }
   if(e.target.closest('[data-close]') || e.target.id === 'sheet'){ $('sheet').hidden = true; return; }
@@ -251,7 +251,7 @@ document.addEventListener('submit', async e => {
   if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(st.email)){ err.textContent = 'That email doesn’t look right.'; err.hidden = false; $('em').focus(); return; }
   st.result = resultLines();
   const answers = { source: location.hostname + location.pathname, experience: EXP[st.exp].text, level: level(EXP[st.exp].months), days: st.days, goals: st.goals, equipment: st.equip };
-  const summary = `${st.result[0].text}\nExperience: ${answers.experience} (${answers.level})\n${st.days} days a week\nGoals: ${st.goals.join(', ')}\nEquipment: ${st.equip}`;
+  const summary = `${st.result[0].text}\nExperience: ${answers.experience} (${answers.level})\n${st.days} days a week\nGoal: ${st.goals.join(', ')}\nEquipment: ${st.equip}`;
   if(!$('hp').value){
     $('sendBtn').disabled = true;
     try{ const j = await rpc('save_lead', { p_lead: { name: st.name, email: st.email, consent: st.consent, answers, result: st.result[0].text, summary } }); if(j && j.ok) st.leadId = j.id; }catch(_){ /* still show the result */ }
