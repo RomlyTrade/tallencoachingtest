@@ -87,6 +87,10 @@ h2{font-size:52px}
 .line p{margin:0;font-size:17px}
 .line.main p{font-size:20px}
 .line.main strong{font-family:var(--display);font-size:44px;line-height:.85;display:block;margin-top:4px;color:var(--plate)}
+.week{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.day{aspect-ratio:1;background:#1E45C8;color:#fff;display:grid;place-items:center;text-align:center;font-weight:700;font-size:clamp(10px,2.9vw,15px);line-height:1.1;padding:2px}
+.day.off{background:var(--rule)}
+.line.main p.note{font-size:15px;color:var(--muted)}
 .ask{appearance:none;align-self:flex-start;border:1.5px solid var(--plate);background:transparent;color:var(--plate);font-weight:700;font-size:15px;padding:8px 12px;min-height:40px;cursor:pointer;text-align:left}
 
 /* sheet */
@@ -136,22 +140,19 @@ const st = { step: 0, exp: 0, days: 2, goals: [], equip: null, name: '', email: 
 const TOTAL = 5;
 
 /* ===== Result ===== */
-function splitFor(days, months, equip){
-  if(equip === 'Bodyweight only') return 'Get a gym membership.';
-  const g = months < 12 ? 'beg' : 'more';
+function splitFor(days, months){
+  const beg = months < 12;
   const t = {
-    1: 'Full Body, once a week', 2: 'Full Body, 2 days a week',
-    3: g === 'beg' ? 'Full Body, 3 days a week' : 'Upper / Lower / Full Body, 3 days a week',
-    4: 'Upper / Lower, 4 days a week',
-    5: equip === 'Full gym' ? 'Upper / Lower / Upper / Lower / Group Class (Bonus)' : equip === 'Dumbbells at home' ? 'Upper / Lower / Upper / Lower / Mobility (Optional)' : g === 'beg' ? 'Upper / Lower + Full Body, 5 days a week' : 'Upper / Lower + Push / Pull / Legs, 5 days a week',
-    6: 'Upper / Lower / Upper / Lower / Find a sport hobby and do it on remaining 2 days, (find time for recovery)',
-    7: 'Upper / Lower / Upper / Lower / Find a sport hobby and do it on remaining 3 days, (find time for recovery)'
+    1: ['Full Body'], 2: ['Full Body', 'Full Body'],
+    3: beg ? ['Full Body', 'Full Body', 'Full Body'] : ['Upper', 'Lower', 'Full Body'],
+    4: ['Upper', 'Lower', 'Upper', 'Lower']
   };
-  return t[days];
+  return t[days] || ['Upper', 'Lower', 'Upper', 'Lower', 'Bonus'];
 }
 function resultLines(){
   if(st.equip === 'Bodyweight only') return [{ main: true, text: 'Get a gym membership.' }];
-  const lines = [{ main: true, text: splitFor(st.days, EXP[st.exp].months, st.equip) }];
+  const week = splitFor(st.days, EXP[st.exp].months);
+  const lines = [{ main: true, week, text: week.join(' / '), note: week.includes('Bonus') ? 'Fill the bonus with a sport of your choice, a group class, a 5k run, go nuts!' : '' }];
   const g = new Set(st.goals);
   if(g.has('Lose Fat')) lines.push({ text: 'Plus short cardio finishers and a daily step target.', ask: 'How fast, how far, what machine?' });
   if(g.has('Gain Muscle')) lines.push({ text: 'Mostly 8–12 reps, close to failure.', ask: 'How close is close?' });
@@ -214,7 +215,7 @@ function render(){
   } else {
     const lines = st.result;
     h = `<div class="step"><h2>${esc(st.name)}, here’s your split</h2>
-      <div class="result">${lines.map((l, i) => `<div class="line${l.main ? ' main' : ''}">${l.main ? `<p>Your best fit:<strong>${esc(l.text)}</strong></p>` : l.text ? `<p>${esc(l.text)}</p>` : ''}${l.ask ? `<button type="button" class="ask" data-ask="${i}">${esc(l.ask)}</button>` : ''}</div>`).join('')}</div></div>`;
+      <div class="result">${lines.map((l, i) => `<div class="line${l.main ? ' main' : ''}">${l.main ? (l.week ? `<p>Your best fit:</p><div class="week">${Array.from({length: 7}, (_, d) => l.week[d] ? `<div class="day">${esc(l.week[d])}</div>` : '<div class="day off"></div>').join('')}</div>${l.note ? `<p class="note">${esc(l.note)}</p>` : ''}` : `<p>Your best fit:<strong>${esc(l.text)}</strong></p>`) : l.text ? `<p>${esc(l.text)}</p>` : ''}${l.ask ? `<button type="button" class="ask" data-ask="${i}">${esc(l.ask)}</button>` : ''}</div>`).join('')}</div></div>`;
   }
   s.innerHTML = h;
   if(st.step === 1) bindWheel('expW', EXP.length, () => st.exp, i => { st.exp = i; $('expLabel').textContent = level(EXP[i].months); });
