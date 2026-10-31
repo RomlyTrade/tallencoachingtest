@@ -247,7 +247,7 @@ document.addEventListener('click', e => {
   const bk = e.target.closest('[data-book]');
   if(bk){
     const l = st.result[askIdx];
-    const msg = 'Hi, I just did your quiz, I have some questions.';
+    const msg = `Hi it’s ${st.name}, I just did your quiz, I have some questions.`;
     if(st.leadId) rpc('lead_tap', { p_id: st.leadId, p_tap: `${l.ask} · ${bk.dataset.book === 'call' ? 'Phone call' : 'Square One'}` }).catch(() => {});
     $('sheet').hidden = true;
     location.href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(msg)}`;
