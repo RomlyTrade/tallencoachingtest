@@ -134,20 +134,20 @@ const st = { step: 0, exp: 0, days: 2, goals: [], equip: null, name: '', email: 
 const TOTAL = 5;
 
 /* ===== Result ===== */
-function splitFor(days, months){
+function splitFor(days, months, equip){
   const g = months < 12 ? 'beg' : 'more';
   const t = {
     1: 'Full Body, once a week', 2: 'Full Body, 2 days a week',
     3: g === 'beg' ? 'Full Body, 3 days a week' : 'Upper / Lower / Full Body, 3 days a week',
     4: 'Upper / Lower, 4 days a week',
-    5: g === 'beg' ? 'Upper / Lower + Full Body, 5 days a week' : 'Upper / Lower + Push / Pull / Legs, 5 days a week',
+    5: equip === 'Full gym' ? 'Upper / Lower / Upper / Lower / Group Class (Bonus)' : equip === 'Dumbbells at home' ? 'Upper / Lower / Upper / Lower / Mobility (Optional)' : g === 'beg' ? 'Upper / Lower + Full Body, 5 days a week' : 'Upper / Lower + Push / Pull / Legs, 5 days a week',
     6: g === 'beg' ? 'Upper / Lower, 6 days a week' : 'Push / Pull / Legs, 6 days a week',
     7: g === 'beg' ? 'Upper / Lower, 6 days a week + 1 recovery day' : 'Push / Pull / Legs, 6 days a week + 1 recovery day'
   };
   return t[days];
 }
 function resultLines(){
-  const lines = [{ main: true, text: splitFor(st.days, st.exp), ask: 'What goes in each day?' }];
+  const lines = [{ main: true, text: splitFor(st.days, EXP[st.exp].months, st.equip), ask: 'What goes in each day?' }];
   const g = new Set(st.goals);
   if(g.has('Fat Loss') || g.has('Cardio') || g.has('General Fitness')) lines.push({ text: 'Plus short cardio finishers and a daily step target.', ask: 'How fast, how far, what machine?' });
   if(g.has('Mobility / Posture')) lines.push({ text: 'Plus 10 minutes of mobility each session.', ask: 'Which stretches?' });
