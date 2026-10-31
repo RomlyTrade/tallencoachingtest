@@ -135,14 +135,15 @@ const TOTAL = 5;
 
 /* ===== Result ===== */
 function splitFor(days, months, equip){
+  if(equip === 'Bodyweight only') return 'Get a gym membership.';
   const g = months < 12 ? 'beg' : 'more';
   const t = {
     1: 'Full Body, once a week', 2: 'Full Body, 2 days a week',
     3: g === 'beg' ? 'Full Body, 3 days a week' : 'Upper / Lower / Full Body, 3 days a week',
     4: 'Upper / Lower, 4 days a week',
     5: equip === 'Full gym' ? 'Upper / Lower / Upper / Lower / Group Class (Bonus)' : equip === 'Dumbbells at home' ? 'Upper / Lower / Upper / Lower / Mobility (Optional)' : g === 'beg' ? 'Upper / Lower + Full Body, 5 days a week' : 'Upper / Lower + Push / Pull / Legs, 5 days a week',
-    6: g === 'beg' ? 'Upper / Lower, 6 days a week' : 'Push / Pull / Legs, 6 days a week',
-    7: g === 'beg' ? 'Upper / Lower, 6 days a week + 1 recovery day' : 'Push / Pull / Legs, 6 days a week + 1 recovery day'
+    6: 'Upper / Lower / Upper / Lower / Find a sport hobby and do it on remaining 3 days, (find time for recovery)',
+    7: 'Upper / Lower / Upper / Lower / Find a sport hobby and do it on remaining 3 days, (find time for recovery)'
   };
   return t[days];
 }
