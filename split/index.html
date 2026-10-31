@@ -94,6 +94,7 @@ h2{font-size:52px}
 .sheet .panel{background:var(--chalk);width:100%;max-width:560px;padding:20px 16px 28px;display:flex;flex-direction:column;gap:10px}
 .sheet h3{margin:0 0 4px;font-size:19px}
 .sheet .q{margin:0 0 6px;color:var(--muted);font-size:15px}
+.sheet textarea{border:1.5px solid var(--rule);background:var(--card);color:var(--ink);padding:12px;font:inherit;font-size:17px;width:100%;min-height:96px;resize:vertical}
 </style>
 </head>
 <body>
@@ -106,6 +107,8 @@ h2{font-size:52px}
   <div class="panel">
     <h3 id="sheetTitle">I’d need to know you better to answer that.</h3>
     <button type="button" class="btn" data-book="call">📞 Free Call for Questions (10 mins max)</button>
+    <textarea id="qText" maxlength="1000" placeholder="Or type your question here" aria-label="Your question"></textarea>
+    <button type="button" class="btn" id="qSend">Send question</button>
     <button type="button" class="btn ghost" data-close>Not now</button>
   </div>
 </div>
@@ -229,8 +232,17 @@ document.addEventListener('click', e => {
   const gl = e.target.closest('[data-goal]');
   if(gl){ const g = gl.dataset.goal; st.goals = [g]; render(); return; }
   const ask = e.target.closest('[data-ask]');
-  if(ask){ askIdx = +ask.dataset.ask; $('sheet').hidden = false; $('sheet').querySelector('[data-book]').focus(); return; }
+  if(ask){ askIdx = +ask.dataset.ask; $('qSend').disabled = false; $('qSend').textContent = 'Send question'; $('sheet').hidden = false; $('sheet').querySelector('[data-book]').focus(); return; }
   if(e.target.closest('[data-close]') || e.target.id === 'sheet'){ $('sheet').hidden = true; return; }
+  if(e.target.closest('#qSend')){
+    const q = $('qText').value.trim(); const b = $('qSend');
+    if(!q){ $('qText').focus(); return; }
+    b.disabled = true; b.textContent = 'Sending…';
+    rpc('lead_question', { p_id: st.leadId, p_about: st.result[askIdx].ask, p_q: q })
+      .then(j => { if(!j || !j.ok) throw 0; $('qText').value = ''; b.textContent = 'Sent ✓'; })
+      .catch(() => { b.disabled = false; b.textContent = 'Couldn’t send. Try again'; });
+    return;
+  }
   const bk = e.target.closest('[data-book]');
   if(bk){
     const l = st.result[askIdx]; const main = st.result[0].text;

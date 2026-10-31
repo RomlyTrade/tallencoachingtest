@@ -205,7 +205,7 @@ function render(){
       <div><a href="mailto:${esc(l.email)}">${esc(l.email)}</a>${l.consent ? ' · ✓ happy to get emails' : ' · no marketing emails'}</div>
       <div class="res">${esc(l.result)}</div>${a.source ? `<div class="meta">From: ${esc(String(a.source).replace(/\/$/, ''))}</div>` : ''}
       <div class="meta">${esc([a.experience && `${a.experience} (${a.level})`, a.days && `${a.days} days`, a.minutes && `${a.minutes} min`, (a.goals || []).join(' + '), a.equipment].filter(Boolean).join(' · '))}</div>
-      ${(l.taps || []).map(t => `<div class="tap">❓ Asked: ${esc(t.q)}</div>`).join('')}</div>`;
+      ${(l.taps || []).map(t => `<div class="tap">${t.msg ? `✉️ Wrote: ${esc(t.q)}` : `❓ Asked: ${esc(t.q)}`}</div>`).join('')}</div>`;
   }).join('') : '<p class="empty">No quiz submissions yet.</p>';
   $('stats').innerHTML = `
     <div class="stat"><b class="num">${inWeek.length}</b><span>${inWeek.length === 1 ? 'session' : 'sessions'} logged</span></div>
