@@ -155,6 +155,7 @@ function resultLines(){
   const lines = [{ main: true, week, text: week.join(' / '), note: week.includes('Bonus') ? 'Fill the bonus with a sport of your choice, a group class, a 5k run, go nuts!' : '' }];
   const g = new Set(st.goals);
   if(g.has('Lose Fat')) lines.push({ text: 'Plus short cardio finishers and a daily step target.', ask: 'How fast, how far, what machine?' });
+  if(g.has('Lose Fat')) lines.push({ ask: 'What do I eat?' });
   if(g.has('Gain Muscle')) lines.push({ ask: 'How many reps?' });
   if(g.has('Recomp')) lines.push({ ask: 'What do I eat to recomp?' });
   if(g.has('Maintain')) lines.push({ ask: 'What do I eat to maintain?' });
