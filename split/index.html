@@ -104,9 +104,8 @@ h2{font-size:52px}
 </div>
 <div class="sheet" id="sheet" hidden role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
   <div class="panel">
-    <h3 id="sheetTitle">Let’s talk it through</h3>
-    <p class="q" id="sheetQ"></p>
-    <button type="button" class="btn" data-book="call">📞 Free call for any questions (10 mins max)</button>
+    <h3 id="sheetTitle">I’d need to know you better to answer that.</h3>
+    <button type="button" class="btn" data-book="call">📞 Free Call for Questions (10 mins max)</button>
     <button type="button" class="btn ghost" data-close>Not now</button>
   </div>
 </div>
@@ -229,7 +228,7 @@ document.addEventListener('click', e => {
   const gl = e.target.closest('[data-goal]');
   if(gl){ const g = gl.dataset.goal; if(st.goals.includes(g)) st.goals = st.goals.filter(x => x !== g); else { st.goals.push(g); if(st.goals.length > 2) st.goals.shift(); } render(); return; }
   const ask = e.target.closest('[data-ask]');
-  if(ask){ askIdx = +ask.dataset.ask; $('sheetQ').textContent = '“' + st.result[askIdx].ask + '”'; $('sheet').hidden = false; $('sheet').querySelector('[data-book]').focus(); return; }
+  if(ask){ askIdx = +ask.dataset.ask; $('sheet').hidden = false; $('sheet').querySelector('[data-book]').focus(); return; }
   if(e.target.closest('[data-close]') || e.target.id === 'sheet'){ $('sheet').hidden = true; return; }
   const bk = e.target.closest('[data-book]');
   if(bk){
