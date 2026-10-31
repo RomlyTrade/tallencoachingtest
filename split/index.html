@@ -246,9 +246,8 @@ document.addEventListener('click', e => {
   }
   const bk = e.target.closest('[data-book]');
   if(bk){
-    const l = st.result[askIdx]; const main = st.result[0].text;
-    const want = bk.dataset.book === 'call' ? 'I’d like a free 5–10 min phone call about it.' : 'I’d like to book a free Square One session in Upminster.';
-    const msg = `Hi Tom, it’s ${st.name}. I did your split quiz and got: ${main}.\n\nMy question: ${l.ask}\n\n${want}`;
+    const l = st.result[askIdx];
+    const msg = 'Hi, I just did your quiz, I have some questions.';
     if(st.leadId) rpc('lead_tap', { p_id: st.leadId, p_tap: `${l.ask} · ${bk.dataset.book === 'call' ? 'Phone call' : 'Square One'}` }).catch(() => {});
     $('sheet').hidden = true;
     location.href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(msg)}`;
