@@ -148,7 +148,7 @@ function splitFor(days, months, equip){
 }
 function resultLines(){
   if(st.equip === 'Bodyweight only') return [{ main: true, text: 'Get a gym membership.' }];
-  const lines = [{ main: true, text: splitFor(st.days, EXP[st.exp].months, st.equip), ask: 'What goes in each day?' }];
+  const lines = [{ main: true, text: splitFor(st.days, EXP[st.exp].months, st.equip) }];
   const g = new Set(st.goals);
   if(g.has('Fat Loss') || g.has('Cardio') || g.has('General Fitness')) lines.push({ text: 'Plus short cardio finishers and a daily step target.', ask: 'How fast, how far, what machine?' });
   if(g.has('Mobility / Posture')) lines.push({ text: 'Plus 10 minutes of mobility each session.', ask: 'Which stretches?' });
