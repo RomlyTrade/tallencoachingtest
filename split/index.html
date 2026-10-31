@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en-GB">
+<html lang="en-GB" data-theme="dark">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -155,7 +155,7 @@ function resultLines(){
   const lines = [{ main: true, week, text: week.join(' / '), note: week.includes('Bonus') ? 'Fill the bonus with a sport of your choice, a group class, a 5k run, go nuts!' : '' }];
   const g = new Set(st.goals);
   if(g.has('Lose Fat')) lines.push({ text: 'Plus short cardio finishers and a daily step target.', ask: 'How fast, how far, what machine?' });
-  if(g.has('Gain Muscle')) lines.push({ text: 'Mostly 8–12 reps, close to failure.', ask: 'How close is close?' });
+  if(g.has('Gain Muscle')) lines.push({ ask: 'How many reps?' });
   if(g.has('Recomp')) lines.push({ ask: 'What do I eat to recomp?' });
   if(g.has('Maintain')) lines.push({ ask: 'What do I eat to maintain?' });
   return lines;
