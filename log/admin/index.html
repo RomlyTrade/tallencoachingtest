@@ -64,6 +64,12 @@ button{font:inherit;color:inherit}
 .chev{font-size:13px;color:var(--plate);font-weight:700}
 .cbody{border-top:1px solid var(--rule);padding:14px;display:flex;flex-direction:column;gap:16px}
 .empty{font-size:14px;color:var(--muted)}
+.tools{display:flex;flex-direction:column;gap:10px}
+.btnlink{align-self:flex-start;border:1.5px solid var(--plate);color:var(--plate);font-weight:700;font-size:14px;padding:8px 12px;text-decoration:none}
+.blab{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{appearance:none;border:1.5px solid var(--bad);background:var(--bad-soft);color:var(--bad);font-weight:600;font-size:13px;padding:4px 8px;cursor:pointer}
+.tools select{border:1.5px solid var(--rule);background:var(--card);color:var(--ink);padding:8px;font:inherit;font-size:15px;max-width:100%}
 
 .sess{display:flex;flex-direction:column;gap:12px}
 .shead{display:flex;justify-content:space-between;align-items:baseline;gap:10px;border-bottom:2px solid var(--ink);padding-bottom:6px}
@@ -194,7 +200,7 @@ function render(){
         <span class="pips">${pips}</span>
         <span class="cmeta"><span>Last session: <strong>${last ? esc(last.date) : 'never'}</strong></span>${tasks ? `<span>朝: <strong>${dailyBy[c.id] || 0}/${tasks.length * 6}</strong></span>` : ''}${mine.some(s => s.note) ? '<span>📝 has notes</span>' : ''}${c.prefs && c.prefs.unit ? `<span>Units: <strong>${esc(c.prefs.unit)}</strong></span>` : ''}${c.prefs && c.prefs.rlo ? `<span>Rep range: <strong>${c.prefs.rlo}–${c.prefs.rhi}</strong></span>` : ''}</span>
       </button>
-      ${isOpen ? `<div class="cbody">${mine.length ? mine.map(s => sessionHTML(c, s, plan, all, lib)).join('') : '<p class="empty">No sessions logged this week.</p>'}</div>` : ''}
+      ${isOpen ? `<div class="cbody">${toolsHTML(c, lib)}${mine.length ? mine.map(s => sessionHTML(c, s, plan, all, lib)).join('') : '<p class="empty">No sessions logged this week.</p>'}</div>` : ''}
     </section>`;
   });
   $('clients').innerHTML = cards.join('') || '<p class="empty">No clients yet.</p>';
@@ -213,6 +219,26 @@ function render(){
     <div class="stat"><b class="num">${notes}</b><span>${notes === 1 ? 'client note' : 'client notes'}</span></div>`;
 }
 
+function toolsHTML(c, lib){
+  const blocked = c.blocked || [];
+  const cats = (data.categories || []);
+  const groups = cats.map(cat => {
+    const xs = (data.library || []).filter(x => x.cat === cat.id && !blocked.includes(x.id));
+    return xs.length ? `<optgroup label="${esc(cat.name)}">${xs.map(x => `<option value="${esc(x.id)}">${esc(x.name)}</option>`).join('')}</optgroup>` : '';
+  }).join('');
+  return `<div class="tools">
+    ${c.key ? `<a class="btnlink" href="/log/#c=${encodeURIComponent(c.id)}&t=${encodeURIComponent(c.key)}&p=1" target="_blank" rel="noopener">Preview workout ↗</a>` : ''}
+    <div class="blab">Blocked exercises</div>
+    ${blocked.length ? `<div class="chips">${blocked.map(id => `<button type="button" class="chip" data-unblock="${esc(id)}" data-c="${esc(c.id)}" aria-label="Unblock ${esc(lib[id] ? lib[id].name : id)}">${esc(lib[id] ? lib[id].name : id)} ✕</button>`).join('')}</div>` : ''}
+    <select data-block="${esc(c.id)}" aria-label="Block an exercise for ${esc(c.name)}"><option value="">Block an exercise…</option>${groups}</select>
+  </div>`;
+}
+async function saveBlocked(cid, list){
+  const c = (data.clients || []).find(x => x.id === cid); if(!c) return;
+  const before = c.blocked || []; c.blocked = list; render();
+  try{ const j = await rpc('set_blocked', { p_key: KEY, p_client: cid, p_blocked: list }); if(!j.ok) throw new Error(j.error); }
+  catch(e){ c.blocked = before; render(); setStatus('Couldn’t save that. (' + e.message + ')'); }
+}
 function exName(p, pick, lib){
   if(pick && String(pick).startsWith('other:')) return String(pick).slice(6);
   if(pick && lib[pick]) return lib[pick].name;
@@ -257,7 +283,13 @@ document.addEventListener('click', e => {
   const wk = e.target.closest('[data-week]');
   if(wk){ week = Math.min(0, week + Number(wk.dataset.week)); load(); return; }
   const ch = e.target.closest('[data-client]');
-  if(ch){ const id = ch.dataset.client; open.has(id) ? open.delete(id) : open.add(id); render(); }
+  if(ch){ const id = ch.dataset.client; open.has(id) ? open.delete(id) : open.add(id); render(); return; }
+  const ub = e.target.closest('[data-unblock]');
+  if(ub){ const c = data.clients.find(x => x.id === ub.dataset.c); saveBlocked(c.id, (c.blocked || []).filter(x => x !== ub.dataset.unblock)); }
+});
+document.addEventListener('change', e => {
+  const sel = e.target.closest('[data-block]');
+  if(sel && sel.value){ const c = data.clients.find(x => x.id === sel.dataset.block); saveBlocked(c.id, [...(c.blocked || []), sel.value]); }
 });
 window.addEventListener('hashchange', () => location.reload());
 load();
