@@ -234,11 +234,13 @@ function sessionHTML(c, s, plan, all, lib){
     const unitBase = p ? String(p.unit || 'kg') : 'kg';
     const rows = (s.sets[slot] || []).map((x, i) => {
       if(!x || (!x.r && !x.w)) return '';
-      const reps = /^\d+$/.test(String(x.r)) ? Number(x.r) : null;
-      const pr = prev && prev.sets[slot][i] && prev.sets[slot][i].r;
+      const rv = y => y && (y.r2 ? `${y.r || '–'}/${y.r2}` : y.r);
+      const rr = [x.r, x.r2].filter(v => /^\d+$/.test(String(v))).map(Number);
+      const reps = rr.length ? Math.min(...rr) : null;
+      const pr = prev && rv(prev.sets[slot][i]);
       const u = x.u ? x.u + unitBase.replace(/^\s*(kg|lbs?)/i, '') : unitBase;
       const hit = reps != null && hi ? reps >= hi : null;
-      return `<tr><td>Set ${i+1}</td><td>${x.w !== '' && x.w != null ? `${esc(fmtW(x.w))} ${esc(u)}` : '<span style="color:var(--muted)">BW</span>'}</td><td class="c">${esc(x.r || '–')}</td><td class="c">${esc(pr || '–')}</td><td class="c">${hit == null ? '–' : `<span class="hit ${hit ? 'y' : 'n'}" title="Target ${hi}">${hit ? '✓' : '✗'}</span>`}</td></tr>`;
+      return `<tr><td>Set ${i+1}</td><td>${x.w !== '' && x.w != null ? `${esc(fmtW(x.w))} ${esc(u)}` : '<span style="color:var(--muted)">BW</span>'}</td><td class="c">${esc(rv(x) || '–')}</td><td class="c">${esc(pr || '–')}</td><td class="c">${hit == null ? '–' : `<span class="hit ${hit ? 'y' : 'n'}" title="Target ${hi}">${hit ? '✓' : '✗'}</span>`}</td></tr>`;
     }).join('');
     const box = s.settings && s.settings[slot];
     return `<div class="ex"><h4>${esc(exName(p, pick, lib))}${box ? ` <small>· ${esc(box)}</small>` : ''}${hi ? ` <small>· target ${hi}</small>` : ''}</h4>

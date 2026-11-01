@@ -109,6 +109,8 @@ button,input,textarea{font:inherit;color:inherit}
 
 .sets{display:flex;flex-direction:column;gap:6px}
 .setrow{display:grid;grid-template-columns:28px minmax(0,1fr) minmax(0,1fr) 44px;gap:8px;align-items:center}
+.lr{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.lr .field input{padding-right:24px}
 .setrow .n{font-size:13px;font-weight:700;color:var(--muted);text-align:center}
 .field{position:relative}
 .field input{width:100%;border:1.5px solid var(--rule);background:var(--chalk);padding:8px 34px 8px 10px;min-height:44px;font-size:17px;font-weight:600;font-variant-numeric:tabular-nums}
@@ -284,6 +286,11 @@ const pickOf = (sess, ex) => (sess && sess.picks && sess.picks[ex.id]) || ex.lib
 const boxOf = (sess, ex) => (sess && sess.settings && sess.settings[ex.id]) || '';
 const modeDefault = (ex, opt) => opt.boxType === 'mode' ? ((opt.id === ex.lib && ex.boxDefault) || 'Bodyweight') : '';
 const isBW = (opt, box) => opt.equipment === 'bw' && !(opt.boxType === 'mode' && box && box !== 'Bodyweight');
+/* "Single leg" switch (e.g. leg curls): reps logged per leg as r (left) and r2 (right) */
+const canSides = opt => opt.boxType === 'toggle' && opt.boxLabel === 'Single leg';
+const sidesOn = (opt, box) => canSides(opt) && !!box;
+const effR = x => { if(!x || x.r2 == null || x.r2 === '') return x; const a = Number(x.r), b = Number(x.r2);
+  return Object.assign({}, x, { r: /^\d+$/.test(String(x.r)) && /^\d+$/.test(String(x.r2)) ? String(Math.min(a, b)) : (x.r || x.r2), rs: `${x.r || '–'}/${x.r2 || '–'}` }); };
 const isOwnPlanPick = (ex, opt) => !ex.cat || opt.id === ex.lib;
 const stepFor = (ex, opt, U) => (isOwnPlanPick(ex, opt) && baseU(ex) === U && Number(ex.inc) > 0) ? Number(ex.inc) : (STEPS[U][opt.equipment] || STEPS[U].other);
 const noAuto = (ex, opt) => isOwnPlanPick(ex, opt) && Number(ex.inc) === 0 && opt.equipment !== 'bw';
@@ -353,10 +360,11 @@ function settingNow(k, exId){ const d = draftFor(k); return d.settings[exId] != 
    - Every required set at the top of the range 3 sessions running at the same weight: every set goes up one step
      (for assisted pull-ups, the assistance comes down a step instead). */
 const HITS_NEEDED = 3;
-function histFor(k, ex, opt, mode){
+function histFor(k, ex, opt, mode, side){
   return allSessions().filter(s => s.workout === k && s.sets && s.sets[ex.id] && pickOf(s, ex) === opt.id
-      && (!mode || (boxOf(s, ex) || modeDefault(ex, opt)) === mode))
-    .reverse().map(s => Array.from(s.sets[ex.id], x => x || {})).filter(a => a.some(x => x.r || x.w));
+      && (!mode || (boxOf(s, ex) || modeDefault(ex, opt)) === mode)
+      && (side == null || !!boxOf(s, ex) === side))
+    .reverse().map(s => Array.from(s.sets[ex.id], x => effR(x || {}))).filter(a => a.some(x => x.r || x.w));
 }
 function estimateFor(ex, opt, U, step){
   if(!opt.factor || !db.lib) return null;
@@ -381,7 +389,7 @@ function targetFor(ex, k, opt, box){
   const mode = opt.boxType === 'mode' ? (box || 'Bodyweight') : '';
   const assisted = mode === 'Assisted';
   const n = ex.sets; const req = reqCount(ex);
-  const hist = histFor(k, ex, opt, mode);
+  const hist = histFor(k, ex, opt, mode, canSides(opt) ? !!box : null);
   const toU = x => { if(!x || x.w === '' || x.w == null || isNaN(Number(x.w))) return null; const from = x.u || baseU(ex); const v = conv(Number(x.w), from, U); return from === U ? v : rnd(v, step); };
   if(!hist.length){
     if(bw) return { lo, hi };
@@ -397,7 +405,7 @@ function targetFor(ex, k, opt, box){
   const repsOf = i => last[i] && /^\d+$/.test(String(last[i].r)) ? Number(last[i].r) : null;
   const reqSets = last.slice(0, req);
   const tooShort = reqSets.some(x => x && /^\d+$/.test(String(x.r)) && Number(x.r) <= lo - 4);
-  const lastTxt = last.slice(0, n).map(x => bw || x.w === '' || x.w == null ? `${x.r || '–'}` : `${fmtW(toU(x))}×${x.r || '–'}`).join(', ');
+  const lastTxt = last.slice(0, n).map(x => bw || x.w === '' || x.w == null ? `${x.rs || x.r || '–'}` : `${fmtW(toU(x))}×${x.rs || x.r || '–'}`).join(', ');
   if(tooShort && !bw && !noAuto(ex, opt)){
     return { lo, hi, ws: lastWs.map(v => v == null ? v : Math.max(0, rnd(v + (assisted ? step : -step), step))), repsAll: hi, lastTxt };
   }
@@ -495,6 +503,7 @@ function exCard(ex, i, k, d, last, wd){
   const done = ro ? cur.map(x => !!(x && (x.r || x.w))) : (d.done[ex.id] || []);
   const allDone = done.filter(Boolean).length >= ex.sets;
   const assisted = opt.boxType === 'mode' && box === 'Assisted';
+  const sides = sidesOn(opt, box);
   const rows = Array.from({length: ex.sets}, (_, s) => {
     const c = cur[s] || {};
     let wv = c.w ?? '';
@@ -504,7 +513,8 @@ function exCard(ex, i, k, d, last, wd){
     return `<div class="setrow">
       <span class="n${isOpt(ex,s) ? ' opt' : ''}"${isOpt(ex,s) ? ' title="Optional set"' : ''}>${s+1}</span>
       ${bw ? `<span class="small">Bodyweight</span>` : `<label class="field"><input inputmode="decimal" class="${t.est && !wv ? 'est' : ''}" id="w-${esc(ex.id)}-${s}" data-ex="${esc(ex.id)}" data-set="${s}" data-k="w" value="${esc(wv)}" ${ro ? 'disabled' : ''} placeholder="${esc(phW)}" aria-label="Set ${s+1} ${assisted ? 'assistance' : 'weight'} in ${esc(lbl)}" style="padding-right:${lbl.length > 2 ? 60 : 34}px"><span class="u">${esc(lbl)}</span></label>`}
-      <label class="field"><input inputmode="numeric" id="r-${esc(ex.id)}-${s}" data-ex="${esc(ex.id)}" data-set="${s}" data-k="r" value="${esc(c.r ?? '')}" ${ro ? 'disabled' : ''} placeholder="${esc(phR)}" aria-label="Set ${s+1} reps"></label>
+      ${sides ? `<div class="lr"><label class="field"><input inputmode="numeric" id="r-${esc(ex.id)}-${s}" data-ex="${esc(ex.id)}" data-set="${s}" data-k="r" value="${esc(c.r ?? '')}" ${ro ? 'disabled' : ''} placeholder="${esc(phR)}" aria-label="Set ${s+1} reps, left leg"><span class="u">L</span></label><label class="field"><input inputmode="numeric" id="r2-${esc(ex.id)}-${s}" data-ex="${esc(ex.id)}" data-set="${s}" data-k="r2" value="${esc(c.r2 ?? '')}" ${ro ? 'disabled' : ''} placeholder="${esc(phR)}" aria-label="Set ${s+1} reps, right leg"><span class="u">R</span></label></div>`
+        : `<label class="field"><input inputmode="numeric" id="r-${esc(ex.id)}-${s}" data-ex="${esc(ex.id)}" data-set="${s}" data-k="r" value="${esc(c.r ?? '')}" ${ro ? 'disabled' : ''} placeholder="${esc(phR)}" aria-label="Set ${s+1} reps"></label>`}
       <button type="button" class="tick" data-tick="${esc(ex.id)}" data-set="${s}" aria-pressed="${!!done[s]}" ${ro ? 'disabled' : ''} aria-label="Mark set ${s+1} done"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="square"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button>
     </div>`;
   }).join('');
@@ -548,12 +558,12 @@ function summaryText(sess){
     if(!s.length) return;
     const opt = optFor(ex, pickOf(sess, ex)); const box = boxOf(sess, ex);
     const name = opt.name.replace(/\s*\(.*?\)\s*/g, ' ').trim();
-    const reps = s.map(x => x.r || '–'); const sameReps = reps.every(r => r === reps[0]);
+    const reps = s.map(x => x.r2 ? `${x.r || '–'}/${x.r2}` : (x.r || '–')); const sameReps = reps.every(r => r === reps[0]);
     const unit = (s[0].u || baseU(ex)) + uSuffix(ex);
     let txt;
     if(isBW(opt, box) || s.every(x => x.w === '' || x.w == null)) txt = `${reps.join(' · ')} reps`;
     else if(sameReps) txt = `${s.map(x => fmtW(x.w) || '–').join(' · ')} ${unit} × ${reps[0]}`;
-    else txt = `${s.map(x => `${fmtW(x.w) || '–'}×${x.r || '–'}`).join(' · ')} ${unit}`;
+    else txt = `${s.map((x, i) => `${fmtW(x.w) || '–'}×${reps[i]}`).join(' · ')} ${unit}`;
     lines.push(`${name}: ${txt}${box ? ` (${box})` : ''}`);
   });
   return lines.join('\n');
@@ -757,6 +767,8 @@ document.addEventListener('click', e => {
       const wi = document.getElementById(`w-${id}-${s}`), ri = document.getElementById(`r-${id}-${s}`);
       if(wi && !wi.value && wi.placeholder && !isNaN(parseFloat(wi.placeholder))) d.sets[id][s].w = wi.placeholder;
       if(ri && !ri.value && ri.placeholder && /^\d+$/.test(ri.placeholder)) d.sets[id][s].r = ri.placeholder;
+      const r2i = document.getElementById(`r2-${id}-${s}`);
+      if(r2i && !r2i.value && r2i.placeholder && /^\d+$/.test(r2i.placeholder)) d.sets[id][s].r2 = r2i.placeholder;
     }
     save(); const y = scrollY; render(); scrollTo(0, y); return;
   }
@@ -775,15 +787,17 @@ function finishSession(){
   const sets = {}, settings = {}, picks = {};
   w.exercises.forEach(ex => {
     if(!(ex.sets > 0)) return;
-    const pick = currentPick(k, ex); const opt = optFor(ex, pick); const box = boxNow(k, ex, opt); const bw = isBW(opt, box);
+    const pick = currentPick(k, ex); const opt = optFor(ex, pick); const box = boxNow(k, ex, opt); const bw = isBW(opt, box); const sides = sidesOn(opt, box);
     const arr = Array.from({length: ex.sets}, (_, i) => {
       const x = (d.sets[ex.id] || [])[i] || {};
       const r = x.r ? String(x.r) : '';
       let wt = !bw && x.w ? String(x.w) : '';
       if(!wt && r && !bw){ const ph = document.getElementById(`w-${ex.id}-${i}`)?.placeholder; if(ph && !isNaN(parseFloat(ph))) wt = ph; }
-      return { w: wt, r, u: U };
+      const r2 = sides && x.r2 ? String(x.r2) : '';
+      if(!wt && r2 && !bw){ const ph = document.getElementById(`w-${ex.id}-${i}`)?.placeholder; if(ph && !isNaN(parseFloat(ph))) wt = ph; }
+      return sides ? { w: wt, r, r2, u: U } : { w: wt, r, u: U };
     });
-    if(arr.some(x => x.r || x.w)){
+    if(arr.some(x => x.r || x.r2 || x.w)){
       sets[ex.id] = arr;
       if(ex.cat) picks[ex.id] = pick;
       if(opt.boxLabel && box) settings[ex.id] = String(box).trim().slice(0, 300);
@@ -813,7 +827,15 @@ document.addEventListener('input', e => {
   if(t.dataset.ex){
     d.sets[t.dataset.ex] ||= [];
     d.sets[t.dataset.ex][+t.dataset.set] ||= {};
-    d.sets[t.dataset.ex][+t.dataset.set][t.dataset.k] = t.value.trim();
+    const cell = d.sets[t.dataset.ex][+t.dataset.set];
+    cell[t.dataset.k] = t.value.trim();
+    /* single leg: the first number typed is copied to the other leg until that leg is typed in */
+    if(t.dataset.k === 'r' || t.dataset.k === 'r2'){
+      const other = t.dataset.k === 'r' ? 'r2' : 'r';
+      cell.typed ||= {}; cell.typed[t.dataset.k] = 1;
+      const oi = document.getElementById(`${other}-${t.dataset.ex}-${t.dataset.set}`);
+      if(oi && !cell.typed[other]){ cell[other] = cell[t.dataset.k]; oi.value = cell[other]; }
+    }
     save(); return;
   }
   if(t.dataset.setting){ d.settings[t.dataset.setting] = t.value; save(); return; }
