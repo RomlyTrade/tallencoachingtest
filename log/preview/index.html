@@ -288,7 +288,7 @@ const modeDefault = (ex, opt) => opt.boxType === 'mode' ? ((opt.id === ex.lib &&
 const isBW = (opt, box) => opt.equipment === 'bw' && !(opt.boxType === 'mode' && box && box !== 'Bodyweight');
 /* "Single leg" switch (e.g. leg curls): reps logged per leg as r (left) and r2 (right) */
 const canSides = opt => opt.boxType === 'toggle' && opt.boxLabel === 'Single leg';
-const sidesOn = (opt, box) => canSides(opt) && !!box;
+const sidesOn = (opt, box) => canSides(opt) && box === 'Single leg';
 const effR = x => { if(!x || x.r2 == null || x.r2 === '') return x; const a = Number(x.r), b = Number(x.r2);
   return Object.assign({}, x, { r: /^\d+$/.test(String(x.r)) && /^\d+$/.test(String(x.r2)) ? String(Math.min(a, b)) : (x.r || x.r2), rs: `${x.r || '–'}/${x.r2 || '–'}` }); };
 const isOwnPlanPick = (ex, opt) => !ex.cat || opt.id === ex.lib;
@@ -363,7 +363,7 @@ const HITS_NEEDED = 3;
 function histFor(k, ex, opt, mode, side){
   return allSessions().filter(s => s.workout === k && s.sets && s.sets[ex.id] && pickOf(s, ex) === opt.id
       && (!mode || (boxOf(s, ex) || modeDefault(ex, opt)) === mode)
-      && (side == null || !!boxOf(s, ex) === side))
+      && (side == null || (boxOf(s, ex) === 'Single leg') === side))
     .reverse().map(s => Array.from(s.sets[ex.id], x => effR(x || {}))).filter(a => a.some(x => x.r || x.w));
 }
 function estimateFor(ex, opt, U, step){
@@ -389,7 +389,7 @@ function targetFor(ex, k, opt, box){
   const mode = opt.boxType === 'mode' ? (box || 'Bodyweight') : '';
   const assisted = mode === 'Assisted';
   const n = ex.sets; const req = reqCount(ex);
-  const hist = histFor(k, ex, opt, mode, canSides(opt) ? !!box : null);
+  const hist = histFor(k, ex, opt, mode, canSides(opt) ? box === 'Single leg' : null);
   const toU = x => { if(!x || x.w === '' || x.w == null || isNaN(Number(x.w))) return null; const from = x.u || baseU(ex); const v = conv(Number(x.w), from, U); return from === U ? v : rnd(v, step); };
   if(!hist.length){
     if(bw) return { lo, hi };
@@ -478,13 +478,12 @@ function render(){
 function pickMenu(ex, opt, ro){
   if(!ex.cat || ro || !db.lib) return `<div class="exname">${esc(opt.name)}</div>`;
   const list = (db.lib.byCat[ex.cat] || []).map(o => [o.id, o.name]);
-  customsFor(ex.cat).forEach(nm => list.push(['other:' + nm, nm]));
-  if(String(opt.id).startsWith('other:') && !list.some(x => x[0] === opt.id)) list.push([opt.id, opt.name]);
-  return `<label class="pickwrap"><select class="pick" data-pick="${esc(ex.id)}" aria-label="Choose exercise">${list.map(([v, nm]) => `<option value="${esc(v)}"${v === opt.id ? ' selected' : ''}>${esc(nm)}</option>`).join('')}<option value="__other">Other…</option></select><span class="chev" aria-hidden="true">⇄</span></label>`;
+  if(opt.id && !list.some(x => x[0] === opt.id)) list.push([opt.id, opt.name]);
+  return `<label class="pickwrap"><select class="pick" data-pick="${esc(ex.id)}" aria-label="Choose exercise">${list.map(([v, nm]) => `<option value="${esc(v)}"${v === opt.id ? ' selected' : ''}>${esc(nm)}</option>`).join('')}</select><span class="chev" aria-hidden="true">⇄</span></label>`;
 }
 function boxUI(ex, opt, box, ro){
   if(!opt.boxLabel) return '';
-  if(opt.boxType === 'toggle') return `<button type="button" class="toggle" data-toggle="${esc(ex.id)}" aria-pressed="${!!box}" ${ro ? 'disabled' : ''}><span class="sw"></span>${esc(opt.boxLabel)}</button>`;
+  if(opt.boxType === 'toggle') return `<button type="button" class="toggle" data-toggle="${esc(ex.id)}" aria-pressed="${canSides(opt) ? box === 'Single leg' : !!box}" ${ro ? 'disabled' : ''}><span class="sw"></span>${esc(opt.boxLabel)}</button>`;
   if(opt.boxType === 'mode'){
     const cur = box || 'Bodyweight';
     return `<div class="seg" role="radiogroup" aria-label="Type">${opt.boxLabel.split('|').map(l => `<button type="button" role="radio" data-mode="${esc(ex.id)}" data-val="${esc(l)}" aria-checked="${l === cur}" ${ro ? 'disabled' : ''}>${esc(l)}</button>`).join('')}</div>`;
@@ -531,7 +530,6 @@ function exCard(ex, i, k, d, last, wd){
       ${opts.length ? `<div class="optnote">Set ${opts.join(' & ')} ${opts.length > 1 ? 'are' : 'is'} optional if you’re short on time</div>` : ''}</div>
       <span class="idx">${i+1}</span>
     </div>
-    ${!ro && d.otherFor === ex.id ? `<div class="othername"><input data-othername="${esc(ex.id)}" placeholder="Name of the exercise" maxlength="60" autocomplete="off"><button type="button" data-otherok="${esc(ex.id)}">Add</button></div>` : ''}
     ${t.up ? `<div class="target up"><span class="tag">Level up</span><span>${esc(t.text)}</span></div>` : ''}
     ${[opt.note, ex.note].filter(Boolean).map(nt => `<div class="note">${esc(nt)}</div>`).join('')}
     ${/^https?:\/\//.test(video || '') ? `<a class="vid" href="${esc(video)}" target="_blank" rel="noopener">▶ Watch the demo</a>` : ''}
@@ -735,7 +733,7 @@ document.addEventListener('click', e => {
   if(e.target.closest('[data-rrreset]')){ const p = Object.assign({}, db.prefs); delete p.rlo; delete p.rhi; setPrefs(p); return; }
   const tg = e.target.closest('[data-toggle]');
   if(tg){ const d = draftFor(db.tab); const ex = exInWorkout(db.tab, tg.dataset.toggle); const opt = optFor(ex, currentPick(db.tab, ex));
-    d.settings[ex.id] = boxNow(db.tab, ex, opt) ? '' : opt.boxLabel; save(); const y = scrollY; render(); scrollTo(0, y); return; }
+    const cur = boxNow(db.tab, ex, opt); d.settings[ex.id] = (canSides(opt) ? cur === opt.boxLabel : !!cur) ? '' : opt.boxLabel; save(); const y = scrollY; render(); scrollTo(0, y); return; }
   const md = e.target.closest('[data-mode]');
   if(md){ const d = draftFor(db.tab); d.settings[md.dataset.mode] = md.dataset.val; delete d.sets[md.dataset.mode]; delete d.done[md.dataset.mode]; save(); const y = scrollY; render(); scrollTo(0, y); return; }
   const nb = e.target.closest('[data-nobar]');
