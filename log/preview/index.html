@@ -222,6 +222,8 @@ function rpc(fn, args){
 function readAuth(){
   const h = new URLSearchParams(location.hash.slice(1));
   let c = h.get('c'), t = h.get('t');
+  /* Coach preview (from the admin panel): read-only, kept apart from the client's own saved data */
+  if(h.get('p') === '1' && c && t) return { c: c.toLowerCase(), t, preview: true };
   try{
     if(c && t) localStorage.setItem('tallen-auth', JSON.stringify({c, t}));
     else { const a = JSON.parse(localStorage.getItem('tallen-auth') || 'null'); if(a){ c = a.c; t = a.t; } }
@@ -231,7 +233,7 @@ function readAuth(){
 const AUTH = readAuth();
 /* Clients whose tabs show only the workout name (no 'Workout A' line) */
 const NAME_ONLY_TABS = ['carl', 'athvaithan', 'ben', 'ian', 'mark', 'sarahlynn']; // tabs: name only
-const KEY = 'tallen-log2:' + (AUTH ? AUTH.c : 'none');
+const KEY = (AUTH && AUTH.preview ? 'tallen-preview:' : 'tallen-log2:') + (AUTH ? AUTH.c : 'none');
 
 /* ===== Local copy (works offline, survives refresh) ===== */
 let canStore = true;
@@ -239,7 +241,7 @@ function load(){ try{ const v = localStorage.getItem(KEY); return v ? JSON.parse
 function save(){ try{ localStorage.setItem(KEY, JSON.stringify(db)); }catch(e){ canStore = false; } }
 /* First visit on the new page: carry over anything saved by the old page (unsent sessions, half-logged sets) */
 function loadOld(){ try{ const v = localStorage.getItem('tallen-log:' + (AUTH ? AUTH.c : 'none')); return v ? JSON.parse(v) : null; }catch(e){ return null; } }
-let db = load() || loadOld() || {};
+let db = load() || (AUTH && AUTH.preview ? null : loadOld()) || {};
 db.plan ||= null; db.name ||= ''; db.sessions ||= []; db.pending ||= []; db.drafts ||= {}; db.settings ||= {}; db.tab ||= null;
 db.daily ||= []; db.dailyLog ||= {}; db.dailyPending ||= {}; db.view ||= 'gym'; db.week ||= 0;
 db.prefs ||= {}; db.lib ||= null;
@@ -303,7 +305,8 @@ function currentPick(k, ex){
   const d = draftFor(k);
   if(d.picks && d.picks[ex.id]) return d.picks[ex.id];
   const prev = allSessions().filter(s => s.workout === k && s.sets && s.sets[ex.id]).pop();
-  return prev ? pickOf(prev, ex) : (ex.lib || '');
+  const pk = prev ? pickOf(prev, ex) : (ex.lib || '');
+  return (ex.cat && db.lib && pk && !db.lib.ex[pk] && !String(pk).startsWith('other:') && ex.lib) ? ex.lib : pk;
 }
 function boxNow(k, ex, opt){
   const d = draftFor(k);
@@ -604,6 +607,7 @@ async function fetchPlan(){
 }
 let syncing = false;
 async function syncPending(){
+  if(AUTH && AUTH.preview) return;
   if(syncing || !db.pending.length) return;
   syncing = true;
   try{
@@ -637,7 +641,7 @@ async function boot(){
       const units = (j.workouts || []).flatMap(w => w.exercises).filter(e => e.sets > 0).map(baseU);
       db.defUnit = units.filter(u => u === 'lb').length > units.length / 2 ? 'lb' : 'kg';
       db.dailyLog = Object.assign({}, j.dailyLog || {}, db.dailyPending);
-      setStatus(canStore ? '' : 'This browser isn’t saving anything between visits. Open the link in Safari or Chrome.');
+      setStatus(AUTH.preview ? 'Preview: nothing is saved.' : canStore ? '' : 'This browser isn’t saving anything between visits. Open the link in Safari or Chrome.');
       save(); render();
     }
   }catch(e){
@@ -661,6 +665,7 @@ function renderPrefs(){
 function setPrefs(next){ db.prefs = next; db.prefsDirty = true; save(); renderPrefs(); const y = scrollY; render(); scrollTo(0, y); syncPrefs(); }
 let prefsSyncing = false;
 async function syncPrefs(){
+  if(AUTH && AUTH.preview) return;
   if(prefsSyncing || !db.prefsDirty || !AUTH) return; prefsSyncing = true;
   try{ const j = await rpc('save_prefs', { p_client: AUTH.c, p_key: AUTH.t, p_prefs: db.prefs }); if(j && j.ok){ db.prefsDirty = false; save(); } }catch(e){ /* try again later */ }
   prefsSyncing = false;
@@ -705,6 +710,7 @@ function renderDaily(){
 }
 let dailySyncing = false;
 async function syncDaily(){
+  if(AUTH && AUTH.preview) return;
   if(dailySyncing) return; dailySyncing = true;
   try{
     for(const day of Object.keys(db.dailyPending)){
@@ -781,6 +787,7 @@ function setPick(slot, value){
   save(); const y = scrollY; render(); scrollTo(0, y);
 }
 function finishSession(){
+  if(AUTH && AUTH.preview){ setStatus('Preview: nothing is saved.'); return; }
   const k = db.tab; const d = draftFor(k); const w = workout(k); const U = dispU();
   const sets = {}, settings = {}, picks = {};
   w.exercises.forEach(ex => {
