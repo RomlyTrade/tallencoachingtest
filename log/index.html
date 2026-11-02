@@ -800,7 +800,10 @@ function finishSession(){
       if(!wt && r && !bw){ const ph = document.getElementById(`w-${ex.id}-${i}`)?.placeholder; if(ph && !isNaN(parseFloat(ph))) wt = ph; }
       const r2 = sides && x.r2 ? String(x.r2) : '';
       if(!wt && r2 && !bw){ const ph = document.getElementById(`w-${ex.id}-${i}`)?.placeholder; if(ph && !isNaN(parseFloat(ph))) wt = ph; }
-      return sides ? { w: wt, r, r2, u: U } : { w: wt, r, u: U };
+      /* client typed their own weight instead of the suggested one: keep the suggestion (sw) so Tom can see the change */
+      const sug = !bw ? document.getElementById(`w-${ex.id}-${i}`)?.placeholder : '';
+      const sw = (x.w && sug && !isNaN(parseFloat(sug)) && Number(x.w) !== Number(sug)) ? { sw: sug } : {};
+      return Object.assign(sides ? { w: wt, r, r2, u: U } : { w: wt, r, u: U }, sw);
     });
     if(arr.some(x => x.r || x.r2 || x.w)){
       sets[ex.id] = arr;

@@ -67,6 +67,8 @@ button{font:inherit;color:inherit}
 .tools{display:flex;flex-direction:column;gap:10px}
 .btnlink{align-self:flex-start;border:1.5px solid var(--plate);color:var(--plate);font-weight:700;font-size:14px;padding:8px 12px;text-decoration:none}
 .blab{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.pen{appearance:none;border:0;background:none;color:var(--warn);cursor:pointer;font-size:14px;padding:0 4px;min-height:24px}
+.was{display:block;font-size:12.5px;color:var(--warn)}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
 .chip{appearance:none;border:1.5px solid var(--bad);background:var(--bad-soft);color:var(--bad);font-weight:600;font-size:13px;padding:4px 8px;cursor:pointer}
 .tools select{border:1.5px solid var(--rule);background:var(--card);color:var(--ink);padding:8px;font:inherit;font-size:15px;max-width:100%}
@@ -266,7 +268,7 @@ function sessionHTML(c, s, plan, all, lib){
       const pr = prev && rv(prev.sets[slot][i]);
       const u = x.u ? x.u + unitBase.replace(/^\s*(kg|lbs?)/i, '') : unitBase;
       const hit = reps != null && hi ? reps >= hi : null;
-      return `<tr><td>Set ${i+1}</td><td>${x.w !== '' && x.w != null ? `${esc(fmtW(x.w))} ${esc(u)}` : '<span style="color:var(--muted)">BW</span>'}</td><td class="c">${esc(rv(x) || '–')}</td><td class="c">${esc(pr || '–')}</td><td class="c">${hit == null ? '–' : `<span class="hit ${hit ? 'y' : 'n'}" title="Target ${hi}">${hit ? '✓' : '✗'}</span>`}</td></tr>`;
+      return `<tr><td>Set ${i+1}</td><td>${x.w !== '' && x.w != null ? `${esc(fmtW(x.w))} ${esc(u)}` : '<span style="color:var(--muted)">BW</span>'}${x.sw != null && x.sw !== '' ? `<button type="button" class="pen" data-pen aria-label="Weight changed by client">✎</button><span class="was" hidden>Suggested ${esc(fmtW(x.sw))} ${esc(u)}, entered ${esc(fmtW(x.w))} ${esc(u)}</span>` : ''}</td><td class="c">${esc(rv(x) || '–')}</td><td class="c">${esc(pr || '–')}</td><td class="c">${hit == null ? '–' : `<span class="hit ${hit ? 'y' : 'n'}" title="Target ${hi}">${hit ? '✓' : '✗'}</span>`}</td></tr>`;
     }).join('');
     const box = s.settings && s.settings[slot];
     return `<div class="ex"><h4>${esc(exName(p, pick, lib))}${box ? ` <small>· ${esc(box)}</small>` : ''}${hi ? ` <small>· target ${hi}</small>` : ''}</h4>
@@ -284,6 +286,8 @@ document.addEventListener('click', e => {
   if(wk){ week = Math.min(0, week + Number(wk.dataset.week)); load(); return; }
   const ch = e.target.closest('[data-client]');
   if(ch){ const id = ch.dataset.client; open.has(id) ? open.delete(id) : open.add(id); render(); return; }
+  const pn = e.target.closest('[data-pen]');
+  if(pn){ const w = pn.nextElementSibling; w.hidden = !w.hidden; return; }
   const ub = e.target.closest('[data-unblock]');
   if(ub){ const c = data.clients.find(x => x.id === ub.dataset.c); saveBlocked(c.id, (c.blocked || []).filter(x => x !== ub.dataset.unblock)); }
 });
