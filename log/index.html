@@ -162,6 +162,9 @@ button,input,textarea{font:inherit;color:inherit}
 .tick[aria-pressed="true"] svg{opacity:1;stroke:var(--plate-ink)}
 .colhead{display:grid;grid-template-columns:28px minmax(0,1fr) minmax(0,1fr) 44px;gap:8px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 .last{font-size:12.5px;color:var(--muted)}
+.setex{font-size:12px;font-weight:700;color:var(--plate);margin:4px 0 -4px 36px}
+.swapfor{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:14px;font-weight:600}
+.swapfor .btn{width:auto}
 
 .finish{display:flex;flex-direction:column;gap:10px;background:var(--card);border:1px solid var(--rule);padding:14px}
 .finish textarea{border:1px solid var(--rule);background:var(--chalk);padding:10px;min-height:70px;width:100%;resize:vertical}
@@ -387,13 +390,17 @@ function histFor(k, ex, opt, mode, side){
   const all = allSessions();
   for(let i = all.length - 1; i >= 0; i--){
     const s = all[i]; if(!s.sets) continue;
-    const slots = ex.cat && opt.id && !String(opt.id).startsWith('other:') ? Object.keys(s.sets).filter(sl => slotPick(s, sl) === opt.id)
+    const slots = ex.cat && opt.id && !String(opt.id).startsWith('other:') ? Object.keys(s.sets).filter(sl => Array.from(s.sets[sl], x => (x && x.x) || slotPick(s, sl)).includes(opt.id))
                                                                           : (s.workout === k && s.sets[ex.id] && pickOf(s, ex) === opt.id ? [ex.id] : []);
     for(const sl of slots){
-      const box = (s.settings && s.settings[sl]) || '';
+      const main = slotPick(s, sl);
+      const mine = Array.from(s.sets[sl], x => x || {}).filter(x => (x.x || main) === opt.id);
+      const viaMain = main === opt.id && mine.some(x => !x.x);
+      const box = viaMain ? ((s.settings && s.settings[sl]) || '') : '';
+      const sd = viaMain ? ((s.settings && s.settings[SL(sl)]) || '') : '';
       if(mode && (box || modeDefault(ex, opt)) !== mode) continue;
-      if(side != null && (((s.settings && s.settings[SL(sl)]) || '') === 'Single leg') !== side) continue;
-      const arr = Array.from(s.sets[sl], x => effR(x || {}));
+      if(side != null && (sd === 'Single leg') !== side) continue;
+      const arr = mine.map(x => effR(x));
       if(arr.some(x => x.r || x.w)){ out.push(arr); break; }
     }
   }
@@ -409,18 +416,22 @@ function estimateFor(ex, opt, U, step, hi, box, sl){
   for(let i = all.length - 1; i >= 0; i--){
     const s = all[i];
     for(const slot of Object.keys(s.sets || {})){
-      const o2 = db.lib.ex[slotPick(s, slot)]; if(!o2 || o2.cat !== ex.cat || !o2.factor) continue;
+      const main = slotPick(s, slot); const groups = {};
+      (s.sets[slot] || []).forEach(x => { if(x) (groups[x.x || main] ||= []).push(x); });
+      for(const [gid, xs] of Object.entries(groups)){
+      const o2 = db.lib.ex[gid]; if(!o2 || o2.cat !== ex.cat || !o2.factor) continue;
       const e2 = exInWorkout(s.workout, slot) || ex;
-      const b2 = (s.settings && s.settings[slot]) || modeDefault(e2, o2), s2 = (s.settings && s.settings[SL(slot)]) || '';
+      const b2 = (gid === main && s.settings && s.settings[slot]) || modeDefault(e2, o2), s2 = (gid === main && s.settings && s.settings[SL(slot)]) || '';
       /* the same exercise counts too when it was done the other way (plate vs cable, one leg vs two) */
       if(o2.id === opt.id && b2 === (box || modeDefault(ex, opt)) && s2 === (sl || '')) continue;
-      const vals = (s.sets[slot] || []).filter(x => x && x.w !== '' && x.w != null && !isNaN(Number(x.w)) && Number(x.w) > 0)
+      const vals = xs.filter(x => x && x.w !== '' && x.w != null && !isNaN(Number(x.w)) && Number(x.w) > 0)
         .map(x => { const r = Number(effR(x).r); return conv(Number(x.w), x.u || baseU(e2), U) * (1 + (r > 0 ? r : hi) / 30); });
       if(!vals.length) continue;
       const max = vals.reduce((a, b) => a + b, 0) / vals.length / loadScale(b2, s2) * opt.factor / o2.factor * loadScale(box || modeDefault(ex, opt), sl);
       const w = max / (1 + hi / 30);
       const est = step > 0 ? Math.floor(w / step + 1e-6) * step : Math.round(w * 100) / 100;
       return est > 0 ? Math.round(est * 100) / 100 : null;
+      }
     }
   }
   return null;
@@ -545,13 +556,21 @@ function exCard(ex, i, k, d, last, wd){
   const allDone = done.filter(Boolean).length >= ex.sets;
   const assisted = opt.boxType === 'mode' && box === 'Assisted';
   const sides = canSides(opt) && sl === 'Single leg';
+  /* each set can be its own exercise from the same category (e.g. 1 set machine press + 2 sets dumbbell press) */
+  const setIds = Array.from({length: ex.sets}, (_, s) => ro ? ((cur[s] && cur[s].x) || pick) : ((d.setPicks && d.setPicks[ex.id] && d.setPicks[ex.id][s]) || pick));
+  const mixed = setIds.some(x => x !== pick);
+  const per = { [pick]: { opt, box, bw, t, sides, assisted: opt.boxType === 'mode' && box === 'Assisted' } };
+  setIds.forEach(id => { if(per[id]) return; const o = optFor(ex, id); const b = modeDefault(ex, o);
+    per[id] = { opt: o, box: b, bw: isBW(o, b), sides: false, assisted: false, t: ro ? { lo: rangeFor(ex, o)[0], hi: rangeFor(ex, o)[1] } : targetFor(ex, k, o, b, '') }; });
   const rows = Array.from({length: ex.sets}, (_, s) => {
     const c = cur[s] || {};
+    const P = per[setIds[s]]; const ix = setIds.slice(0, s).filter(x => x === setIds[s]).length;
+    const { bw, sides, assisted } = P; const t = P.t; const opt = P.opt;
     let wv = c.w ?? '';
     if(ro && wv !== '' && !isNaN(Number(wv))){ const from = c.u || baseU(ex); wv = fmtW(from === U ? Number(wv) : rnd(conv(Number(wv), from, U), stepFor(ex, opt, U))); }
-    const phW = t.ws && t.ws[s] != null ? fmtW(t.ws[s]) : '';
-    const phR = t.repsAll != null ? String(t.repsAll) : (t.repsEach && t.repsEach[s] != null ? String(t.repsEach[s]) : rangeTxt(t.lo, t.hi));
-    return `<div class="setrow">
+    const phW = t.ws && t.ws[ix] != null ? fmtW(t.ws[ix]) : '';
+    const phR = t.repsAll != null ? String(t.repsAll) : (t.repsEach && t.repsEach[ix] != null ? String(t.repsEach[ix]) : rangeTxt(t.lo, t.hi));
+    return `${setIds[s] !== pick ? `<div class="setex">${esc(opt.name)}</div>` : ''}<div class="setrow">
       <span class="n${isOpt(ex,s) ? ' opt' : ''}"${isOpt(ex,s) ? ' title="Optional set"' : ''}>${s+1}</span>
       ${bw ? `<span class="small">Bodyweight</span>` : `<label class="field"><input inputmode="decimal" class="${t.est && !wv ? 'est' : ''}" id="w-${esc(ex.id)}-${s}" data-ex="${esc(ex.id)}" data-set="${s}" data-k="w" value="${esc(wv)}" ${ro ? 'disabled' : ''} placeholder="${esc(phW)}" aria-label="Set ${s+1} ${assisted ? 'assistance' : 'weight'} in ${esc(lbl)}" style="padding-right:${lbl.length > 2 ? 60 : 34}px"><span class="u">${esc(lbl)}</span></label>`}
       ${sides ? `<div class="lr"><label class="field"><input inputmode="numeric" id="r-${esc(ex.id)}-${s}" data-ex="${esc(ex.id)}" data-set="${s}" data-k="r" value="${esc(c.r ?? '')}" ${ro ? 'disabled' : ''} placeholder="${esc(phR)}" aria-label="Set ${s+1} reps, left leg"><span class="u">L</span></label><label class="field"><input inputmode="numeric" id="r2-${esc(ex.id)}-${s}" data-ex="${esc(ex.id)}" data-set="${s}" data-k="r2" value="${esc(c.r2 ?? '')}" ${ro ? 'disabled' : ''} placeholder="${esc(phR)}" aria-label="Set ${s+1} reps, right leg"><span class="u">R</span></label></div>`
@@ -572,19 +591,20 @@ function exCard(ex, i, k, d, last, wd){
       ${opts.length ? `<div class="optnote">Set ${opts.join(' & ')} ${opts.length > 1 ? 'are' : 'is'} optional if you’re short on time</div>` : ''}</div>
       <span class="idx">${i+1}</span>
     </div>
+    ${!ro && d.pendingSwap && d.pendingSwap.slot === ex.id ? `<div class="swapfor"><span>Swap to ${esc(optFor(ex, d.pendingSwap.value).name)} for:</span><button type="button" class="btn slim" data-swapall="${esc(ex.id)}">All sets</button>${Array.from({length: ex.sets}, (_, s) => `<button type="button" class="btn ghost slim" data-swapset="${esc(ex.id)}" data-set="${s}">Set ${s+1}</button>`).join('')}<button type="button" class="btn ghost slim" data-swapcancel="${esc(ex.id)}">Cancel</button></div>` : ''}
     ${t.up ? `<div class="target up"><span class="tag">Level up</span><span>${esc(t.text)}</span></div>` : ''}
     ${[opt.note, ex.note].filter(Boolean).map(nt => `<div class="note">${esc(nt)}</div>`).join('')}
     ${/^https?:\/\//.test(video || '') ? `<a class="vid" href="${esc(video)}" target="_blank" rel="noopener">▶ Watch the demo</a>` : ''}
     ${opt.boxType === 'mode' ? boxUI(ex, opt, box, ro) : ''}
     <div class="sets">
-      <div class="colhead"><span>Set</span><span>${bw ? '' : (assisted ? 'Assistance' : 'Weight')}</span><span>Reps</span><span></span></div>
+      <div class="colhead"><span>Set</span><span>${bw && !mixed ? '' : (assisted ? 'Assistance' : 'Weight')}</span><span>Reps</span><span></span></div>
       ${rows}
     </div>
     ${opt.boxType !== 'mode' ? boxUI(ex, opt, box, ro) : ''}
     ${canSides(opt) ? `<button type="button" class="toggle" data-sl="${esc(ex.id)}" aria-pressed="${sides}" ${ro ? 'disabled' : ''}><span class="sw"></span>Single leg</button>` : ''}
     ${!ro && nobar && opt.id === 'pull-ups' ? `<button type="button" class="btn ghost slim" data-nobar="${esc(ex.id)}">No pull-up bar</button>` : ''}
     ${!ro && nobar && opt.id === 'db-pullover' ? `<button type="button" class="btn ghost slim" data-hasbar="${esc(ex.id)}">I have a pull-up bar</button>` : ''}
-    ${t.lastTxt && !ro ? `<div class="last">Last time: ${esc(t.lastTxt)}</div>` : ''}
+    ${ro ? '' : Object.values(per).filter(P => P.t.lastTxt).map(P => `<div class="last">Last time${mixed ? ` (${esc(P.opt.name)})` : ''}: ${esc(P.t.lastTxt)}</div>`).join('')}
   </article>`;
 }
 
@@ -595,9 +615,12 @@ function summaryText(sess){
   if(sess.note) lines.push(`📝 ${sess.note}`);
   lines.push('');
   w.exercises.forEach(ex => {
-    const s = (sess.sets[ex.id]||[]).filter(x => x && (x.r || x.w));
-    if(!s.length) return;
-    const opt = optFor(ex, pickOf(sess, ex)); const box = boxOf(sess, ex);
+    const all = (sess.sets[ex.id]||[]).filter(x => x && (x.r || x.w));
+    if(!all.length) return;
+    const main = pickOf(sess, ex);
+    [...new Set(all.map(x => x.x || main))].forEach(id => {
+    const s = all.filter(x => (x.x || main) === id);
+    const opt = optFor(ex, id); const box = id === main ? boxOf(sess, ex) : '';
     const name = opt.name.replace(/\s*\(.*?\)\s*/g, ' ').trim();
     const reps = s.map(x => x.r2 ? `${x.r || '–'}/${x.r2}` : (x.r || '–')); const sameReps = reps.every(r => r === reps[0]);
     const unit = (s[0].u || baseU(ex)) + uSuffix(ex);
@@ -606,6 +629,7 @@ function summaryText(sess){
     else if(sameReps) txt = `${s.map(x => fmtW(x.w) || '–').join(' · ')} ${unit} × ${reps[0]}`;
     else txt = `${s.map((x, i) => `${fmtW(x.w) || '–'}×${reps[i]}`).join(' · ')} ${unit}`;
     lines.push(`${name}: ${txt}${box ? ` (${box})` : ''}`);
+    });
   });
   return lines.join('\n');
 }
@@ -785,6 +809,16 @@ document.addEventListener('click', e => {
     d.settings[SL(ex.id)] = sideNow(db.tab, ex, opt) === 'Single leg' ? '' : 'Single leg'; save(); const y = scrollY; render(); scrollTo(0, y); return; }
   const md = e.target.closest('[data-mode]');
   if(md){ const d = draftFor(db.tab); d.settings[md.dataset.mode] = md.dataset.val; delete d.sets[md.dataset.mode]; delete d.done[md.dataset.mode]; save(); const y = scrollY; render(); scrollTo(0, y); return; }
+  const sa = e.target.closest('[data-swapall]');
+  if(sa){ const d = draftFor(db.tab); if(d.pendingSwap) setPick(sa.dataset.swapall, d.pendingSwap.value); return; }
+  const ss = e.target.closest('[data-swapset]');
+  if(ss){ const d = draftFor(db.tab); const slot = ss.dataset.swapset, n = +ss.dataset.set; const ex = exInWorkout(db.tab, slot);
+    if(d.pendingSwap && ex){ const main = currentPick(db.tab, ex); d.setPicks ||= {}; d.setPicks[slot] ||= [];
+      d.setPicks[slot][n] = d.pendingSwap.value === main ? null : d.pendingSwap.value;
+      if(d.sets[slot]) d.sets[slot][n] = {}; if(d.done[slot]) d.done[slot][n] = false; }
+    d.pendingSwap = null; save(); const y = scrollY; render(); scrollTo(0, y); return; }
+  const sc = e.target.closest('[data-swapcancel]');
+  if(sc){ const d = draftFor(db.tab); d.pendingSwap = null; save(); const y = scrollY; render(); scrollTo(0, y); return; }
   const nb = e.target.closest('[data-nobar]');
   if(nb){ setPick(nb.dataset.nobar, 'db-pullover'); return; }
   const hb = e.target.closest('[data-hasbar]');
@@ -826,7 +860,8 @@ document.addEventListener('click', e => {
 
 function setPick(slot, value){
   const d = draftFor(db.tab); d.picks ||= {};
-  d.picks[slot] = value; delete d.sets[slot]; delete d.done[slot]; delete d.settings[slot]; d.otherFor = null;
+  d.picks[slot] = value; delete d.sets[slot]; delete d.done[slot]; delete d.settings[slot]; d.otherFor = null; d.pendingSwap = null;
+  if(d.setPicks) delete d.setPicks[slot];
   save(); const y = scrollY; render(); scrollTo(0, y);
 }
 function finishSession(){
@@ -836,8 +871,11 @@ function finishSession(){
   w.exercises.forEach(ex => {
     if(!(ex.sets > 0)) return;
     const pick = currentPick(k, ex); const opt = optFor(ex, pick); const box = boxNow(k, ex, opt); const bw = isBW(opt, box); const sl = sideNow(k, ex, opt); const sides = canSides(opt) && sl === 'Single leg';
+    const ids = Array.from({length: ex.sets}, (_, i) => (d.setPicks && d.setPicks[ex.id] && d.setPicks[ex.id][i]) || pick);
     const arr = Array.from({length: ex.sets}, (_, i) => {
       const x = (d.sets[ex.id] || [])[i] || {};
+      const own = ids[i] === pick; const oi = own ? opt : optFor(ex, ids[i]);
+      const bw = own ? isBW(opt, box) : isBW(oi, modeDefault(ex, oi)); const sides = own && canSides(opt) && sl === 'Single leg';
       const r = x.r ? String(x.r) : '';
       let wt = !bw && x.w ? String(x.w) : '';
       if(!wt && r && !bw){ const ph = document.getElementById(`w-${ex.id}-${i}`)?.placeholder; if(ph && !isNaN(parseFloat(ph))) wt = ph; }
@@ -846,7 +884,7 @@ function finishSession(){
       /* client typed their own weight instead of the suggested one: keep the suggestion (sw) so Tom can see the change */
       const sug = !bw ? document.getElementById(`w-${ex.id}-${i}`)?.placeholder : '';
       const sw = (x.w && sug && !isNaN(parseFloat(sug)) && Number(x.w) !== Number(sug)) ? { sw: sug } : {};
-      return Object.assign(sides ? { w: wt, r, r2, u: U } : { w: wt, r, u: U }, sw);
+      return Object.assign(sides ? { w: wt, r, r2, u: U } : { w: wt, r, u: U }, own ? {} : { x: ids[i] }, sw);
     });
     if(arr.some(x => x.r || x.r2 || x.w)){
       sets[ex.id] = arr;
@@ -869,6 +907,8 @@ document.addEventListener('change', e => {
   if(t.dataset && t.dataset.pick){
     if(t.value === '__other'){ const d = draftFor(db.tab); d.otherFor = t.dataset.pick; save(); const y = scrollY; render(); scrollTo(0, y);
       const inp = document.querySelector(`[data-othername="${CSS.escape(t.dataset.pick)}"]`); inp && inp.focus(); return; }
+    const ex = exInWorkout(db.tab, t.dataset.pick);
+    if(ex && ex.sets > 1){ const d = draftFor(db.tab); d.pendingSwap = { slot: ex.id, value: t.value }; save(); const y = scrollY; render(); scrollTo(0, y); return; }
     setPick(t.dataset.pick, t.value);
   }
 });
