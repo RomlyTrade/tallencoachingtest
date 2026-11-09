@@ -162,6 +162,10 @@ button,input,textarea{font:inherit;color:inherit}
 .tick[aria-pressed="true"] svg{opacity:1;stroke:var(--plate-ink)}
 .colhead{display:grid;grid-template-columns:var(--c1,28px) minmax(0,1fr) minmax(0,1fr) 44px;gap:8px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 .last{font-size:12.5px;color:var(--muted)}
+.addgroup{position:relative;display:flex;align-items:center;justify-content:center;min-height:72px;border:2px dashed var(--plate);color:var(--plate);font-size:18px;font-weight:700;cursor:pointer}
+.addgroup select{position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer;font-size:16px}
+.buildbar{display:flex;flex-wrap:wrap;gap:8px}
+.buildbar .btn{width:auto}
 .setex{font-size:12px;font-weight:700;color:var(--plate);margin:4px 0 -4px 52px}
 .setpick{position:relative;display:flex;align-items:center;justify-content:center;gap:2px;height:44px;border:1.5px solid var(--rule);color:var(--ink);font-size:13px;font-weight:700;cursor:pointer}
 .setpick.opt{border:1.5px dashed var(--plate);color:var(--plate)}
@@ -259,7 +263,14 @@ const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;
 const fmtW = w => (w === '' || w == null || isNaN(Number(w))) ? '' : (Math.round(Number(w)*100)/100).toString();
 const today = () => new Date().toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
 const uid = () => (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2));
-const workouts = () => (db.plan || []);
+/* Builder clients (prefs.builder): one blank session Tom fills in live, card by card. Each finished session saves like any other. */
+const BK = 'F';
+function builderWorkout(){
+  const d = draftFor(BK); d.free ||= [];
+  return { key: BK, name: 'Session', builder: true,
+    exercises: d.free.map(c => ({ id: c.id, name: '', muscle: '', sets: c.sets, reps: [8, 12], cat: c.cat, lib: '', wUnit: 'kg', builder: true })) };
+}
+const workouts = () => db.builder ? [...(db.plan || []), builderWorkout()] : (db.plan || []);
 const workout = k => workouts().find(w => w.key === k) || workouts()[0];
 /* Alternate workouts use the main key plus a number: A2 is the variety version of A */
 const baseKey = k => String(k).replace(/\d+$/, '') || String(k);
@@ -366,7 +377,7 @@ function allSessions(){
 function lastSession(k){ const s = allSessions().filter(x => x.workout === k); return s.length ? s[s.length-1] : null; }
 /* A workout finished this week (Mon–Sun) stays on show, ticked, until Monday */
 function weekStartMs(){ const n = new Date(); n.setHours(0,0,0,0); n.setDate(n.getDate() - ((n.getDay() + 6) % 7)); return n.getTime(); }
-function doneThisWeek(k){ const s = lastSession(k); if(!s || !(Number(s.ts) >= weekStartMs())) return null; const d = db.drafts[k]; return d && d.again === s.id ? null : s; }
+function doneThisWeek(k){ if(db.builder && k === BK) return null; const s = lastSession(k); if(!s || !(Number(s.ts) >= weekStartMs())) return null; const d = db.drafts[k]; return d && d.again === s.id ? null : s; }
 function prevSets(sess, exId){
   const arr = sess && sess.sets && sess.sets[exId];
   return arr ? Array.from(arr, x => x || { w:'', r:'' }) : null;
@@ -488,11 +499,11 @@ function setStatus(msg){ const el = $('status'); el.hidden = !msg; el.textConten
 function render(){
   const hasDaily = db.daily && db.daily.length;
   if(!hasDaily) db.view = 'gym';
-  $('views').hidden = !hasDaily || !(db.plan && db.plan.length);
+  $('views').hidden = !hasDaily || !workouts().length;
   $('views').innerHTML = hasDaily ? `<button type="button" role="tab" class="view" data-view="gym" aria-selected="${db.view==='gym'}">Workouts</button><button type="button" role="tab" class="view" data-view="daily" aria-selected="${db.view==='daily'}">朝 Morning</button>` : '';
   if(db.view === 'daily'){ $('app').hidden = true; $('daily').hidden = false; $('who').textContent = db.name || 'Your workouts'; renderDaily(); return; }
   $('daily').hidden = true;
-  if(!db.plan || !db.plan.length){ $('app').hidden = true; return; }
+  if(!workouts().length){ $('app').hidden = true; return; }
   $('app').hidden = false;
   if(!db.tab || !workout(db.tab) || workout(db.tab).key !== db.tab) db.tab = workouts()[0].key;
   const k = db.tab; const w = workout(k); const d = draftFor(k); const last = lastSession(k); const wd = doneThisWeek(k);
@@ -525,6 +536,7 @@ function render(){
     html.push(exCard(ex, num++, k, d, last, wd));
   });
   flushInfo();
+  if(w.builder && db.lib) html.push(`<label class="addgroup">+ Add muscle group<select data-addcat aria-label="Add a muscle group"><option value="" selected disabled>Choose</option>${Object.values(db.lib.cats).map(c => `<option value="${esc(c.id)}">${esc(c.name)}</option>`).join('')}</select></label>`);
   $('list').innerHTML = html.join('');
 
   renderFinish();
@@ -540,6 +552,7 @@ function pickMenu(ex, opt, ro){
   if(!ex.cat || ro || !db.lib) return `<div class="exname">${esc(opt.name)}</div>`;
   const list = (db.lib.byCat[ex.cat] || []).map(o => [o.id, o.name]);
   if(opt.id && !list.some(x => x[0] === opt.id)) list.push([opt.id, opt.name]);
+  if(!opt.id) return `<label class="pickwrap"><select class="pick" data-pick="${esc(ex.id)}" aria-label="Choose exercise"><option value="" selected disabled>+ Add exercise</option>${list.map(([v, nm]) => `<option value="${esc(v)}">${esc(nm)}</option>`).join('')}</select></label>`;
   return `<label class="pickwrap"><select class="pick" data-pick="${esc(ex.id)}" aria-label="Choose exercise">${list.map(([v, nm]) => `<option value="${esc(v)}"${v === opt.id ? ' selected' : ''}>${esc(nm)}</option>`).join('')}</select><span class="chev" aria-hidden="true">⇄</span></label>`;
 }
 function boxUI(ex, opt, box, ro){
@@ -579,7 +592,7 @@ function exCard(ex, i, k, d, last, wd){
     let wv = c.w ?? '';
     if(ro && wv !== '' && !isNaN(Number(wv))){ const from = c.u || baseU(ex); wv = fmtW(from === U ? Number(wv) : rnd(conv(Number(wv), from, U), stepFor(ex, opt, U))); }
     const phW = t.ws && t.ws[ix] != null ? fmtW(t.ws[ix]) : '';
-    const phR = t.repsAll != null ? String(t.repsAll) : (t.repsEach && t.repsEach[ix] != null ? String(t.repsEach[ix]) : rangeTxt(t.lo, t.hi));
+    const phR = t.repsAll != null ? String(t.repsAll) : (t.repsEach && t.repsEach[ix] != null ? String(t.repsEach[ix]) : (ex.builder ? '' : rangeTxt(t.lo, t.hi)));
     return `${mixed ? `<div class="setex">${esc(opt.name)}</div>` : ''}<div class="setrow">
       ${canPickSets ? `<label class="setpick${isOpt(ex,s) ? ' opt' : ''}" aria-label="Set ${s+1}: change exercise">${s+1}<select data-setpick="${esc(ex.id)}" data-set="${s}">${pickList(ex, opt).map(([v, nm]) => `<option value="${esc(v)}"${v === setIds[s] ? ' selected' : ''}>${esc(nm)}</option>`).join('')}</select></label>`
         : `<span class="n${isOpt(ex,s) ? ' opt' : ''}"${isOpt(ex,s) ? ' title="Optional set"' : ''}>${s+1}</span>`}
@@ -598,7 +611,7 @@ function exCard(ex, i, k, d, last, wd){
     <div class="exhead">
       <div style="min-width:0;flex:1">${cat ? `<div class="muscle">${esc(cat.name)}</div>${cat.subtext ? `<div class="catsub">${esc(cat.subtext)}</div>` : ''}` : (ex.muscle ? `<div class="muscle">${esc(ex.muscle)}</div>` : '')}
       ${pickMenu(ex, opt, ro)}
-      <div class="exspec">${ex.sets} sets · ${rangeTxt(t.lo, t.hi)} reps${ex.perSide ? ' each side' : ''}${ex.rest ? ` · rest ${esc(ex.rest)}` : ''}</div>
+      <div class="exspec">${ex.builder ? `${ex.sets} ${ex.sets === 1 ? 'set' : 'sets'}` : `${ex.sets} sets · ${rangeTxt(t.lo, t.hi)} reps`}${ex.perSide ? ' each side' : ''}${ex.rest ? ` · rest ${esc(ex.rest)}` : ''}</div>
       ${opts.length ? `<div class="optnote">Set ${opts.join(' & ')} ${opts.length > 1 ? 'are' : 'is'} optional if you’re short on time</div>` : ''}</div>
       <span class="idx">${i+1}</span>
     </div>
@@ -610,6 +623,7 @@ function exCard(ex, i, k, d, last, wd){
       <div class="colhead"><span>Set</span><span>${bw && !mixed ? '' : (assisted ? 'Assistance' : 'Weight')}</span><span>Reps</span><span></span></div>
       ${rows}
     </div>
+    ${ex.builder && !ro ? `<div class="buildbar"><button type="button" class="btn ghost slim" data-addset="${esc(ex.id)}">+ Add set</button>${ex.sets > 1 ? `<button type="button" class="btn ghost slim" data-delset="${esc(ex.id)}">− Remove set</button>` : ''}<button type="button" class="btn ghost slim" data-delcard="${esc(ex.id)}">Remove</button></div>` : ''}
     ${opt.boxType !== 'mode' ? boxUI(ex, opt, box, ro) : ''}
     ${canSides(opt) ? `<button type="button" class="toggle" data-sl="${esc(ex.id)}" aria-pressed="${sides}" ${ro ? 'disabled' : ''}><span class="sw"></span>Single leg</button>` : ''}
     ${!ro && nobar && opt.id === 'pull-ups' ? `<button type="button" class="btn ghost slim" data-nobar="${esc(ex.id)}">No pull-up bar</button>` : ''}
@@ -624,7 +638,9 @@ function summaryText(sess){
   const lines = [head];
   if(sess.note) lines.push(`📝 ${sess.note}`);
   lines.push('');
-  w.exercises.forEach(ex => {
+  const exs = w.exercises.slice();
+  Object.keys(sess.sets || {}).forEach(slot => { if(!exs.some(e => e.id === slot)){ const lb = db.lib && db.lib.ex[(sess.picks || {})[slot]]; exs.push({ id: slot, name: '', sets: (sess.sets[slot] || []).length, reps: [8, 12], cat: lb ? lb.cat : '', lib: '', wUnit: 'kg' }); } });
+  exs.forEach(ex => {
     const all = (sess.sets[ex.id]||[]).filter(x => x && (x.r || x.w));
     if(!all.length) return;
     const main = pickOf(sess, ex);
@@ -705,6 +721,7 @@ async function boot(){
     else{
       /* A workout whose name starts with ~ is hidden (e.g. parked for a travel week) */
       db.plan = (j.workouts || []).filter(w => !String(w.name || '').startsWith('~')); db.name = j.client.name;
+      db.builder = !!(j.prefs && j.prefs.builder);
       db.sessions = j.sessions || [];
       db.daily = j.daily || [];
       const lib = j.library || { categories: [], exercises: [] };
@@ -819,6 +836,15 @@ document.addEventListener('click', e => {
     d.settings[SL(ex.id)] = sideNow(db.tab, ex, opt) === 'Single leg' ? '' : 'Single leg'; save(); const y = scrollY; render(); scrollTo(0, y); return; }
   const md = e.target.closest('[data-mode]');
   if(md){ const d = draftFor(db.tab); d.settings[md.dataset.mode] = md.dataset.val; delete d.sets[md.dataset.mode]; delete d.done[md.dataset.mode]; save(); const y = scrollY; render(); scrollTo(0, y); return; }
+  const ads = e.target.closest('[data-addset]'), dls = e.target.closest('[data-delset]'), dlc = e.target.closest('[data-delcard]');
+  if(ads || dls || dlc){
+    const d = draftFor(BK); d.free ||= []; const id = (ads || dls || dlc).dataset.addset || (ads || dls || dlc).dataset.delset || (ads || dls || dlc).dataset.delcard;
+    const c = d.free.find(x => x.id === id); if(!c) return;
+    if(ads) c.sets = Math.min(12, c.sets + 1);
+    if(dls && c.sets > 1){ c.sets--; [d.sets, d.done].forEach(m => { if(m[id]) m[id].length = Math.min(m[id].length, c.sets); }); if(d.setPicks && d.setPicks[id]) d.setPicks[id].length = Math.min(d.setPicks[id].length, c.sets); }
+    if(dlc){ d.free = d.free.filter(x => x.id !== id); delete d.sets[id]; delete d.done[id]; if(d.picks) delete d.picks[id]; if(d.setPicks) delete d.setPicks[id]; delete d.settings[id]; }
+    save(); const y = scrollY; render(); scrollTo(0, y); return;
+  }
   const nb = e.target.closest('[data-nobar]');
   if(nb){ setPick(nb.dataset.nobar, 'db-pullover'); return; }
   const hb = e.target.closest('[data-hasbar]');
@@ -870,7 +896,7 @@ function finishSession(){
   const sets = {}, settings = {}, picks = {};
   w.exercises.forEach(ex => {
     if(!(ex.sets > 0)) return;
-    const pick = currentPick(k, ex); const opt = optFor(ex, pick); const box = boxNow(k, ex, opt); const bw = isBW(opt, box); const sl = sideNow(k, ex, opt); const sides = canSides(opt) && sl === 'Single leg';
+    const pick = currentPick(k, ex); if(ex.builder && !pick) return; const opt = optFor(ex, pick); const box = boxNow(k, ex, opt); const bw = isBW(opt, box); const sl = sideNow(k, ex, opt); const sides = canSides(opt) && sl === 'Single leg';
     const ids = Array.from({length: ex.sets}, (_, i) => (d.setPicks && d.setPicks[ex.id] && d.setPicks[ex.id][i]) || pick);
     const arr = Array.from({length: ex.sets}, (_, i) => {
       const x = (d.sets[ex.id] || [])[i] || {};
@@ -908,6 +934,12 @@ document.addEventListener('change', e => {
     if(t.value === '__other'){ const d = draftFor(db.tab); d.otherFor = t.dataset.pick; save(); const y = scrollY; render(); scrollTo(0, y);
       const inp = document.querySelector(`[data-othername="${CSS.escape(t.dataset.pick)}"]`); inp && inp.focus(); return; }
     setPick(t.dataset.pick, t.value);
+  }
+  if(t.dataset && t.dataset.addcat !== undefined && t.matches('[data-addcat]') && t.value){
+    const d = draftFor(BK); d.free ||= []; const id = 'f' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
+    d.free.push({ id, cat: t.value, sets: 1 }); save(); render();
+    document.querySelector(`[data-pick="${CSS.escape(id)}"]`)?.closest('article')?.scrollIntoView({ block: 'center' });
+    return;
   }
   if(t.dataset && t.dataset.setpick){
     const d = draftFor(db.tab); const slot = t.dataset.setpick, n = +t.dataset.set; const ex = exInWorkout(db.tab, slot);
