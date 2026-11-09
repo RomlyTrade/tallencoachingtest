@@ -178,7 +178,7 @@ function render(){
     const day = new Date(d.day + 'T12:00:00'); if(day < r.mon || day > r.sun) return;
     dailyBy[d.client] = (dailyBy[d.client] || 0) + Object.keys(d.done || {}).length;
   });
-  const clients = (data.clients || []).filter(c => c.active && plansBy[c.id]);
+  const clients = (data.clients || []).filter(c => c.active && (plansBy[c.id] || (c.prefs && c.prefs.builder)));
 
   let trained = 0, notes = 0;
   const cards = clients.map(c => {
@@ -198,7 +198,7 @@ function render(){
     return `<section class="client">
       <button type="button" class="chead" data-client="${esc(c.id)}" aria-expanded="${isOpen}">
         <span class="cname">${esc(c.name)}</span>
-        <span class="count${doneVisible >= visible.length && visible.length ? ' full' : ''}">${mine.length} of ${visible.length} ${visible.length === 1 ? 'session' : 'sessions'} <span class="chev">${isOpen ? '▲' : '▼'}</span></span>
+        <span class="count${doneVisible >= visible.length && visible.length ? ' full' : ''}">${c.prefs && c.prefs.builder ? `${mine.length} ${mine.length === 1 ? 'session' : 'sessions'}` : `${mine.length} of ${visible.length} ${visible.length === 1 ? 'session' : 'sessions'}`} <span class="chev">${isOpen ? '▲' : '▼'}</span></span>
         <span class="pips">${pips}</span>
         <span class="cmeta"><span>Last session: <strong>${last ? esc(last.date) : 'never'}</strong></span>${tasks ? `<span>朝: <strong>${dailyBy[c.id] || 0}/${tasks.length * 6}</strong></span>` : ''}${mine.some(s => s.note) ? '<span>📝 has notes</span>' : ''}${c.prefs && c.prefs.unit ? `<span>Units: <strong>${esc(c.prefs.unit)}</strong></span>` : ''}${c.prefs && c.prefs.rlo ? `<span>Rep range: <strong>${c.prefs.rlo}–${c.prefs.rhi}</strong></span>` : ''}</span>
       </button>
@@ -248,7 +248,7 @@ function exName(p, pick, lib){
   return p ? p.name : '';
 }
 function sessionHTML(c, s, plan, all, lib){
-  const w = plan[s.workout] || { name: 'Workout ' + s.workout, ex: [] };
+  const w = plan[s.workout] || { name: s.workout === 'F' ? 'Session' : 'Workout ' + s.workout, ex: [] };
   const order = {}; w.ex.forEach(p => order[p.id] = p.sort);
   const slots = Object.keys(s.sets || {}).sort((a,b) => (order[a] ?? 999) - (order[b] ?? 999));
   const prefs = c.prefs || {};
