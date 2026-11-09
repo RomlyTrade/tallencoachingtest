@@ -276,7 +276,7 @@ function sessionHTML(c, s, plan, all, lib){
       const hit = reps != null && hi ? reps >= hi : null;
       return `<tr><td>Set ${i+1}</td><td>${x.w !== '' && x.w != null ? `${esc(fmtW(x.w))} ${esc(u)}` : '<span style="color:var(--muted)">BW</span>'}${x.sw != null && x.sw !== '' ? `<button type="button" class="pen" data-pen aria-label="Weight changed by client">✎</button><span class="was" hidden>Suggested ${esc(fmtW(x.sw))} ${esc(u)}, entered ${esc(fmtW(x.w))} ${esc(u)}</span>` : ''}</td><td class="c">${esc(rv(x) || '–')}</td><td class="c">${esc(pr || '–')}</td><td class="c">${hit == null ? '–' : `<span class="hit ${hit ? 'y' : 'n'}" title="Target ${hi}">${hit ? '✓' : '✗'}</span>`}</td></tr>`;
     }).join('');
-    const box = s.settings && s.settings[slot];
+    const box = [s.settings && s.settings[slot], s.settings && s.settings[slot + '~sl']].filter(Boolean).join(' · ');
     return `<div class="ex"><h4>${esc(exName(p, pick, lib))}${box ? ` <small>· ${esc(box)}</small>` : ''}${hi ? ` <small>· target ${hi}</small>` : ''}</h4>
       <table><thead><tr><th>Set</th><th>Weight</th><th class="c">Reps</th><th class="c">Last time</th><th class="c">Target</th></tr></thead><tbody>${rows}</tbody></table></div>`;
   }).join('');
