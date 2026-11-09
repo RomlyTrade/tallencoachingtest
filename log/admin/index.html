@@ -118,7 +118,7 @@ td.c,th.c{text-align:center}
       <div class="clients" id="clients"></div>
       <h2 class="sect">Quiz leads</h2>
       <div class="leads" id="leads"></div>
-      <p class="legend">Target = top of the rep range for that exercise (the client's own range for compound lifts if they've set one). Last week = the previous time they did that exercise in that session.</p>
+      <p class="legend">Target = top of the rep range for that exercise (the client's own range for compound lifts if they've set one). Last time = the previous time they did that exercise, in any session.</p>
     </div>
   </div>
 </div>
@@ -257,8 +257,14 @@ function sessionHTML(c, s, plan, all, lib){
     const pick = (s.picks && s.picks[slot]) || (p && p.lib) || '';
     const L = lib[pick];
     const hi = (L && L.compound && prefs.rhi) ? Number(prefs.rhi) : (p ? Number(p.hi) : null);
-    const prev = all.filter(x => x.client === s.client && x.workout === s.workout && x.ts < s.ts && x.sets && x.sets[slot]
-                    && (((x.picks && x.picks[slot]) || (p && p.lib) || '') === pick)).pop();
+    /* last time this exercise was done, in any of this client's sessions */
+    const pickIn = (x, sl) => (x.picks && x.picks[sl]) || ((plan[x.workout] && (plan[x.workout].ex.find(e => e.id === sl) || {}).lib) || '');
+    let prevArr = null;
+    for(const x of all.filter(x => x.client === s.client && x.ts < s.ts && x.sets).reverse()){
+      const sl = pick && L ? Object.keys(x.sets).find(k => pickIn(x, k) === pick) : (x.workout === s.workout && x.sets[slot] ? slot : null);
+      if(sl){ prevArr = x.sets[sl]; break; }
+    }
+    const prev = prevArr ? { sets: { [slot]: prevArr } } : null;
     const unitBase = p ? String(p.unit || 'kg') : 'kg';
     const rows = (s.sets[slot] || []).map((x, i) => {
       if(!x || (!x.r && !x.w)) return '';
@@ -272,7 +278,7 @@ function sessionHTML(c, s, plan, all, lib){
     }).join('');
     const box = s.settings && s.settings[slot];
     return `<div class="ex"><h4>${esc(exName(p, pick, lib))}${box ? ` <small>· ${esc(box)}</small>` : ''}${hi ? ` <small>· target ${hi}</small>` : ''}</h4>
-      <table><thead><tr><th>Set</th><th>Weight</th><th class="c">Reps</th><th class="c">Last week</th><th class="c">Target</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+      <table><thead><tr><th>Set</th><th>Weight</th><th class="c">Reps</th><th class="c">Last time</th><th class="c">Target</th></tr></thead><tbody>${rows}</tbody></table></div>`;
   }).join('');
   return `<div class="sess">
     <div class="shead"><h3>${esc(String(w.name || '').replace(/^~/, ''))}</h3><span>${esc(s.date)}</span></div>

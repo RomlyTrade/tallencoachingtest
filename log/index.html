@@ -363,26 +363,49 @@ function settingNow(k, exId){ const d = draftFor(k); return d.settings[exId] != 
    - Every required set at the top of the range 3 sessions running at the same weight: every set goes up one step
      (for assisted pull-ups, the assistance comes down a step instead). */
 const HITS_NEEDED = 3;
-function histFor(k, ex, opt, mode, side){
-  return allSessions().filter(s => s.workout === k && s.sets && s.sets[ex.id] && pickOf(s, ex) === opt.id
-      && (!mode || (boxOf(s, ex) || modeDefault(ex, opt)) === mode)
-      && (side == null || (boxOf(s, ex) === 'Single leg') === side))
-    .reverse().map(s => Array.from(s.sets[ex.id], x => effR(x || {}))).filter(a => a.some(x => x.r || x.w));
+/* What was done in a logged slot: the exercise picked there (or the plan's), from any workout, hidden ones included */
+function slotPick(s, slot){
+  if(s.picks && s.picks[slot]) return s.picks[slot];
+  const e = exInWorkout(s.workout, slot); return e ? (e.lib || '') : '';
 }
-function estimateFor(ex, opt, U, step){
+/* An exercise's history is the exercise's, wherever it was done: pull-ups are pull-ups in any session.
+   Exercises from the library are matched by exercise; anything else stays tied to its own slot. */
+function histFor(k, ex, opt, mode, side){
+  const out = [];
+  const all = allSessions();
+  for(let i = all.length - 1; i >= 0; i--){
+    const s = all[i]; if(!s.sets) continue;
+    const slots = ex.cat && opt.id && !String(opt.id).startsWith('other:') ? Object.keys(s.sets).filter(sl => slotPick(s, sl) === opt.id)
+                                                                          : (s.workout === k && s.sets[ex.id] && pickOf(s, ex) === opt.id ? [ex.id] : []);
+    for(const sl of slots){
+      const box = (s.settings && s.settings[sl]) || '';
+      if(mode && (box || modeDefault(ex, opt)) !== mode) continue;
+      if(side != null && (box === 'Single leg') !== side) continue;
+      const arr = Array.from(s.sets[sl], x => effR(x || {}));
+      if(arr.some(x => x.r || x.w)){ out.push(arr); break; }
+    }
+  }
+  return out;
+}
+/* A first guess for an exercise never done before, from the latest exercise done in the same category.
+   Each set becomes an estimated max (weight x (1 + reps/30)), is scaled by the two exercises' factors
+   (factors compare the number logged: plate-loaded machines are logged per side), then brought back to
+   the top of this exercise's rep range and rounded down. */
+function estimateFor(ex, opt, U, step, hi){
   if(!opt.factor || !db.lib) return null;
   const all = allSessions();
   for(let i = all.length - 1; i >= 0; i--){
     const s = all[i];
     for(const slot of Object.keys(s.sets || {})){
-      const e2 = exInWorkout(s.workout, slot); if(!e2 || e2.cat !== ex.cat) continue;
-      const o2 = optFor(e2, pickOf(s, e2)); if(!o2.factor || o2.id === opt.id) continue;
+      const o2 = db.lib.ex[slotPick(s, slot)]; if(!o2 || o2.cat !== ex.cat || !o2.factor || o2.id === opt.id) continue;
+      const e2 = exInWorkout(s.workout, slot) || ex;
       const vals = (s.sets[slot] || []).filter(x => x && x.w !== '' && x.w != null && !isNaN(Number(x.w)) && Number(x.w) > 0)
-        .map(x => conv(Number(x.w), x.u || baseU(e2), U));
+        .map(x => { const r = Number(effR(x).r); return conv(Number(x.w), x.u || baseU(e2), U) * (1 + (r > 0 ? r : hi) / 30); });
       if(!vals.length) continue;
-      const mean = vals.reduce((a, b) => a + b, 0) / vals.length;
-      const est = rnd(mean * opt.factor / o2.factor, step);
-      return est > 0 ? est : null;
+      const max = vals.reduce((a, b) => a + b, 0) / vals.length * opt.factor / o2.factor;
+      const w = max / (1 + hi / 30);
+      const est = step > 0 ? Math.floor(w / step) * step : Math.round(w * 100) / 100;
+      return est > 0 ? Math.round(est * 100) / 100 : null;
     }
   }
   return null;
@@ -399,7 +422,7 @@ function targetFor(ex, k, opt, box){
     if((isOwnPlanPick(ex, opt) || (ex.setting === 'No pull-up bar' && opt.id === 'db-pullover')) && ex.start != null){
       return { lo, hi, ws: Array.from({length: n}, (_, i) => { const v = startAt(ex, i); return baseU(ex) === U ? v : rnd(conv(v, baseU(ex), U), step); }) };
     }
-    const e = estimateFor(ex, opt, U, step);
+    const e = estimateFor(ex, opt, U, step, hi);
     return e != null ? { lo, hi, ws: Array(n).fill(e), est: true } : { lo, hi };
   }
   const last = hist[0];
