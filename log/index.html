@@ -108,7 +108,7 @@ button,input,textarea{font:inherit;color:inherit}
 .asa-total strong{color:var(--shu)}
 
 .sets{display:flex;flex-direction:column;gap:6px}
-.setrow{display:grid;grid-template-columns:28px minmax(0,1fr) minmax(0,1fr) 44px;gap:8px;align-items:center}
+.setrow{display:grid;grid-template-columns:var(--c1,28px) minmax(0,1fr) minmax(0,1fr) 44px;gap:8px;align-items:center}
 .lr{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 .lr .field input{padding-right:24px}
 .setrow .n{font-size:13px;font-weight:700;color:var(--muted);text-align:center}
@@ -160,9 +160,13 @@ button,input,textarea{font:inherit;color:inherit}
 .tick:disabled{cursor:default}
 .field input:disabled,.settings input:disabled{opacity:1;color:var(--ink);-webkit-text-fill-color:var(--ink)}
 .tick[aria-pressed="true"] svg{opacity:1;stroke:var(--plate-ink)}
-.colhead{display:grid;grid-template-columns:28px minmax(0,1fr) minmax(0,1fr) 44px;gap:8px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.colhead{display:grid;grid-template-columns:var(--c1,28px) minmax(0,1fr) minmax(0,1fr) 44px;gap:8px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 .last{font-size:12.5px;color:var(--muted)}
-.setex{font-size:12px;font-weight:700;color:var(--plate);margin:4px 0 -4px 36px}
+.setex{font-size:12px;font-weight:700;color:var(--plate);margin:4px 0 -4px 52px}
+.setpick{position:relative;display:flex;align-items:center;justify-content:center;gap:2px;height:44px;border:1.5px solid var(--rule);color:var(--ink);font-size:13px;font-weight:700;cursor:pointer}
+.setpick.opt{border:1.5px dashed var(--plate);color:var(--plate)}
+.setpick .sx{color:var(--plate);font-size:12px}
+.setpick select{position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer;font-size:16px}
 .swapfor{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:14px;font-weight:600}
 .swapfor .btn{width:auto}
 
@@ -527,6 +531,11 @@ function render(){
   renderHistory();
 }
 
+function pickList(ex, opt){
+  const list = (db.lib.byCat[ex.cat] || []).map(o => [o.id, o.name]);
+  if(opt.id && !list.some(x => x[0] === opt.id)) list.push([opt.id, opt.name]);
+  return list;
+}
 function pickMenu(ex, opt, ro){
   if(!ex.cat || ro || !db.lib) return `<div class="exname">${esc(opt.name)}</div>`;
   const list = (db.lib.byCat[ex.cat] || []).map(o => [o.id, o.name]);
@@ -559,6 +568,7 @@ function exCard(ex, i, k, d, last, wd){
   /* each set can be its own exercise from the same category (e.g. 1 set machine press + 2 sets dumbbell press) */
   const setIds = Array.from({length: ex.sets}, (_, s) => ro ? ((cur[s] && cur[s].x) || pick) : ((d.setPicks && d.setPicks[ex.id] && d.setPicks[ex.id][s]) || pick));
   const mixed = setIds.some(x => x !== pick);
+  const canPickSets = !ro && !!ex.cat && !!db.lib && ex.sets > 1;
   const per = { [pick]: { opt, box, bw, t, sides, assisted: opt.boxType === 'mode' && box === 'Assisted' } };
   setIds.forEach(id => { if(per[id]) return; const o = optFor(ex, id); const b = modeDefault(ex, o);
     per[id] = { opt: o, box: b, bw: isBW(o, b), sides: false, assisted: false, t: ro ? { lo: rangeFor(ex, o)[0], hi: rangeFor(ex, o)[1] } : targetFor(ex, k, o, b, '') }; });
@@ -570,8 +580,9 @@ function exCard(ex, i, k, d, last, wd){
     if(ro && wv !== '' && !isNaN(Number(wv))){ const from = c.u || baseU(ex); wv = fmtW(from === U ? Number(wv) : rnd(conv(Number(wv), from, U), stepFor(ex, opt, U))); }
     const phW = t.ws && t.ws[ix] != null ? fmtW(t.ws[ix]) : '';
     const phR = t.repsAll != null ? String(t.repsAll) : (t.repsEach && t.repsEach[ix] != null ? String(t.repsEach[ix]) : rangeTxt(t.lo, t.hi));
-    return `${setIds[s] !== pick ? `<div class="setex">${esc(opt.name)}</div>` : ''}<div class="setrow">
-      <span class="n${isOpt(ex,s) ? ' opt' : ''}"${isOpt(ex,s) ? ' title="Optional set"' : ''}>${s+1}</span>
+    return `${mixed ? `<div class="setex">${esc(opt.name)}</div>` : ''}<div class="setrow">
+      ${canPickSets ? `<label class="setpick${isOpt(ex,s) ? ' opt' : ''}" aria-label="Set ${s+1}: change exercise">${s+1}<span class="sx" aria-hidden="true">⇄</span><select data-setpick="${esc(ex.id)}" data-set="${s}">${pickList(ex, opt).map(([v, nm]) => `<option value="${esc(v)}"${v === setIds[s] ? ' selected' : ''}>${esc(nm)}</option>`).join('')}</select></label>`
+        : `<span class="n${isOpt(ex,s) ? ' opt' : ''}"${isOpt(ex,s) ? ' title="Optional set"' : ''}>${s+1}</span>`}
       ${bw ? `<span class="small">Bodyweight</span>` : `<label class="field"><input inputmode="decimal" class="${t.est && !wv ? 'est' : ''}" id="w-${esc(ex.id)}-${s}" data-ex="${esc(ex.id)}" data-set="${s}" data-k="w" value="${esc(wv)}" ${ro ? 'disabled' : ''} placeholder="${esc(phW)}" aria-label="Set ${s+1} ${assisted ? 'assistance' : 'weight'} in ${esc(lbl)}" style="padding-right:${lbl.length > 2 ? 60 : 34}px"><span class="u">${esc(lbl)}</span></label>`}
       ${sides ? `<div class="lr"><label class="field"><input inputmode="numeric" id="r-${esc(ex.id)}-${s}" data-ex="${esc(ex.id)}" data-set="${s}" data-k="r" value="${esc(c.r ?? '')}" ${ro ? 'disabled' : ''} placeholder="${esc(phR)}" aria-label="Set ${s+1} reps, left leg"><span class="u">L</span></label><label class="field"><input inputmode="numeric" id="r2-${esc(ex.id)}-${s}" data-ex="${esc(ex.id)}" data-set="${s}" data-k="r2" value="${esc(c.r2 ?? '')}" ${ro ? 'disabled' : ''} placeholder="${esc(phR)}" aria-label="Set ${s+1} reps, right leg"><span class="u">R</span></label></div>`
         : `<label class="field"><input inputmode="numeric" id="r-${esc(ex.id)}-${s}" data-ex="${esc(ex.id)}" data-set="${s}" data-k="r" value="${esc(c.r ?? '')}" ${ro ? 'disabled' : ''} placeholder="${esc(phR)}" aria-label="Set ${s+1} reps"></label>`}
@@ -591,12 +602,11 @@ function exCard(ex, i, k, d, last, wd){
       ${opts.length ? `<div class="optnote">Set ${opts.join(' & ')} ${opts.length > 1 ? 'are' : 'is'} optional if you’re short on time</div>` : ''}</div>
       <span class="idx">${i+1}</span>
     </div>
-    ${!ro && d.pendingSwap && d.pendingSwap.slot === ex.id ? `<div class="swapfor"><span>Swap to ${esc(optFor(ex, d.pendingSwap.value).name)} for:</span><button type="button" class="btn slim" data-swapall="${esc(ex.id)}">All sets</button>${Array.from({length: ex.sets}, (_, s) => `<button type="button" class="btn ghost slim" data-swapset="${esc(ex.id)}" data-set="${s}">Set ${s+1}</button>`).join('')}<button type="button" class="btn ghost slim" data-swapcancel="${esc(ex.id)}">Cancel</button></div>` : ''}
     ${t.up ? `<div class="target up"><span class="tag">Level up</span><span>${esc(t.text)}</span></div>` : ''}
     ${[opt.note, ex.note].filter(Boolean).map(nt => `<div class="note">${esc(nt)}</div>`).join('')}
     ${/^https?:\/\//.test(video || '') ? `<a class="vid" href="${esc(video)}" target="_blank" rel="noopener">▶ Watch the demo</a>` : ''}
     ${opt.boxType === 'mode' ? boxUI(ex, opt, box, ro) : ''}
-    <div class="sets">
+    <div class="sets"${canPickSets ? ' style="--c1:44px"' : ''}>
       <div class="colhead"><span>Set</span><span>${bw && !mixed ? '' : (assisted ? 'Assistance' : 'Weight')}</span><span>Reps</span><span></span></div>
       ${rows}
     </div>
@@ -809,16 +819,6 @@ document.addEventListener('click', e => {
     d.settings[SL(ex.id)] = sideNow(db.tab, ex, opt) === 'Single leg' ? '' : 'Single leg'; save(); const y = scrollY; render(); scrollTo(0, y); return; }
   const md = e.target.closest('[data-mode]');
   if(md){ const d = draftFor(db.tab); d.settings[md.dataset.mode] = md.dataset.val; delete d.sets[md.dataset.mode]; delete d.done[md.dataset.mode]; save(); const y = scrollY; render(); scrollTo(0, y); return; }
-  const sa = e.target.closest('[data-swapall]');
-  if(sa){ const d = draftFor(db.tab); if(d.pendingSwap) setPick(sa.dataset.swapall, d.pendingSwap.value); return; }
-  const ss = e.target.closest('[data-swapset]');
-  if(ss){ const d = draftFor(db.tab); const slot = ss.dataset.swapset, n = +ss.dataset.set; const ex = exInWorkout(db.tab, slot);
-    if(d.pendingSwap && ex){ const main = currentPick(db.tab, ex); d.setPicks ||= {}; d.setPicks[slot] ||= [];
-      d.setPicks[slot][n] = d.pendingSwap.value === main ? null : d.pendingSwap.value;
-      if(d.sets[slot]) d.sets[slot][n] = {}; if(d.done[slot]) d.done[slot][n] = false; }
-    d.pendingSwap = null; save(); const y = scrollY; render(); scrollTo(0, y); return; }
-  const sc = e.target.closest('[data-swapcancel]');
-  if(sc){ const d = draftFor(db.tab); d.pendingSwap = null; save(); const y = scrollY; render(); scrollTo(0, y); return; }
   const nb = e.target.closest('[data-nobar]');
   if(nb){ setPick(nb.dataset.nobar, 'db-pullover'); return; }
   const hb = e.target.closest('[data-hasbar]');
@@ -907,9 +907,14 @@ document.addEventListener('change', e => {
   if(t.dataset && t.dataset.pick){
     if(t.value === '__other'){ const d = draftFor(db.tab); d.otherFor = t.dataset.pick; save(); const y = scrollY; render(); scrollTo(0, y);
       const inp = document.querySelector(`[data-othername="${CSS.escape(t.dataset.pick)}"]`); inp && inp.focus(); return; }
-    const ex = exInWorkout(db.tab, t.dataset.pick);
-    if(ex && ex.sets > 1){ const d = draftFor(db.tab); d.pendingSwap = { slot: ex.id, value: t.value }; save(); const y = scrollY; render(); scrollTo(0, y); return; }
     setPick(t.dataset.pick, t.value);
+  }
+  if(t.dataset && t.dataset.setpick){
+    const d = draftFor(db.tab); const slot = t.dataset.setpick, n = +t.dataset.set; const ex = exInWorkout(db.tab, slot);
+    if(ex){ const main = currentPick(db.tab, ex); d.setPicks ||= {}; d.setPicks[slot] ||= [];
+      d.setPicks[slot][n] = t.value === main ? null : t.value;
+      if(d.sets[slot]) d.sets[slot][n] = {}; if(d.done[slot]) d.done[slot][n] = false; }
+    save(); const y = scrollY; render(); scrollTo(0, y);
   }
 });
 document.addEventListener('keydown', e => {
