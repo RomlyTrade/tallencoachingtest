@@ -166,6 +166,8 @@ button,input,textarea{font:inherit;color:inherit}
 .addgroup select{position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer;font-size:16px}
 .buildbar{display:flex;flex-wrap:wrap;gap:8px}
 .buildbar .btn{width:auto}
+.colhead .ps{text-transform:none;letter-spacing:0}
+.setpick select:disabled{cursor:default}
 .setex{font-size:12px;font-weight:700;color:var(--plate);margin:4px 0 -4px 52px}
 .setpick{position:relative;display:flex;align-items:center;justify-content:center;gap:2px;height:44px;border:1.5px solid var(--rule);color:var(--ink);font-size:13px;font-weight:700;cursor:pointer}
 .setpick.opt{border:1.5px dashed var(--plate);color:var(--plate)}
@@ -323,6 +325,8 @@ function sideNow(k, ex, opt){
 const loadScale = (box, sl) => (box === 'Plate loaded' ? 0.5 : 1) * (sl === 'Single leg' ? 0.5 : 1);
 const effR = x => { if(!x || x.r2 == null || x.r2 === '') return x; const a = Number(x.r), b = Number(x.r2);
   return Object.assign({}, x, { r: /^\d+$/.test(String(x.r)) && /^\d+$/.test(String(x.r2)) ? String(Math.min(a, b)) : (x.r || x.r2), rs: `${x.r || '–'}/${x.r2 || '–'}` }); };
+/* Plate-loaded machines are logged per side */
+const perSide = (o, b) => b === 'Plate loaded' || o.id === 'hack-squat';
 const isOwnPlanPick = (ex, opt) => !ex.cat || opt.id === ex.lib;
 const stepFor = (ex, opt, U) => (isOwnPlanPick(ex, opt) && baseU(ex) === U && Number(ex.inc) > 0) ? Number(ex.inc) : (STEPS[U][opt.equipment] || STEPS[U].other);
 const noAuto = (ex, opt) => isOwnPlanPick(ex, opt) && Number(ex.inc) === 0 && opt.equipment !== 'bw';
@@ -593,12 +597,13 @@ function exCard(ex, i, k, d, last, wd){
     if(ro && wv !== '' && !isNaN(Number(wv))){ const from = c.u || baseU(ex); wv = fmtW(from === U ? Number(wv) : rnd(conv(Number(wv), from, U), stepFor(ex, opt, U))); }
     const phW = t.ws && t.ws[ix] != null ? fmtW(t.ws[ix]) : '';
     const phR = t.repsAll != null ? String(t.repsAll) : (t.repsEach && t.repsEach[ix] != null ? String(t.repsEach[ix]) : (ex.builder ? '' : rangeTxt(t.lo, t.hi)));
-    return `${mixed ? `<div class="setex">${esc(opt.name)}</div>` : ''}<div class="setrow">
-      ${canPickSets ? `<label class="setpick${isOpt(ex,s) ? ' opt' : ''}" aria-label="Set ${s+1}: change exercise">${s+1}<select data-setpick="${esc(ex.id)}" data-set="${s}">${pickList(ex, opt).map(([v, nm]) => `<option value="${esc(v)}"${v === setIds[s] ? ' selected' : ''}>${esc(nm)}</option>`).join('')}</select></label>`
+    const lock = !ro && !!done[s];
+    return `${mixed ? `<div class="setex">${esc(opt.name)}${perSide(opt, P.box) ? ' (per side)' : ''}</div>` : ''}<div class="setrow">
+      ${canPickSets ? `<label class="setpick${isOpt(ex,s) ? ' opt' : ''}" aria-label="Set ${s+1}: change exercise">${s+1}<select data-setpick="${esc(ex.id)}" data-set="${s}" ${lock ? 'disabled' : ''}>${pickList(ex, opt).map(([v, nm]) => `<option value="${esc(v)}"${v === setIds[s] ? ' selected' : ''}>${esc(nm)}</option>`).join('')}</select></label>`
         : `<span class="n${isOpt(ex,s) ? ' opt' : ''}"${isOpt(ex,s) ? ' title="Optional set"' : ''}>${s+1}</span>`}
-      ${bw ? `<span class="small">Bodyweight</span>` : `<label class="field"><input inputmode="decimal" class="${t.est && !wv ? 'est' : ''}" id="w-${esc(ex.id)}-${s}" data-ex="${esc(ex.id)}" data-set="${s}" data-k="w" value="${esc(wv)}" ${ro ? 'disabled' : ''} placeholder="${esc(phW)}" aria-label="Set ${s+1} ${assisted ? 'assistance' : 'weight'} in ${esc(lbl)}" style="padding-right:${lbl.length > 2 ? 60 : 34}px"><span class="u">${esc(lbl)}</span></label>`}
-      ${sides ? `<div class="lr"><label class="field"><input inputmode="numeric" id="r-${esc(ex.id)}-${s}" data-ex="${esc(ex.id)}" data-set="${s}" data-k="r" value="${esc(c.r ?? '')}" ${ro ? 'disabled' : ''} placeholder="${esc(phR)}" aria-label="Set ${s+1} reps, left leg"><span class="u">L</span></label><label class="field"><input inputmode="numeric" id="r2-${esc(ex.id)}-${s}" data-ex="${esc(ex.id)}" data-set="${s}" data-k="r2" value="${esc(c.r2 ?? '')}" ${ro ? 'disabled' : ''} placeholder="${esc(phR)}" aria-label="Set ${s+1} reps, right leg"><span class="u">R</span></label></div>`
-        : `<label class="field"><input inputmode="numeric" id="r-${esc(ex.id)}-${s}" data-ex="${esc(ex.id)}" data-set="${s}" data-k="r" value="${esc(c.r ?? '')}" ${ro ? 'disabled' : ''} placeholder="${esc(phR)}" aria-label="Set ${s+1} reps"></label>`}
+      ${bw ? `<span class="small">Bodyweight</span>` : `<label class="field"><input inputmode="decimal" class="${t.est && !wv ? 'est' : ''}" id="w-${esc(ex.id)}-${s}" data-ex="${esc(ex.id)}" data-set="${s}" data-k="w" value="${esc(wv)}" ${ro || lock ? 'disabled' : ''} placeholder="${esc(phW)}" aria-label="Set ${s+1} ${assisted ? 'assistance' : 'weight'} in ${esc(lbl)}" style="padding-right:${lbl.length > 2 ? 60 : 34}px"><span class="u">${esc(lbl)}</span></label>`}
+      ${sides ? `<div class="lr"><label class="field"><input inputmode="numeric" id="r-${esc(ex.id)}-${s}" data-ex="${esc(ex.id)}" data-set="${s}" data-k="r" value="${esc(c.r ?? '')}" ${ro || lock ? 'disabled' : ''} placeholder="${esc(phR)}" aria-label="Set ${s+1} reps, left leg"><span class="u">L</span></label><label class="field"><input inputmode="numeric" id="r2-${esc(ex.id)}-${s}" data-ex="${esc(ex.id)}" data-set="${s}" data-k="r2" value="${esc(c.r2 ?? '')}" ${ro || lock ? 'disabled' : ''} placeholder="${esc(phR)}" aria-label="Set ${s+1} reps, right leg"><span class="u">R</span></label></div>`
+        : `<label class="field"><input inputmode="numeric" id="r-${esc(ex.id)}-${s}" data-ex="${esc(ex.id)}" data-set="${s}" data-k="r" value="${esc(c.r ?? '')}" ${ro || lock ? 'disabled' : ''} placeholder="${esc(phR)}" aria-label="Set ${s+1} reps"></label>`}
       <button type="button" class="tick" data-tick="${esc(ex.id)}" data-set="${s}" aria-pressed="${!!done[s]}" ${ro ? 'disabled' : ''} aria-label="Mark set ${s+1} done"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="square"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button>
     </div>`;
   }).join('');
@@ -620,7 +625,7 @@ function exCard(ex, i, k, d, last, wd){
     ${/^https?:\/\//.test(video || '') ? `<a class="vid" href="${esc(video)}" target="_blank" rel="noopener">▶ Watch the demo</a>` : ''}
     ${opt.boxType === 'mode' ? boxUI(ex, opt, box, ro) : ''}
     <div class="sets"${canPickSets ? ' style="--c1:44px"' : ''}>
-      <div class="colhead"><span>Set</span><span>${bw && !mixed ? '' : (assisted ? 'Assistance' : 'Weight')}</span><span>Reps</span><span></span></div>
+      <div class="colhead"><span>Set</span><span>${bw && !mixed ? '' : (assisted ? 'Assistance' : 'Weight')}${!mixed && !bw && perSide(opt, box) ? ' <span class="ps">(per side)</span>' : ''}</span><span>Reps</span><span></span></div>
       ${rows}
     </div>
     ${ex.builder && !ro ? `<div class="buildbar"><button type="button" class="btn ghost slim" data-addset="${esc(ex.id)}">+ Add set</button>${ex.sets > 1 ? `<button type="button" class="btn ghost slim" data-delset="${esc(ex.id)}">− Remove set</button>` : ''}<button type="button" class="btn ghost slim" data-delcard="${esc(ex.id)}">Remove</button></div>` : ''}
