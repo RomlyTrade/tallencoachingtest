@@ -118,7 +118,7 @@ td.c,th.c{text-align:center}
       <div class="clients" id="clients"></div>
       <h2 class="sect">Quiz leads</h2>
       <div class="leads" id="leads"></div>
-      <p class="legend">Target = top of the rep range for that exercise (the client's own range for compound lifts if they've set one). Last time = the previous time they did that exercise, in any session.</p>
+      <p class="legend">Target = reps within the rep range for that exercise (the client's own range for compound lifts if they've set one). Last time = the previous time they did that exercise, in any session.</p>
     </div>
   </div>
 </div>
@@ -257,6 +257,7 @@ function sessionHTML(c, s, plan, all, lib){
     const pick = (s.picks && s.picks[slot]) || (p && p.lib) || '';
     const L = lib[pick];
     const hi = (L && L.compound && prefs.rhi) ? Number(prefs.rhi) : (p ? Number(p.hi) : null);
+    const lo = (L && L.compound && prefs.rlo) ? Number(prefs.rlo) : (p && p.lo != null ? Number(p.lo) : hi);
     /* last time this exercise was done, in any of this client's sessions */
     const pickIn = (x, sl) => (x.picks && x.picks[sl]) || ((plan[x.workout] && (plan[x.workout].ex.find(e => e.id === sl) || {}).lib) || '');
     let prevArr = null;
@@ -273,11 +274,11 @@ function sessionHTML(c, s, plan, all, lib){
       const reps = rr.length ? Math.min(...rr) : null;
       const pr = prev && rv(prev.sets[slot][i]);
       const u = x.u ? x.u + unitBase.replace(/^\s*(kg|lbs?)/i, '') : unitBase;
-      const hit = reps != null && hi ? reps >= hi : null;
-      return `<tr><td>Set ${i+1}${x.x ? `<br><small style="color:var(--plate)">${esc(lib[x.x] ? lib[x.x].name : x.x)}</small>` : ''}</td><td>${x.w !== '' && x.w != null ? `${esc(fmtW(x.w))} ${esc(u)}` : '<span style="color:var(--muted)">BW</span>'}${x.sw != null && x.sw !== '' ? `<button type="button" class="pen" data-pen aria-label="Weight changed by client">✎</button><span class="was" hidden>Suggested ${esc(fmtW(x.sw))} ${esc(u)}, entered ${esc(fmtW(x.w))} ${esc(u)}</span>` : ''}</td><td class="c">${esc(rv(x) || '–')}</td><td class="c">${esc(pr || '–')}</td><td class="c">${hit == null ? '–' : `<span class="hit ${hit ? 'y' : 'n'}" title="Target ${hi}">${hit ? '✓' : '✗'}</span>`}</td></tr>`;
+      const hit = reps != null && lo ? reps >= lo : null;
+      return `<tr><td>Set ${i+1}${x.x ? `<br><small style="color:var(--plate)">${esc(lib[x.x] ? lib[x.x].name : x.x)}</small>` : ''}</td><td>${x.w !== '' && x.w != null ? `${esc(fmtW(x.w))} ${esc(u)}` : '<span style="color:var(--muted)">BW</span>'}${x.sw != null && x.sw !== '' ? `<button type="button" class="pen" data-pen aria-label="Weight changed by client">✎</button><span class="was" hidden>Suggested ${esc(fmtW(x.sw))} ${esc(u)}, entered ${esc(fmtW(x.w))} ${esc(u)}</span>` : ''}</td><td class="c">${esc(rv(x) || '–')}</td><td class="c">${esc(pr || '–')}</td><td class="c">${hit == null ? '–' : `<span class="hit ${hit ? 'y' : 'n'}" title="Target ${lo === hi ? hi : `${lo}–${hi}`}">${hit ? '✓' : '✗'}</span>`}</td></tr>`;
     }).join('');
     const box = [s.settings && s.settings[slot], s.settings && s.settings[slot + '~sl']].filter(Boolean).join(' · ');
-    return `<div class="ex"><h4>${esc(exName(p, pick, lib))}${box ? ` <small>· ${esc(box)}</small>` : ''}${hi ? ` <small>· target ${hi}</small>` : ''}</h4>
+    return `<div class="ex"><h4>${esc(exName(p, pick, lib))}${box ? ` <small>· ${esc(box)}</small>` : ''}${hi ? ` <small>· target ${lo && lo !== hi ? `${lo}–${hi}` : hi}</small>` : ''}</h4>
       <table><thead><tr><th>Set</th><th>Weight</th><th class="c">Reps</th><th class="c">Last time</th><th class="c">Target</th></tr></thead><tbody>${rows}</tbody></table></div>`;
   }).join('');
   return `<div class="sess">
