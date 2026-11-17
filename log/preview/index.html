@@ -245,7 +245,7 @@ function readAuth(){
 }
 const AUTH = readAuth();
 /* Clients whose tabs show only the workout name (no 'Workout A' line) */
-const NAME_ONLY_TABS = ['carl', 'athvaithan', 'ben', 'ian', 'mark', 'sarahlynn']; // tabs: name only
+const NAME_ONLY_TABS = ['carl', 'athvaithan', 'ben', 'ian', 'mark', 'sarahlynn', 'francesca']; // tabs: name only
 const KEY = (AUTH && AUTH.preview ? 'tallen-preview:' : 'tallen-log2:') + (AUTH ? AUTH.c : 'none');
 
 /* ===== Local copy (works offline, survives refresh) ===== */
@@ -269,7 +269,7 @@ const uid = () => (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString
 const BK = 'F';
 function builderWorkout(){
   const d = draftFor(BK); d.free ||= [];
-  return { key: BK, name: 'Session', builder: true,
+  return { key: BK, name: 'Session ' + ((db.plan || []).filter(w => baseKey(w.key) === w.key).length + 1), builder: true,
     exercises: d.free.map(c => ({ id: c.id, name: '', muscle: '', sets: c.sets, reps: [8, 12], cat: c.cat, lib: '', wUnit: 'kg', builder: true })) };
 }
 const workouts = () => db.builder ? [...(db.plan || []), builderWorkout()] : (db.plan || []);
