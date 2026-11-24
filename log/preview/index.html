@@ -978,6 +978,17 @@ document.addEventListener('input', e => {
     d.sets[t.dataset.ex][+t.dataset.set] ||= {};
     const cell = d.sets[t.dataset.ex][+t.dataset.set];
     cell[t.dataset.k] = t.value.trim();
+    /* typing a weight updates every later set that hasn't been ticked or typed by hand, live */
+    if(t.dataset.k === 'w'){
+      delete cell.autoW; const sp = (d.setPicks && d.setPicks[t.dataset.ex]) || [], s0 = +t.dataset.set;
+      for(let j = s0 + 1; ; j++){
+        const wj = document.getElementById(`w-${t.dataset.ex}-${j}`); if(!wj) break;
+        if((d.done[t.dataset.ex] || [])[j] || (sp[j] || sp[s0]) !== sp[s0]) continue;
+        const cj = (d.sets[t.dataset.ex][j] ||= {});
+        if(cj.w && !cj.autoW) continue;
+        if(cell.w === ''){ delete cj.w; delete cj.autoW; wj.value = ''; } else { cj.w = cell.w; cj.autoW = 1; wj.value = cell.w; }
+      }
+    }
     /* single leg: the first number typed is copied to the other leg until that leg is typed in */
     if(t.dataset.k === 'r' || t.dataset.k === 'r2'){
       const other = t.dataset.k === 'r' ? 'r2' : 'r';
