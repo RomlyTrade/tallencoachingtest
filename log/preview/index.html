@@ -393,7 +393,7 @@ function settingNow(k, exId){ const d = draftFor(k); return d.settings[exId] != 
 
 /* ===== Targets =====
    - Next time shows the same exercise and the weight actually used last time.
-   - Any required set 4+ reps under the bottom of the range: every set drops one step, target stays.
+   - A required set 3+ reps under the bottom of the range, two sessions running at the same weight: every set drops one step, target stays.
    - Every required set at the top of the range 3 sessions running at the same weight: every set goes up one step
      (for assisted pull-ups, the assistance comes down a step instead). */
 const HITS_NEEDED = 3;
@@ -475,7 +475,11 @@ function targetFor(ex, k, opt, box, sl){
   const lastWs = Array.from({length: n}, (_, i) => { const v = toU(last[i]); return v != null ? v : firstW; });
   const repsOf = i => last[i] && /^\d+$/.test(String(last[i].r)) ? Number(last[i].r) : null;
   const reqSets = last.slice(0, req);
-  const tooShort = reqSets.some(x => x && /^\d+$/.test(String(x.r)) && Number(x.r) <= lo - 4);
+  /* forgiving: step down only after two sessions in a row at the same weight with a required set 3+ reps under the range */
+  const shortIn = a => a.slice(0, req).some(x => x && /^\d+$/.test(String(x.r)) && Number(x.r) <= lo - 3);
+  const prev = hist[1];
+  const sameWts = (a, b) => { for(let i = 0; i < req; i++){ const x = a[i] || {}, y = b[i] || {}; if(String(x.w || '') !== String(y.w || '') || (x.u || '') !== (y.u || '')) return false; } return true; };
+  const tooShort = shortIn(last) && !!prev && shortIn(prev) && sameWts(last, prev);
   const lastTxt = last.slice(0, n).map(x => bw || x.w === '' || x.w == null ? `${x.rs || x.r || '–'}` : `${fmtW(toU(x))}×${x.rs || x.r || '–'}`).join(', ');
   if(tooShort && !bw && !noAuto(ex, opt)){
     return { lo, hi, ws: lastWs.map(v => v == null ? v : Math.max(0, rnd(v + (assisted ? step : -step), step))), repsAll: hi, lastTxt };
