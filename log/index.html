@@ -442,7 +442,7 @@ function estimateFor(ex, opt, U, step, hi, box, sl){
       const e2 = exInWorkout(s.workout, slot) || ex;
       const b2 = (gid === main && s.settings && s.settings[slot]) || modeDefault(e2, o2), s2 = (gid === main && s.settings && s.settings[SL(slot)]) || '';
       /* the same exercise counts too when it was done the other way (plate vs cable, one leg vs two) */
-      if(o2.id === opt.id && b2 === (box || modeDefault(ex, opt)) && s2 === (sl || '')) continue;
+      if(o2.id === opt.id) continue; /* cable and plate loaded are separate exercises: never guess one from the other */
       const vals = xs.filter(x => x && x.w !== '' && x.w != null && !isNaN(Number(x.w)) && Number(x.w) > 0)
         .map(x => { const r = Number(effR(x).r); return conv(Number(x.w), x.u || baseU(e2), U) * (1 + (r > 0 ? r : hi) / 30); });
       if(!vals.length) continue;
@@ -881,6 +881,16 @@ document.addEventListener('click', e => {
       if(ri && !ri.value && ri.placeholder && /^\d+$/.test(ri.placeholder)) d.sets[id][s].r = ri.placeholder;
       const r2i = document.getElementById(`r2-${id}-${s}`);
       if(r2i && !r2i.value && r2i.placeholder && /^\d+$/.test(r2i.placeholder)) d.sets[id][s].r2 = r2i.placeholder;
+      /* weight changed from the suggestion: carry it to the sets still to do (up or down) */
+      const nw = d.sets[id][s].w;
+      if(wi && nw !== '' && nw != null && !isNaN(Number(nw)) && Number(nw) !== parseFloat(wi.placeholder)){
+        const sp = (d.setPicks && d.setPicks[id]) || [];
+        for(let j = s + 1; j < (d.sets[id].length > 0 ? 99 : 0); j++){
+          const wj = document.getElementById(`w-${id}-${j}`); if(!wj) break;
+          if(d.done[id][j] || (sp[j] || sp[s]) !== sp[s]) continue;
+          d.sets[id][j] ||= {}; d.sets[id][j].w = nw;
+        }
+      }
     }
     save(); const y = scrollY; render(); scrollTo(0, y); return;
   }
