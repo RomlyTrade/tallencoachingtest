@@ -202,6 +202,7 @@ function render(){
         <span class="pips">${pips}</span>
         <span class="cmeta"><span>Last session: <strong>${last ? esc(last.date) : 'never'}</strong></span>${tasks ? `<span>朝: <strong>${dailyBy[c.id] || 0}/${tasks.length * 6}</strong></span>` : ''}${mine.some(s => s.note) ? '<span>📝 has notes</span>' : ''}${c.prefs && c.prefs.unit ? `<span>Units: <strong>${esc(c.prefs.unit)}</strong></span>` : ''}${c.prefs && c.prefs.rlo ? `<span>Rep range: <strong>${c.prefs.rlo}–${c.prefs.rhi}</strong></span>` : ''}</span>
       </button>
+      ${mine.filter(s => s.note).map(s => `<div class="note" style="margin:0 16px 12px">📝 ${esc(String(((plan[s.workout] || {}).name) || 'Workout ' + s.workout).replace(/^~/, ''))}, ${esc(s.date)}: ${esc(s.note)}</div>`).join('')}
       ${isOpen ? `<div class="cbody">${toolsHTML(c, lib)}${mine.length ? mine.map(s => sessionHTML(c, s, plan, all, lib)).join('') : '<p class="empty">No sessions logged this week.</p>'}</div>` : ''}
     </section>`;
   });
